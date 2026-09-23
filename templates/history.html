@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import event_row %}
+{% block title %}Event history{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-4">Event history</h1>
+<form class="card mb-5 grid grid-cols-2 md:grid-cols-6 gap-3 text-sm" method="get">
+  <div><label class="label">Audio ID</label><input class="input" name="audio_id" value="{{ args.get('audio_id','') }}"></div>
+  <div><label class="label">Filename</label><input class="input" name="filename" value="{{ args.get('filename','') }}"></div>
+  <div><label class="label">Category</label><select class="input" name="category"><option value="">Any</option>{% for c in CLASSES + ['Unknown'] %}<option {{ 'selected' if args.get('category')==c }}>{{ c }}</option>{% endfor %}</select></div>
+  <div><label class="label">Severity</label><select class="input" name="severity"><option value="">Any</option>{% for s in SEVERITY_LEVELS %}<option {{ 'selected' if args.get('severity')==s }}>{{ s }}</option>{% endfor %}</select></div>
+  <div><label class="label">Quality</label><select class="input" name="quality"><option value="">Any</option>{% for q in QUALITY_LEVELS %}<option {{ 'selected' if args.get('quality')==q }}>{{ q }}</option>{% endfor %}</select></div>
+  <div><label class="label">Status</label><select class="input" name="status"><option value="">Any</option>{% for s in EVENT_STATUSES %}<option {{ 'selected' if args.get('status')==s }}>{{ s }}</option>{% endfor %}</select></div>
+  <div><label class="label">From</label><input class="input" type="date" name="date_from" value="{{ args.get('date_from','') }}"></div>
+  <div><label class="label">To</label><input class="input" type="date" name="date_to" value="{{ args.get('date_to','') }}"></div>
+  <div><label class="label">Confidence min %</label><input class="input" type="number" min="0" max="100" name="conf_min" value="{{ args.get('conf_min','') }}"></div>
+  <div><label class="label">Confidence max %</label><input class="input" type="number" min="0" max="100" name="conf_max" value="{{ args.get('conf_max','') }}"></div>
+  <div><label class="label">Review status</label><select class="input" name="review">
+    <option value="">Any</option><option value="pending" {{ 'selected' if args.get('review')=='pending' }}>Awaiting review</option>
+    <option value="reviewed" {{ 'selected' if args.get('review')=='reviewed' }}>Reviewed</option><option value="none" {{ 'selected' if args.get('review')=='none' }}>No review needed</option></select></div>
+  {% if current_user.role != 'user' %}<div><label class="label">User</label><input class="input" name="user" placeholder="username / USR-…" value="{{ args.get('user','') }}"></div>{% endif %}
+  <div><label class="label">Source</label><select class="input" name="source"><option value="">Any</option>{% for s in ['upload','batch','live','evaluation'] %}<option {{ 'selected' if args.get('source')==s }}>{{ s }}</option>{% endfor %}</select></div>
+  <label class="flex items-end gap-2 text-xs text-slate-400"><input type="checkbox" name="include_background" {{ 'checked' if args.get('include_background') }}> Include live background windows</label>
+  <div class="col-span-2 md:col-span-6 flex gap-2 justify-end"><a class="btn btn-ghost" href="{{ url_for('main.history') }}">Reset</a><button class="btn btn-primary">Filter</button></div>
+</form>
+<div class="card overflow-x-auto">
+  <div class="text-sm text-slate-400 mb-2">{{ pag.total }} event(s)</div>
+  <table class="table">
+    <thead><tr><th>Audio ID</th><th>Detected</th><th>Conf.</th><th>Severity</th><th>Quality</th><th>Status</th><th>Time</th></tr></thead>
+    <tbody>{% for e in pag.items %}{{ event_row(e) }}{% else %}<tr><td colspan="7" class="text-slate-500">No matching events.</td></tr>{% endfor %}</tbody>
+  </table>
+  {% if pag.pages > 1 %}
+  <div class="flex justify-between items-center mt-4 text-sm">
+    {% set qs = args.to_dict() %}
+    {% if pag.has_prev %}{% set _ = qs.update({'page': pag.prev_num}) %}<a class="btn btn-ghost btn-sm" href="{{ url_for('main.history', **qs) }}">← Prev</a>{% else %}<span></span>{% endif %}
+    <span class="text-slate-400">Page {{ pag.page }} / {{ pag.pages }}</span>
+    {% if pag.has_next %}{% set _ = qs.update({'page': pag.next_num}) %}<a class="btn btn-ghost btn-sm" href="{{ url_for('main.history', **qs) }}">Next →</a>{% else %}<span></span>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

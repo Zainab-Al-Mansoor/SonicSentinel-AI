@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-6">My profile</h1>
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="card">
+    <div class="w-16 h-16 rounded-full bg-brand-600 grid place-items-center text-2xl font-bold text-white mb-3">{{ current_user.username[:2]|upper }}</div>
+    <dl class="text-sm space-y-2">
+      <div><dt class="text-slate-500">User ID</dt><dd class="font-mono text-white">{{ current_user.user_code }}</dd></div>
+      <div><dt class="text-slate-500">Username</dt><dd>{{ current_user.username }}</dd></div>
+      <div><dt class="text-slate-500">Role</dt><dd>{{ ROLES[current_user.role] }}</dd></div>
+      <div><dt class="text-slate-500">Member since</dt><dd>{{ current_user.created_at|dt }}</dd></div>
+      <div><dt class="text-slate-500">Last login</dt><dd>{{ current_user.last_login|dt }}</dd></div>
+    </dl>
+  </div>
+  <form method="post" class="card lg:col-span-2 grid sm:grid-cols-2 gap-4 content-start">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="sm:col-span-2 card-title">Profile information</div>
+    <div><label class="label">Full name</label><input class="input" name="full_name" value="{{ current_user.full_name or '' }}"></div>
+    <div><label class="label">Email</label><input class="input" type="email" name="email" value="{{ current_user.email }}"></div>
+    <div><label class="label">Phone</label><input class="input" name="phone" value="{{ current_user.phone or '' }}"></div>
+    <div><label class="label">Organisation</label><input class="input" name="organization" value="{{ current_user.organization or '' }}"></div>
+    <div class="sm:col-span-2 text-right"><button class="btn btn-primary">Save profile</button></div>
+  </form>
+  <form method="post" class="card lg:col-start-2 lg:col-span-2 grid sm:grid-cols-3 gap-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="password">
+    <div class="sm:col-span-3 card-title">Change password</div>
+    <div><label class="label">Current</label><input class="input" type="password" name="current" required></div>
+    <div><label class="label">New</label><input class="input" type="password" name="new" required></div>
+    <div><label class="label">Confirm</label><input class="input" type="password" name="confirm" required></div>
+    <div class="sm:col-span-3 text-right"><button class="btn btn-ghost">Update password</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card max-w-lg mx-auto text-center py-10">
+  <div class="text-6xl font-bold text-brand-400">{{ code }}</div>
+  <h1 class="text-xl font-semibold text-white mt-3">{{ title }}</h1>
+  <p class="text-slate-400 mt-2">{{ message }}</p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-6">Back to dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-3">Detection settings</h1>
+{% include "admin/_nav.html" %}
+{% set help = {
+  'segment_seconds': 'Fixed segment length for uploaded audio (seconds). Retrain the Python model after changing it.',
+  'segment_hop_seconds': 'Step between segments. Smaller = more overlap = better at catching short events.',
+  'live_window_seconds': 'Length of each live microphone window (1–3 s recommended).',
+  'min_confidence': 'Minimum combined confidence for an automatic decision (0–1).',
+  'top2_margin': 'Minimum difference between the highest and second-highest class (0–1).',
+  'acceptable_match_diff': 'Max |Python − GTM| top-class confidence difference for an "Acceptable Match".',
+  'unknown_threshold': 'Below this combined confidence the sound is marked Unknown.',
+  'overlap_threshold': 'If 2+ non-background classes exceed this, overlapping sounds are reported.',
+  'repeat_window_seconds': 'Time period used for repeated-detection confirmation in live mode.',
+  'noise_reduction': 'Apply spectral-gating noise reduction before the Python model.',
+  'background_noise_limit_db': 'Noise floor (dBFS) above which a background-noise alert is raised.',
+  'audio_retention_days': 'Audio files older than this are deleted (records kept).',
+  'record_retention_days': 'Event records older than this are deleted.' } %}
+{% if model_seg and (model_seg.segment_seconds != s.segment_seconds) %}
+<div class="flash flash-warning mb-4">The Python model was trained with {{ model_seg.segment_seconds }}-second segments but the current setting is {{ s.segment_seconds }} s. Retrain the model (python -m python_models.train_models) for best accuracy.</div>
+{% endif %}
+<form method="post" class="card grid md:grid-cols-2 gap-5">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for k, v in s.items() %}
+  <div>
+    <label class="label" for="{{ k }}">{{ k|replace('_', ' ')|capitalize }} <span class="text-slate-600">(default {{ defaults[k] }})</span></label>
+    {% if defaults[k] is sameas true or defaults[k] is sameas false %}
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="{{ k }}" name="{{ k }}" {{ 'checked' if v }}> Enabled</label>
+    {% else %}
+      <input class="input" id="{{ k }}" name="{{ k }}" type="number" step="any" value="{{ v }}">
+    {% endif %}
+    <p class="text-xs text-slate-500 mt-1">{{ help.get(k, '') }}</p>
+  </div>
+  {% endfor %}
+  <div class="md:col-span-2 flex justify-end"><button class="btn btn-primary">Save settings</button></div>
+</form>
+<form method="post" action="{{ url_for('admin.retention') }}" class="card mt-5 flex items-center justify-between">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div><div class="text-white font-medium">Apply data-retention policy now</div><div class="text-xs text-slate-400">Also runs automatically when the application starts.</div></div>
+  <button class="btn btn-danger">Run retention</button>
+</form>
+{% endblock %}

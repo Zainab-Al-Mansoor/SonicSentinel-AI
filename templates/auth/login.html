@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] grid md:grid-cols-2 gap-10 items-center">
+  <div class="hidden md:block">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" class="w-16 h-16 mb-6" alt="">
+    <h1 class="text-4xl font-bold text-white leading-tight">SonicSentinel <span class="text-brand-400">AI</span></h1>
+    <p class="mt-3 text-slate-400 text-lg">AI-powered sound-event detection. Two independent models – a Python classifier and a Google Teachable Machine model – analyse every sound, compare their confidence, and raise alerts for critical events.</p>
+    <ul class="mt-6 space-y-2 text-slate-300 text-sm">
+      <li>• Uploaded audio &amp; live microphone monitoring</li>
+      <li>• Waveform, spectrogram &amp; audio-quality checks</li>
+      <li>• Gunshot, glass breaking, screams, calls for help, machinery faults …</li>
+      <li>• Manual review, event history &amp; reports</li>
+    </ul>
+  </div>
+  <div class="card max-w-md w-full mx-auto">
+    <h2 class="text-xl font-semibold text-white mb-1">Log in</h2>
+    <p class="text-sm text-slate-400 mb-5">Use your username or email.</p>
+    <form method="post" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div><label class="label" for="username">Username or email</label>
+        <input class="input" id="username" name="username" required autofocus autocomplete="username"></div>
+      <div><label class="label" for="password">Password</label>
+        <input class="input" id="password" type="password" name="password" required autocomplete="current-password"></div>
+      <label class="flex items-center gap-2 text-sm text-slate-400"><input type="checkbox" name="remember"> Remember me</label>
+      <button class="btn btn-primary w-full">Log in</button>
+    </form>
+    <p class="text-sm text-slate-400 mt-4 text-center">No account? <a class="text-brand-400 hover:underline" href="{{ url_for('auth.register') }}">Register</a></p>
+  </div>
+</div>
+{% endblock %}

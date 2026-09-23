@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev %}
+{% block title %}Alert history{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-5">Alert history</h1>
+<div class="grid lg:grid-cols-2 gap-5">
+  <div class="card overflow-x-auto"><div class="card-title">All alerts</div>
+    <table class="table"><thead><tr><th>#</th><th>Created</th><th>Category</th><th>Severity</th><th>Status</th></tr></thead><tbody>
+    {% for a in alerts %}<tr><td>{{ a.id }}</td><td class="text-xs">{{ a.created_at|dt }}</td>
+      <td><a class="text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=a.event.audio_id) }}">{{ a.category }}</a></td>
+      <td>{{ sev(a.severity) }}</td><td>{{ a.status }}</td></tr>{% else %}<tr><td colspan="5" class="text-slate-500">None.</td></tr>{% endfor %}
+    </tbody></table></div>
+  <div class="card overflow-x-auto"><div class="card-title">User actions</div>
+    <table class="table"><thead><tr><th>Time</th><th>User</th><th>Alert</th><th>Action</th><th>Note</th></tr></thead><tbody>
+    {% for x in actions %}<tr><td class="text-xs">{{ x.at|dt }}</td><td>{{ x.user.username }}</td><td>#{{ x.alert_id }} {{ x.alert.category }}</td><td>{{ x.action }}</td><td class="text-xs">{{ x.note }}</td></tr>
+    {% else %}<tr><td colspan="5" class="text-slate-500">No actions yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endblock %}

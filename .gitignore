@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Runtime data (keep folders, not contents)
+data/*.db
+data/uploads/*
+data/segments/*
+data/images/*
+data/features/*
+data/reports/*
+data/exports/*
+
+# Large audio – share the dataset through a separate link (see documentation/DATASET_GUIDE.md)
+audio_dataset/raw/*
+audio_dataset/processed/*
+gtm_model/training_samples/
+!**/.gitkeep
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

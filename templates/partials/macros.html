@@ -1,0 +1,31 @@
+{% macro sev(s) -%}{% if s %}<span class="badge sev-{{ s|replace(' ', '-') }}">{{ s }}</span>{% endif %}{%- endmacro %}
+{% macro qual(q) -%}{% if q %}<span class="badge q-{{ q }}">{{ q }}</span>{% endif %}{%- endmacro %}
+{% macro cs(c) -%}{% if c %}<span class="badge cs-{{ c|replace(' ', '-') }}">{{ c }}</span>{% endif %}{%- endmacro %}
+{% macro status(s) -%}{% if s %}<span class="badge st st-{{ s|replace(' ', '-') }}">{{ s }}</span>{% endif %}{%- endmacro %}
+
+{% macro score_bars(scores, highlight=None, color='#06b6d4', n=10) -%}
+  {% if scores %}
+  <div class="space-y-1.5">
+    {% for c, v in (scores.items()|sort(attribute='1', reverse=true))[:n] %}
+      <div class="grid grid-cols-12 gap-2 items-center text-xs">
+        <div class="col-span-5 truncate {{ 'text-white font-semibold' if c == highlight else 'text-slate-400' }}">{{ c }}</div>
+        <div class="col-span-5 bar"><span style="width: {{ (v*100)|round(1) }}%; background: {{ color if c == highlight else '#475569' }}"></span></div>
+        <div class="col-span-2 text-right tabular-nums {{ 'text-white' if c == highlight else 'text-slate-400' }}">{{ (v*100)|round(1) }}%</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}<p class="text-sm text-slate-500">No scores.</p>{% endif %}
+{%- endmacro %}
+
+{% macro event_row(e) -%}
+  <tr>
+    <td><a class="text-brand-400 hover:underline font-mono text-xs" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
+      <div class="text-xs text-slate-500 truncate max-w-[14rem]">{{ e.original_filename }}</div></td>
+    <td class="text-white">{{ e.display_category }}{% if e.reviewed_category and e.reviewed_category != e.final_category %} <span class="text-xs text-amber-400">(reviewed)</span>{% endif %}</td>
+    <td class="tabular-nums">{{ e.final_confidence|pct }}</td>
+    <td>{{ sev(e.severity) }}</td>
+    <td>{{ qual(e.quality_label) }}</td>
+    <td>{{ status(e.status) }}</td>
+    <td class="text-xs text-slate-400 whitespace-nowrap">{{ e.uploaded_at|dt }}</td>
+  </tr>
+{%- endmacro %}

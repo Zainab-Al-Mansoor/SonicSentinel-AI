@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Upload audio{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-1">Upload audio</h1>
+<p class="text-slate-400 text-sm mb-6">WAV, MP3, FLAC, OGG or M4A · max 25 MB · 0.5 s – 5 min. The clip is validated, cleaned, split into {{ settings.segment_seconds }}-second segments and analysed by both models.</p>
+{% include "partials/gtm_status.html" %}
+<div class="grid lg:grid-cols-5 gap-6">
+  <form method="post" enctype="multipart/form-data" class="card lg:col-span-3" id="upload-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label id="drop" for="audio" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl p-10 cursor-pointer hover:border-brand-500 transition">
+      <div class="text-4xl mb-2">🎧</div>
+      <div class="text-white font-medium">Drop an audio file here or click to choose</div>
+      <div class="text-xs text-slate-500 mt-1" id="fname">No file selected</div>
+      <input id="audio" name="audio" type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" class="hidden" required>
+    </label>
+    <div id="preview-wrap" class="hidden mt-4">
+      <div class="label">Preview (play, pause, seek, volume)</div>
+      <audio id="preview" controls></audio>
+    </div>
+    <div class="mt-4 flex items-center justify-between">
+      <p class="text-xs text-slate-500">Files are stored securely and only visible to you and authorised staff.</p>
+      <button class="btn btn-primary" id="submit-btn">Analyse</button>
+    </div>
+  </form>
+  <div class="card lg:col-span-2 text-sm text-slate-300 space-y-3">
+    <div class="card-title">What happens next</div>
+    <ol class="list-decimal list-inside space-y-1.5 text-slate-400">
+      <li>Validation: format, size, duration, sample rate, channels, integrity, silence</li>
+      <li>Duplicate check (SHA-256) and near-duplicate check</li>
+      <li>Quality check: clipping, noise, low level, missing frames</li>
+      <li>Pre-processing: resample, mono, normalise, trim, noise reduction, segments</li>
+      <li>Python model scores every segment</li>
+      <li>GTM model scores the same segments in your browser</li>
+      <li>Comparison, alert rules, severity, manual-review routing</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const input = document.getElementById('audio'), drop = document.getElementById('drop');
+function show(f) {
+  document.getElementById('fname').textContent = `${f.name} · ${(f.size / 1e6).toFixed(2)} MB`;
+  const a = document.getElementById('preview'); a.src = URL.createObjectURL(f);
+  document.getElementById('preview-wrap').classList.remove('hidden');
+}
+input.onchange = () => input.files[0] && show(input.files[0]);
+['dragover', 'dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('border-brand-500'); }));
+['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('border-brand-500'); }));
+drop.addEventListener('drop', ev => { input.files = ev.dataTransfer.files; if (input.files[0]) show(input.files[0]); });
+document.getElementById('upload-form').onsubmit = () => {
+  const b = document.getElementById('submit-btn'); b.disabled = true; b.textContent = 'Analysing…';
+};
+</script>
+{% endblock %}

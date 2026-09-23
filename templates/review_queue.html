@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev, qual, cs, status %}
+{% block title %}Review queue{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-5">
+  <div><h1 class="text-2xl font-semibold text-white">Manual review queue</h1><p class="text-sm text-slate-400">Uncertain, conflicting, poor-quality and unconfirmed critical events.</p></div>
+  <div class="flex gap-1 text-sm"><a class="nav-link {{ 'nav-active' if show=='pending' }}" href="{{ url_for('review.queue', show='pending') }}">Pending</a>
+    <a class="nav-link {{ 'nav-active' if show!='pending' }}" href="{{ url_for('review.queue', show='done') }}">Reviewed</a></div>
+</div>
+<div class="card overflow-x-auto"><table class="table">
+  <thead><tr><th>Audio ID</th><th>Automatic result</th><th>Python / GTM</th><th>Agreement</th><th>Quality</th><th>Severity</th><th>Why</th><th></th></tr></thead>
+  <tbody>
+  {% for e in events %}
+    <tr><td class="font-mono text-xs">{{ e.audio_id }}<div class="text-slate-500">{{ e.uploaded_at|dt }}</div></td>
+      <td class="text-white">{{ e.final_category }} <span class="text-xs text-slate-400">{{ e.final_confidence|pct }}</span>
+        {% if e.reviewed_category %}<div class="text-xs text-emerald-400">→ {{ e.reviewed_category }}</div>{% endif %}</td>
+      <td class="text-xs">{{ e.python_prediction }} ({{ e.python_confidence|pct }})<br>{{ e.gtm_prediction or '—' }} ({{ e.gtm_confidence|pct }})</td>
+      <td>{{ cs(e.consistency_status) }}</td><td>{{ qual(e.quality_label) }}</td><td>{{ sev(e.severity) }}</td>
+      <td class="text-xs text-amber-300 max-w-xs">{{ (e.review_reasons or [])|join('; ') }}</td>
+      <td><a class="btn btn-warn btn-sm" href="{{ url_for('review.review', audio_id=e.audio_id) }}">{{ 'Review' if show=='pending' else 'Open' }}</a></td></tr>
+  {% else %}<tr><td colspan="8" class="text-slate-500">Queue is empty. 🎉</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

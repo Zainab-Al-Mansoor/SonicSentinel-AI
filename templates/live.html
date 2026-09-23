@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Live monitoring{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+  <div>
+    <h1 class="text-2xl font-semibold text-white">Live microphone monitoring</h1>
+    <p class="text-slate-400 text-sm">Audio is captured in {{ settings.live_window_seconds }}-second windows. Each window is analysed by GTM (in this browser) and by the Python model (on the server), compared, and checked against the alert rules. Nothing is recorded while monitoring is stopped.</p>
+  </div>
+  <div class="flex gap-2">
+    <button id="btn-start" class="btn btn-primary">▶ Start monitoring</button>
+    <button id="btn-pause" class="btn btn-ghost" disabled>⏸ Pause</button>
+    <button id="btn-stop" class="btn btn-danger" disabled>■ Stop</button>
+  </div>
+</div>
+{% include "partials/gtm_status.html" %}
+
+<div class="grid lg:grid-cols-3 gap-5 mb-5">
+  <div class="card">
+    <div class="card-title">Microphone</div>
+    <div class="flex items-center gap-3 mb-3"><span id="mic-dot" class="w-3 h-3 rounded-full bg-slate-500"></span><span id="mic-status" class="text-lg font-semibold text-white">Checking…</span></div>
+    <div class="meter mb-2"><div id="meter"></div></div>
+    <dl class="grid grid-cols-2 text-xs gap-y-1 mt-3">
+      <dt class="text-slate-500">Session</dt><dd id="sess" class="font-mono">—</dd>
+      <dt class="text-slate-500">Windows analysed</dt><dd id="count">0</dd>
+      <dt class="text-slate-500">Last latency</dt><dd id="latency">—</dd>
+      <dt class="text-slate-500">GTM</dt><dd id="gtm-state">{{ 'loading on start' if gtm.available else 'not installed' }}</dd>
+    </dl>
+  </div>
+  <div id="current-card" class="card lg:col-span-2">
+    <div class="card-title">Current sound <span id="cur-status" class="badge st">—</span></div>
+    <div class="flex flex-wrap items-end gap-6">
+      <div><div class="text-xs text-slate-500">Detected</div><div id="cur-cat" class="text-3xl font-bold text-white">—</div></div>
+      <div><div class="text-xs text-slate-500">Confidence</div><div id="cur-conf" class="text-2xl font-semibold text-white">—</div></div>
+      <div><div class="text-xs text-slate-500">Severity</div><div id="cur-sev" class="mt-1">—</div></div>
+      <div><div class="text-xs text-slate-500">Model agreement</div><div id="cur-cs" class="mt-1">—</div></div>
+      <div><div class="text-xs text-slate-500">Quality</div><div id="cur-q" class="mt-1">—</div></div>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4 mt-4 text-sm">
+      <div class="p-3 rounded-lg bg-slate-800/50"><div class="text-xs text-slate-400">🐍 Python</div><div id="cur-py" class="text-white">—</div></div>
+      <div class="p-3 rounded-lg bg-slate-800/50"><div class="text-xs text-slate-400">🎓 GTM</div><div id="cur-gtm" class="text-white">—</div></div>
+    </div>
+    <div id="active-alert" class="hidden mt-4 p-4 rounded-lg bg-red-950 border border-red-700 alert-pulse">
+      <div class="text-red-200 font-semibold" id="alert-msg"></div>
+      <div class="text-sm text-red-300 mt-1" id="alert-action"></div>
+      <div class="mt-3 flex gap-2" id="alert-buttons"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Recent detections <span class="text-xs text-slate-500">background-noise windows are hidden</span></div>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>Time</th><th>Detected</th><th>Conf.</th><th>Python</th><th>GTM</th><th>Agreement</th><th>Severity</th><th>Alert</th></tr></thead>
+    <tbody id="recent"><tr><td colspan="8" class="text-slate-500">Start monitoring to see detections.</td></tr></tbody>
+  </table></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if gtm.available %}{% include "partials/gtm_scripts.html" %}{% endif %}
+<script src="{{ url_for('static', filename='js/wav.js') }}"></script>
+<script>
+const LIVE = {
+  windowSec: {{ settings.live_window_seconds }},
+  gtmAvailable: {{ 'true' if gtm.available else 'false' }},
+  urls: { start: "{{ url_for('api.live_start') }}", stop: "{{ url_for('api.live_stop') }}",
+          window: "{{ url_for('api.live_window') }}", recent: "{{ url_for('api.live_recent') }}",
+          alertAct: "{{ url_for('alerts.act', alert_id=0, action='ACTION') }}" },
+  canHandleAlerts: {{ 'true' if current_user.role in ['admin','security','maintenance'] else 'false' }},
+};
+</script>
+<script src="{{ url_for('static', filename='js/live.js') }}"></script>
+{% endblock %}

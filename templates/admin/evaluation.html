@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Model comparison report{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-1">Model prediction &amp; confidence comparison</h1>
+<p class="text-sm text-slate-400 mb-3">Runs unseen TEST recordings (from <code>data/dataset_metadata.csv</code>) through both models and builds the comparison report required by the SRS (≥ 100 recordings, ≥ 10 per class).</p>
+{% include "admin/_nav.html" %}
+{% include "partials/gtm_status.html" %}
+<div class="card mb-5 flex flex-wrap items-end gap-3">
+  <div><label class="label">Recordings per class</label><input id="per" class="input !w-28" type="number" min="1" value="10"></div>
+  <button id="run" class="btn btn-primary">Run test-set evaluation</button>
+  <span id="progress" class="text-sm text-slate-400"></span>
+  <div class="ml-auto flex gap-2"><a class="btn btn-ghost" href="{{ url_for('admin.export', name='evaluation', fmt='csv') }}">Export CSV</a>
+    <a class="btn btn-ghost" href="{{ url_for('admin.export', name='evaluation', fmt='xlsx') }}">Export Excel</a></div>
+</div>
+{% if s %}
+<div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-5">
+  <div class="stat"><div class="stat-label">Recordings</div><div class="stat-value">{{ s.with_ground_truth }}</div></div>
+  <div class="stat"><div class="stat-label">Python accuracy</div><div class="stat-value">{{ s.python_accuracy|pct }}</div></div>
+  <div class="stat"><div class="stat-label">GTM accuracy</div><div class="stat-value">{{ s.gtm_accuracy|pct }}</div></div>
+  <div class="stat"><div class="stat-label">Final accuracy</div><div class="stat-value">{{ s.final_accuracy|pct }}</div></div>
+  <div class="stat"><div class="stat-label">Agreement</div><div class="stat-value">{{ s.agreement_rate|pct }}</div></div>
+  <div class="stat"><div class="stat-label">Mean |Δconf|</div><div class="stat-value">{{ s.mean_confidence_difference|pct }}</div></div>
+</div>
+{% endif %}
+<div class="card overflow-x-auto"><table class="table">
+  <thead><tr><th>Audio ID / file</th><th>Actual</th><th>Python</th><th>GTM</th><th>Agreement</th><th>Final</th><th>Severity</th><th>Quality</th><th>Alert / review</th></tr></thead>
+  <tbody id="rows">
+  {% for r in rows %}<tr><td class="font-mono text-xs">{{ r['Audio ID'] }}<div class="text-slate-500">{{ r['Filename'] }}</div></td><td>{{ r['Actual class'] }}</td>
+    <td>{{ r['Python predicted class'] }}</td><td>{{ r['GTM predicted class'] or '—' }}</td><td>{{ r['Consistency status'] }}</td>
+    <td class="{{ 'text-emerald-400' if r['Correct']=='Yes' else 'text-red-400' }}">{{ r['Final decision'] }}</td><td>{{ r['Severity'] }}</td><td>{{ r['Audio quality'] }}</td>
+    <td class="text-xs">{{ r['Alert status'] }}{{ ' · review' if r['Manual review']=='Yes' }}</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}
+{% block scripts %}
+{% if gtm.available %}{% include "partials/gtm_scripts.html" %}{% endif %}
+<script src="{{ url_for('static', filename='js/batch.js') }}"></script>
+<script>
+document.getElementById('run').onclick = async () => {
+  const btn = document.getElementById('run'); btn.disabled = true;
+  try {
+    const list = await SS.api("{{ url_for('api.testset_list') }}?per_class=" + document.getElementById('per').value);
+    const items = list.map(x => ({ label: `${x.audio_id} (${x.class_label})`,
+      analyse: () => SS.api("{{ url_for('api.testset_file') }}", { method: 'POST', json: { audio_id: x.audio_id } }) }));
+    document.getElementById('rows').innerHTML = '';
+    await Batch.run(items, { tbody: document.getElementById('rows'), progress: document.getElementById('progress'),
+                             gtmAvailable: {{ 'true' if gtm.available else 'false' }} });
+    SS.toast('Evaluation finished – reload to see the summary.', 'success');
+  } catch (err) { SS.toast(err.message, 'error'); }
+  btn.disabled = false;
+};
+</script>
+{% endblock %}

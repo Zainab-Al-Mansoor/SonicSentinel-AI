@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Admin analytics{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-3">
+  <h1 class="text-2xl font-semibold text-white">Administrator dashboard</h1>
+  <form><select class="input" name="days" onchange="this.form.submit()">{% for d in [7,30,90,365] %}<option value="{{ d }}" {{ 'selected' if d==days }}>Last {{ d }} days</option>{% endfor %}</select></form>
+</div>
+{% include "admin/_nav.html" %}
+
+<div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+  <div class="stat"><div class="stat-label">Audio events</div><div class="stat-value">{{ s.total }}</div></div>
+  <div class="stat"><div class="stat-label">Critical alerts</div><div class="stat-value text-red-400">{{ s.critical_alerts }}</div></div>
+  <div class="stat"><div class="stat-label">Avg confidence</div><div class="stat-value">{{ s.avg_confidence|pct }}</div></div>
+  <div class="stat"><div class="stat-label">Model disagreements</div><div class="stat-value text-orange-400">{{ s.disagreements }}</div></div>
+  <div class="stat"><div class="stat-label">Poor-quality</div><div class="stat-value text-amber-400">{{ s.poor_quality }}</div></div>
+  <div class="stat"><div class="stat-label">Alert response</div><div class="stat-value text-lg">{{ '%.0f s'|format(s.alert_response_avg_s) if s.alert_response_avg_s is not none else '—' }}</div></div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-5 mb-5">
+  <div class="card lg:col-span-2"><div class="card-title">Detection trend</div><canvas id="trend" height="110"></canvas></div>
+  <div class="card"><div class="card-title">Model status</div>
+    <div class="text-sm space-y-3">
+      <div><div class="text-slate-400 text-xs">Python model</div>
+        {% if py.error %}<div class="text-red-400">{{ py.error }}</div>{% else %}
+        <div class="text-white">{{ py.version }}</div>
+        {% set t = py.metrics.get('test', {}) %}
+        <div class="text-xs text-slate-400">Test accuracy {{ t.get('accuracy')|pct }} · macro-F1 {{ '%.3f'|format(t.get('f1_macro', 0)) }} · min critical recall {{ t.get('critical_recall_min')|pct }}</div>{% endif %}</div>
+      <div><div class="text-slate-400 text-xs">GTM model</div>
+        {% if gtm.available %}<div class="text-white">{{ gtm.version }}</div><div class="text-xs text-slate-400">{{ gtm.labels|length }} classes{% if gtm.missing %} · <span class="text-amber-400">missing {{ gtm.missing|join(', ') }}</span>{% endif %}</div>
+        {% else %}<div class="text-amber-400">{{ gtm.reason }}</div>{% endif %}</div>
+      <div><div class="text-slate-400 text-xs">Model agreement rate</div><div class="text-white">{{ s.agreement_rate|pct }}</div></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">Events by category</div><canvas id="cats" height="220"></canvas></div>
+  <div class="card"><div class="card-title">Confidence distribution</div><canvas id="conf" height="220"></canvas></div>
+  <div class="card"><div class="card-title">Audio quality</div><canvas id="quality" height="220"></canvas></div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-5">
+  <div class="card"><div class="card-title">False positives / negatives <span class="text-xs text-slate-500">from reviews + evaluation</span></div>
+    <table class="table"><thead><tr><th>Class</th><th>FP</th><th>FN</th></tr></thead><tbody>
+    {% for c in CLASSES %}<tr><td>{{ c }}</td><td>{{ s.false_positives.get(c, 0) }}</td><td>{{ s.false_negatives.get(c, 0) }}</td></tr>{% endfor %}
+    </tbody></table></div>
+  <div class="card"><div class="card-title">Alert response</div>
+    <dl class="text-sm grid grid-cols-2 gap-y-2">{% for k in ['Active','Acknowledged','Escalated','Dismissed'] %}<dt class="text-slate-400">{{ k }}</dt><dd>{{ s.alert_status.get(k, 0) }}</dd>{% endfor %}
+      <dt class="text-slate-400">Manual review pending</dt><dd>{{ s.manual_review }}</dd><dt class="text-slate-400">Reviewed</dt><dd>{{ s.reviewed }}</dd></dl>
+    <div class="card-title mt-5">Exports</div>
+    <div class="flex flex-wrap gap-2">{% for n in ['events','alerts','reviews','audit','comparison'] %}
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.export', name=n, fmt='csv') }}">{{ n }}.csv</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.export', name=n, fmt='xlsx') }}">.xlsx</a>{% endfor %}</div>
+  </div>
+  <div class="card"><div class="card-title">Recent anomaly notifications <a class="text-xs text-brand-400" href="{{ url_for('admin.notifications') }}">All →</a></div>
+    <ul class="text-sm space-y-2">{% for n in notes %}<li class="{{ 'text-white' if not n.is_read else 'text-slate-400' }}"><span class="text-xs text-slate-500">{{ n.at|dt }}</span><br>{{ n.message }}</li>
+    {% else %}<li class="text-slate-500">No anomalies.</li>{% endfor %}</ul></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script>
+(async () => {
+  Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = '#1e293b';
+  const d = await SS.api("{{ url_for('api.stats') }}?days={{ days }}");
+  new Chart(document.getElementById('trend'), { type: 'line', data: { labels: d.trend.labels, datasets: [
+    { label: 'Detections', data: d.trend.all, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.15)', fill: true, tension: .3 },
+    { label: 'High/Critical alerts', data: d.trend.critical, borderColor: '#ef4444', tension: .3 }] } });
+  const cats = Object.entries(d.categories).filter(([, v]) => v > 0);
+  new Chart(document.getElementById('cats'), { type: 'bar', data: { labels: cats.map(c => c[0]), datasets: [{ data: cats.map(c => c[1]), backgroundColor: '#0891b2' }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } } } });
+  new Chart(document.getElementById('conf'), { type: 'bar', data: { labels: ['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'],
+    datasets: [{ data: d.confidence_hist, backgroundColor: '#a855f7' }] }, options: { plugins: { legend: { display: false } } } });
+  const q = ['Good', 'Acceptable', 'Poor', 'Unusable'];
+  new Chart(document.getElementById('quality'), { type: 'doughnut', data: { labels: q, datasets: [{ data: q.map(k => d.quality[k] || 0),
+    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 0 }] } });
+})();
+</script>
+{% endblock %}

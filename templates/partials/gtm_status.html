@@ -1,0 +1,5 @@
+{% if not gtm.available %}
+<div class="flash flash-warning mb-4">Google Teachable Machine model not installed – {{ gtm.reason }}. Results will use the Python model only and be marked <b>Uncertain Result</b>. See <code>gtm_model/README.md</code>.</div>
+{% elif gtm.missing %}
+<div class="flash flash-warning mb-4">GTM model is missing classes: {{ gtm.missing|join(', ') }}. Class names must match the Python model exactly.</div>
+{% endif %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev, status %}
+{% block title %}Timeline{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-5">
+  <div><h1 class="text-2xl font-semibold text-white">Event timeline</h1><p class="text-sm text-slate-400">Chronological view of detected sound events (background noise hidden).</p></div>
+  <form><select class="input" name="days" onchange="this.form.submit()">{% for d in [1,7,30,90] %}<option value="{{ d }}" {{ 'selected' if d==days }}>Last {{ d }} day{{ 's' if d>1 }}</option>{% endfor %}</select></form>
+</div>
+{% for day, evs in groups.items() %}
+<div class="mb-6">
+  <div class="text-sm font-semibold text-slate-300 mb-2">{{ day.strftime('%A, %d %B %Y') }} <span class="text-slate-500 font-normal">· {{ evs|length }} events</span></div>
+  <ol class="relative border-l border-slate-700 ml-2">
+    {% for e in evs %}
+    <li class="ml-5 mb-3">
+      <span class="absolute -left-1.5 w-3 h-3 rounded-full {{ 'bg-red-500' if e.severity == 'Critical' else ('bg-orange-500' if e.severity == 'High' else ('bg-amber-400' if e.severity == 'Medium' else 'bg-slate-500')) }}"></span>
+      <a href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}" class="block p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-600">
+        <div class="flex flex-wrap items-center gap-2 text-sm"><span class="text-slate-400 tabular-nums">{{ e.uploaded_at.strftime('%H:%M:%S') }}</span>
+          <span class="text-white font-medium">{{ e.display_category }}</span> {{ sev(e.severity) }} {{ status(e.status) }}
+          <span class="text-xs text-slate-500">{{ e.final_confidence|pct }} · {{ e.source }}</span></div>
+      </a>
+    </li>{% endfor %}
+  </ol>
+</div>
+{% else %}<div class="card text-slate-500">No events in this period.</div>{% endfor %}
+{% endblock %}

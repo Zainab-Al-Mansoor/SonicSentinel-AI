@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-3 mb-5">
+  <div><h1 class="text-2xl font-semibold text-white">Alerts</h1><p class="text-sm text-slate-400">Acknowledge, escalate or dismiss alerts assigned to your role.</p></div>
+  <div class="flex gap-1 text-sm">{% for s in ['Active','Acknowledged','Escalated','Dismissed','all'] %}
+    <a href="{{ url_for('alerts.index', status=s) }}" class="nav-link {{ 'nav-active' if status == s }}">{{ s|capitalize }}</a>{% endfor %}
+    <a href="{{ url_for('alerts.history') }}" class="btn btn-ghost btn-sm ml-2">History</a></div>
+</div>
+<div class="space-y-3">
+{% for a in alerts %}
+  <div class="card {{ 'border-red-700' if a.severity == 'Critical' and a.status == 'Active' }}">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">{{ sev(a.severity) }} <span class="text-white font-medium">{{ a.message }}</span></div>
+        <div class="text-xs text-slate-400 mt-1">#{{ a.id }} · {{ a.created_at|dt }} · <a class="text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=a.event.audio_id) }}">{{ a.event.audio_id }}</a> · {{ a.event.source }} · status <b>{{ a.status }}</b>{% if a.handled_by %} by {{ a.handled_by.username }} {{ a.handled_at|dt }}{% endif %}</div>
+        <div class="text-sm text-slate-300 mt-2">{{ a.recommended_action }}</div>
+        {% if a.event.stored_path %}<audio class="mt-2 max-w-md" controls preload="none" src="{{ url_for('main.event_media', audio_id=a.event.audio_id, kind='audio') }}"></audio>{% endif %}
+      </div>
+      {% if a.status in ['Active', 'Escalated'] %}
+      <form method="post" class="flex flex-col gap-2 w-60">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input class="input" name="note" placeholder="Note (optional)">
+        <div class="flex gap-2">
+          <button class="btn btn-primary btn-sm flex-1" formaction="{{ url_for('alerts.act', alert_id=a.id, action='acknowledge') }}">Acknowledge</button>
+          {% if a.status == 'Active' %}<button class="btn btn-danger btn-sm" formaction="{{ url_for('alerts.act', alert_id=a.id, action='escalate') }}">Escalate</button>{% endif %}
+          <button class="btn btn-ghost btn-sm" formaction="{{ url_for('alerts.act', alert_id=a.id, action='dismiss') }}">Dismiss</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+{% else %}<div class="card text-slate-500">No {{ status|lower if status != 'all' }} alerts.</div>{% endfor %}
+</div>
+{% endblock %}

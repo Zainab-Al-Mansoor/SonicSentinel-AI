@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="card max-w-xl mx-auto">
+  <h2 class="text-xl font-semibold text-white mb-1">Create an account</h2>
+  <p class="text-sm text-slate-400 mb-5">A unique User ID is assigned automatically. Administrator accounts are created by an existing administrator.</p>
+  <form method="post" class="grid sm:grid-cols-2 gap-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div><label class="label">Username *</label><input class="input" name="username" value="{{ form.get('username','') }}" required></div>
+    <div><label class="label">Email *</label><input class="input" type="email" name="email" value="{{ form.get('email','') }}" required></div>
+    <div><label class="label">Full name</label><input class="input" name="full_name" value="{{ form.get('full_name','') }}"></div>
+    <div><label class="label">Organisation</label><input class="input" name="organization" value="{{ form.get('organization','') }}"></div>
+    <div><label class="label">Password * <span class="text-slate-500">(8+ chars, letters &amp; numbers)</span></label><input class="input" type="password" name="password" required></div>
+    <div><label class="label">Confirm password *</label><input class="input" type="password" name="confirm" required></div>
+    <div class="sm:col-span-2"><label class="label">Role</label>
+      <select class="input" name="role">{% for k, v in roles.items() %}<option value="{{ k }}" {{ 'selected' if form.get('role')==k }}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="sm:col-span-2 flex items-center justify-between">
+      <a class="text-sm text-brand-400 hover:underline" href="{{ url_for('auth.login') }}">Already registered? Log in</a>
+      <button class="btn btn-primary">Create account</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

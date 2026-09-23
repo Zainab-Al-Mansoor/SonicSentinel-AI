@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Audit trail{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-3">Audit trail</h1>
+{% include "admin/_nav.html" %}
+<form class="card mb-4 flex flex-wrap gap-3 items-end text-sm">
+  <div><label class="label">Action</label><select class="input" name="action"><option value="">Any</option>{% for a in actions %}<option {{ 'selected' if args.get('action')==a }}>{{ a }}</option>{% endfor %}</select></div>
+  <div><label class="label">User</label><input class="input" name="user" value="{{ args.get('user','') }}"></div>
+  <button class="btn btn-primary">Filter</button>
+  <a class="btn btn-ghost ml-auto" href="{{ url_for('admin.export', name='audit', fmt='csv') }}">Export CSV</a>
+</form>
+<div class="card overflow-x-auto"><table class="table">
+  <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
+  <tbody>{% for l in pag.items %}<tr><td class="text-xs whitespace-nowrap">{{ l.at|dt }}</td><td>{{ l.username or '—' }}</td><td><span class="badge st">{{ l.action }}</span></td>
+    <td class="text-xs">{{ l.entity }} {{ l.entity_id }}</td><td class="text-xs text-slate-400 max-w-md break-words">{{ l.details }}</td><td class="text-xs">{{ l.ip or '' }}</td></tr>
+  {% endfor %}</tbody></table>
+  <div class="flex justify-between mt-3 text-sm">
+    {% if pag.has_prev %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.audit_log', page=pag.prev_num, action=args.get('action',''), user=args.get('user','')) }}">← Newer</a>{% else %}<span></span>{% endif %}
+    <span class="text-slate-500">Page {{ pag.page }} / {{ pag.pages or 1 }}</span>
+    {% if pag.has_next %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.audit_log', page=pag.next_num, action=args.get('action',''), user=args.get('user','')) }}">Older →</a>{% else %}<span></span>{% endif %}
+  </div></div>
+{% endblock %}

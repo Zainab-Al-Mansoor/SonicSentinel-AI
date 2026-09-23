@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Models{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-3">Models &amp; versions</h1>
+{% include "admin/_nav.html" %}
+<div class="grid lg:grid-cols-2 gap-5 mb-5">
+  <div class="card"><div class="card-title">Python models compared (validation split)</div>
+    {% if comp %}<div class="overflow-x-auto"><table class="table"><thead><tr><th>Model</th><th>CV F1</th><th>Val acc.</th><th>Val macro-F1</th><th>Min crit. recall</th><th>Time</th></tr></thead><tbody>
+    {% for r in comp %}<tr class="{{ 'text-white font-semibold' if loop.first }}"><td>{{ r.model }}{% if loop.first %} ✔ selected{% endif %}<div class="text-xs text-slate-500 font-normal">{{ r.best_params }}</div></td>
+      <td>{{ '%.3f'|format(r.cv_f1_macro) }}</td><td>{{ r.val_accuracy|pct }}</td><td>{{ '%.3f'|format(r.val_f1_macro) }}</td><td>{{ r.val_critical_recall_min|pct }}</td><td>{{ r.train_seconds }}s</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p class="text-sm text-slate-500">No training report yet. Run <code>python -m python_models.train_models</code>.</p>{% endif %}
+  </div>
+  <div class="card"><div class="card-title">Selected model – unseen test split</div>
+    {% if test %}<dl class="grid grid-cols-2 text-sm gap-y-1">
+      <dt class="text-slate-400">Version</dt><dd>{{ test.version }}</dd>
+      <dt class="text-slate-400">Accuracy</dt><dd>{{ test.accuracy|pct }} <span class="text-xs {{ 'text-emerald-400' if test.accuracy >= 0.85 else 'text-amber-400' }}">(target ≥ 85%)</span></dd>
+      <dt class="text-slate-400">Macro F1</dt><dd>{{ '%.3f'|format(test.f1_macro) }} <span class="text-xs {{ 'text-emerald-400' if test.f1_macro >= 0.80 else 'text-amber-400' }}">(target ≥ 0.80)</span></dd>
+      <dt class="text-slate-400">Precision / recall</dt><dd>{{ test.precision_macro|pct }} / {{ test.recall_macro|pct }}</dd>
+      {% for c, v in test.critical_recall.items() %}<dt class="text-slate-400">Recall – {{ c }}</dt><dd>{{ v|pct }} <span class="text-xs {{ 'text-emerald-400' if v >= 0.85 else 'text-amber-400' }}">(≥ 85%)</span></dd>{% endfor %}
+    </dl>
+    {% if test.noise_robustness %}<div class="mt-3 text-xs text-slate-400">Noise robustness: {% for r in test.noise_robustness %}{{ r.condition }} → {{ r.accuracy|pct }}{{ '; ' if not loop.last }}{% endfor %}</div>{% endif %}
+    {% else %}<p class="text-sm text-slate-500">No test metrics yet.</p>{% endif %}
+  </div>
+</div>
+{% if has_cm %}<div class="card mb-5"><div class="card-title">Confusion matrix (Python, test split)</div><img class="max-w-2xl mx-auto" src="{{ url_for('admin.confusion_png') }}" alt="confusion matrix"></div>{% endif %}
+<div class="card mb-5"><div class="card-title">Google Teachable Machine</div>
+  {% if gtm.available %}<p class="text-sm">Version <b>{{ gtm.version }}</b> · labels: {{ gtm.labels|join(', ') }}</p>
+    {% if gtm.missing %}<p class="text-amber-400 text-sm mt-1">Missing: {{ gtm.missing|join(', ') }}</p>{% endif %}
+    {% if gtm.extra %}<p class="text-slate-400 text-sm mt-1">Extra labels ignored: {{ gtm.extra|join(', ') }}</p>{% endif %}
+  {% else %}<p class="text-amber-400 text-sm">{{ gtm.reason }}</p>{% endif %}
+</div>
+<div class="card"><div class="card-title">Version history</div>
+  <table class="table"><thead><tr><th>Type</th><th>Version</th><th>Registered</th></tr></thead><tbody>
+  {% for v in versions %}<tr><td>{{ v.model_type }}</td><td class="font-mono text-xs">{{ v.version }}</td><td class="text-xs">{{ v.registered_at|dt }}</td></tr>{% else %}<tr><td colspan="3" class="text-slate-500">None yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

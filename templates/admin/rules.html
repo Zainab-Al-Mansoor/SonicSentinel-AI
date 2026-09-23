@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Alert rules{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-1">Configurable alert rules</h1>
+<p class="text-sm text-slate-400 mb-3">Stored in <code>alert_rules/alert_rules.json</code>. Changes apply to the next analysed sound.</p>
+{% include "admin/_nav.html" %}
+<form method="post" class="card mb-5 flex flex-wrap items-end gap-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add">
+  <div><label class="label">Add rule for a new category</label><input class="input" name="category" placeholder="e.g. Drone Sound" required></div>
+  <button class="btn btn-ghost">Add rule</button>
+  <p class="text-xs text-slate-500">A new category also needs training data and must exist in both models.</p>
+</form>
+<div class="space-y-4">
+{% for cat, r in rules.items() %}
+<form method="post" id="rule-{{ cat|replace(' ', '-') }}" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="category" value="{{ cat }}">
+  <div class="card-title">{{ cat }} <span class="badge sev-{{ r.severity }}">{{ r.severity }}</span></div>
+  <div class="grid md:grid-cols-4 gap-3 text-sm">
+    <div><label class="label">Severity</label><select class="input" name="severity">{% for s in SEVERITY_LEVELS %}<option {{ 'selected' if s==r.severity }}>{{ s }}</option>{% endfor %}</select></div>
+    <div><label class="label">Minimum confidence</label><input class="input" type="number" step="0.01" min="0" max="1" name="min_confidence" value="{{ r.min_confidence }}"></div>
+    <div><label class="label">Top-two margin</label><input class="input" type="number" step="0.01" min="0" max="1" name="top2_margin" value="{{ r.top2_margin }}"></div>
+    <div><label class="label">Required consecutive detections</label><input class="input" type="number" min="1" name="required_consecutive" value="{{ r.required_consecutive }}"></div>
+    <div><label class="label">Strong confidence (single detection OK if both agree)</label><input class="input" type="number" step="0.01" min="0" max="1" name="strong_confidence" value="{{ r.strong_confidence }}"></div>
+    <div><label class="label">Minimum audio quality</label><select class="input" name="min_quality">{% for q in QUALITY_LEVELS[:3] %}<option {{ 'selected' if q==r.min_quality }}>{{ q }}</option>{% endfor %}</select></div>
+    <div><label class="label">Escalate after repeats (0 = never)</label><input class="input" type="number" min="0" name="escalate_after_repeats" value="{{ r.escalate_after_repeats }}"></div>
+    <div><label class="label">Escalate to</label><select class="input" name="escalate_to"><option value="">—</option>{% for s in SEVERITY_LEVELS %}<option {{ 'selected' if s==r.escalate_to }}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="md:col-span-4"><label class="label">Recommended action</label><input class="input" name="recommended_action" value="{{ r.recommended_action }}"></div>
+    <div class="md:col-span-4 flex flex-wrap gap-5 text-slate-300">
+      <label class="flex items-center gap-2"><input type="checkbox" name="generate_alert" {{ 'checked' if r.generate_alert }}> Generate alert</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="require_model_agreement" {{ 'checked' if r.require_model_agreement }}> Require Python + GTM agreement</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="manual_review_if_unconfirmed" {{ 'checked' if r.manual_review_if_unconfirmed }}> Manual review if not confirmed</label>
+      <span class="text-slate-500">Audience:</span>
+      {% for role in ['security','maintenance','reviewer'] %}<label class="flex items-center gap-1"><input type="checkbox" name="audience" value="{{ role }}" {{ 'checked' if role in (r.audience or []) }}> {{ roles[role] }}</label>{% endfor %}
+    </div>
+  </div>
+  <div class="text-right mt-3"><button class="btn btn-primary btn-sm">Save {{ cat }}</button></div>
+</form>
+{% endfor %}
+</div>
+{% endblock %}

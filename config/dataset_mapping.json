@@ -1,0 +1,54 @@
+{
+  "_comment": "Maps labels of free public datasets to SonicSentinel classes. Matching is case-insensitive. Edit freely. Always check each dataset's licence and record it (the importer writes it to annotations.csv).",
+  "urbansound8k": {
+    "license": "CC BY-NC 3.0 (UrbanSound8K)",
+    "map": {
+      "gun_shot": "Gunshot",
+      "siren": "Alarm or Siren",
+      "car_horn": "Vehicle Horn",
+      "dog_bark": "Animal Sound",
+      "air_conditioner": "Background Noise",
+      "engine_idling": "Background Noise",
+      "street_music": null,
+      "children_playing": null,
+      "drilling": null,
+      "jackhammer": null
+    }
+  },
+  "esc50": {
+    "license": "CC BY-NC 3.0 (ESC-50) – check per-clip licence in esc50.csv",
+    "map": {
+      "glass_breaking": "Glass Breaking",
+      "siren": "Alarm or Siren",
+      "clock_alarm": "Alarm or Siren",
+      "car_horn": "Vehicle Horn",
+      "dog": "Animal Sound", "rooster": "Animal Sound", "pig": "Animal Sound", "cow": "Animal Sound",
+      "frog": "Animal Sound", "cat": "Animal Sound", "hen": "Animal Sound", "sheep": "Animal Sound",
+      "crow": "Animal Sound", "chirping_birds": "Animal Sound",
+      "rain": "Background Noise", "sea_waves": "Background Noise", "wind": "Background Noise",
+      "crickets": "Background Noise", "airplane": "Background Noise", "clock_tick": "Background Noise",
+      "vacuum_cleaner": "Background Noise", "washing_machine": "Background Noise"
+    }
+  },
+  "fsd50k": {
+    "license": "Per-clip Creative Commons licence (see FSD50K metadata/*_clips_info_FSD50K.json)",
+    "map": {
+      "gunshot_and_gunfire": "Gunshot",
+      "shatter": "Glass Breaking",
+      "glass": "Glass Breaking",
+      "screaming": "Panic Scream",
+      "shout": "Aggression",
+      "yell": "Aggression",
+      "siren": "Alarm or Siren",
+      "alarm": "Alarm or Siren",
+      "vehicle_horn_and_car_horn_and_honking": "Vehicle Horn",
+      "dog": "Animal Sound", "cat": "Animal Sound", "bird": "Animal Sound", "livestock_and_farm_animals_and_working_animals": "Animal Sound"
+    }
+  },
+  "mimii": {
+    "license": "CC BY-SA 4.0 (MIMII dataset)",
+    "_comment": "Files under */abnormal/* -> Machinery Fault. Normal files are NOT used as Machinery Fault.",
+    "abnormal_class": "Machinery Fault",
+    "normal_class": null
+  }
+}

@@ -1,0 +1,5 @@
+<div class="flex flex-wrap gap-1 text-sm mb-5 border-b border-slate-800 pb-3">
+  {% for ep, label in [('admin.dashboard','Analytics'),('admin.evaluation','Model comparison'),('admin.models','Models'),('admin.rules','Alert rules'),('admin.settings','Settings'),('admin.users','Users'),('admin.audit_log','Audit trail'),('admin.notifications','Notifications')] %}
+    <a href="{{ url_for(ep) }}" class="nav-link {{ 'nav-active' if request.endpoint == ep }}">{{ label }}{% if ep == 'admin.notifications' and nav_notifications %} <span class="ml-1 bg-fuchsia-500 text-white text-[10px] px-1.5 rounded-full">{{ nav_notifications }}</span>{% endif %}</a>
+  {% endfor %}
+</div>

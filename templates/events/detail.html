@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev, qual, cs, status, score_bars %}
+{% block title %}{{ ev.audio_id }}{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-start justify-between gap-4 mb-5">
+  <div>
+    <div class="text-xs text-slate-500"><a href="{{ url_for('main.history') }}" class="hover:underline">History</a> / {{ ev.source|capitalize }}</div>
+    <h1 class="text-2xl font-semibold text-white font-mono">{{ ev.audio_id }}</h1>
+    <div class="text-sm text-slate-400">{{ ev.original_filename }} · uploaded {{ ev.uploaded_at|dt }} by {{ ev.user.username if ev.user else '—' }}</div>
+    <div class="flex flex-wrap gap-2 mt-2">{{ status(ev.status) }} {{ sev(ev.severity) }} {{ qual(ev.quality_label) }} {{ cs(ev.consistency_status) }}</div>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a class="btn btn-ghost" href="{{ url_for('main.event_report', audio_id=ev.audio_id) }}">⬇ Download report</a>
+    {% if current_user.role in ['admin','reviewer'] %}<a class="btn btn-warn" href="{{ url_for('review.review', audio_id=ev.audio_id) }}">Review</a>{% endif %}
+  </div>
+</div>
+
+{% if ev.near_duplicate_of_id and similar %}
+<div class="flash flash-warning mb-4">Possible near-duplicate of <a class="underline" href="{{ url_for('main.event_detail', audio_id=similar.audio_id) }}">{{ similar.audio_id }}</a> (similarity {{ ev.near_duplicate_score }}). It may be a re-encoded, trimmed or volume-changed copy.</div>
+{% endif %}
+
+<div id="gtm-box" class="{{ '' if ev.gtm_status == 'pending' else 'hidden' }} card mb-5 border-brand-600">
+  <div class="flex items-center gap-3">
+    <div class="w-5 h-5 border-2 border-brand-400 border-t-transparent rounded-full animate-spin"></div>
+    <div><div class="text-white font-medium">Running Google Teachable Machine on {{ ev.segments|length }} segment(s)…</div>
+      <div class="text-xs text-slate-400" id="gtm-progress">Loading model</div></div>
+  </div>
+</div>
+
+{% if ev.final_category %}
+<div class="grid lg:grid-cols-3 gap-5 mb-5">
+  <div class="card lg:col-span-2 {{ 'border-red-700 alert-pulse' if ev.alert_status == 'Alert Generated' and ev.severity in ['High','Critical'] }}">
+    <div class="card-title">Final sound-event decision</div>
+    <div class="flex flex-wrap items-end gap-6">
+      <div><div class="text-xs text-slate-500">Detected category</div>
+        <div class="text-3xl font-bold text-white">{{ ev.display_category }}</div>
+        {% if ev.reviewed_category and ev.reviewed_category != ev.final_category %}<div class="text-xs text-amber-400">Reviewer override · model said {{ ev.final_category }}</div>{% endif %}</div>
+      <div><div class="text-xs text-slate-500">Confidence</div><div class="text-2xl font-semibold text-white">{{ ev.final_confidence|pct }}</div><div class="text-xs text-slate-400">{{ ev.confidence_level }}</div></div>
+      <div><div class="text-xs text-slate-500">Severity</div><div class="mt-1">{{ sev(ev.severity) }}</div></div>
+      <div><div class="text-xs text-slate-500">Alert</div><div class="mt-1 text-sm {{ 'text-red-400 font-semibold' if ev.alert_status == 'Alert Generated' else 'text-slate-300' }}">{{ ev.alert_status }}</div></div>
+      <div><div class="text-xs text-slate-500">Repeated detection</div><div class="mt-1 text-sm text-slate-300">{{ ev.repeated_count }}×</div></div>
+    </div>
+    <div class="mt-4 p-3 rounded-lg bg-slate-800/60 text-sm"><span class="text-slate-400">Recommended action:</span> <span class="text-white">{{ ev.recommended_action }}</span></div>
+    {% if ev.manual_review_required %}
+    <div class="mt-3 p-3 rounded-lg bg-amber-950/50 border border-amber-800 text-sm text-amber-200"><b>Manual review required:</b> {{ ev.review_reasons|join('; ') }}</div>
+    {% endif %}
+    {% if ev.overlap_detected %}<div class="mt-2 text-sm text-orange-300">Overlapping sounds: {{ ev.overlap_classes|join(', ') }}</div>{% endif %}
+    {% if ev.uncertain %}<div class="mt-2 text-xs text-slate-400">Uncertainty: {{ ev.uncertain_reasons|join('; ') }}</div>{% endif %}
+    {% if ev.actual_class %}<div class="mt-2 text-sm">Ground truth (evaluation): <b class="{{ 'text-emerald-400' if ev.actual_class == ev.display_category else 'text-red-400' }}">{{ ev.actual_class }}</b></div>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-title">How the decision was made</div>
+    <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside">
+      {% for t in ev.decision_trace or [] %}<li>{{ t }}</li>{% endfor %}
+    </ol>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid lg:grid-cols-3 gap-5 mb-5">
+  <div class="card lg:col-span-2">
+    <div class="card-title">Waveform &amp; spectrogram</div>
+    {% if ev.stored_path %}<audio controls preload="metadata" src="{{ url_for('main.event_media', audio_id=ev.audio_id, kind='audio') }}" class="mb-3"></audio>{% endif %}
+    {% if ev.waveform_path %}<img class="w-full rounded-lg" src="{{ url_for('main.event_media', audio_id=ev.audio_id, kind='wave') }}" alt="Waveform">{% endif %}
+    {% if ev.spectrogram_path %}<img class="w-full rounded-lg mt-3" src="{{ url_for('main.event_media', audio_id=ev.audio_id, kind='spec') }}" alt="Mel spectrogram">{% endif %}
+    {% if not ev.stored_path %}<p class="text-sm text-slate-500">Audio removed by the data-retention policy.</p>{% endif %}
+  </div>
+  <div class="space-y-5">
+    <div class="card">
+      <div class="card-title">Audio quality {{ qual(ev.quality_label) }}</div>
+      {% set q = ev.quality or {} %}
+      <dl class="grid grid-cols-2 gap-y-1 text-xs">
+        <dt class="text-slate-500">RMS level</dt><dd>{{ q.rms_dbfs }} dBFS</dd>
+        <dt class="text-slate-500">Peak</dt><dd>{{ q.peak_dbfs }} dBFS</dd>
+        <dt class="text-slate-500">Noise floor</dt><dd>{{ q.noise_floor_dbfs }} dBFS</dd>
+        <dt class="text-slate-500">SNR estimate</dt><dd>{{ q.snr_db }} dB</dd>
+        <dt class="text-slate-500">Clipping</dt><dd>{{ ((q.clipping_ratio or 0) * 100)|round(2) }} %</dd>
+        <dt class="text-slate-500">Silence</dt><dd>{{ ((q.silence_ratio or 0) * 100)|round(1) }} %</dd>
+        <dt class="text-slate-500">Missing-frame gaps</dt><dd>{{ q.dropouts }}</dd>
+      </dl>
+      {% if q.issues %}<ul class="mt-3 text-xs text-amber-300 list-disc list-inside">{% for i in q.issues %}<li>{{ i }}</li>{% endfor %}</ul>
+      {% else %}<p class="mt-3 text-xs text-emerald-400">No quality issues detected.</p>{% endif %}
+    </div>
+    <div class="card">
+      <div class="card-title">Metadata</div>
+      <dl class="grid grid-cols-2 gap-y-1 text-xs">
+        <dt class="text-slate-500">Format</dt><dd>{{ (ev.format or '')|upper }}</dd>
+        <dt class="text-slate-500">Duration</dt><dd>{{ ev.duration }} s</dd>
+        <dt class="text-slate-500">Sample rate</dt><dd>{{ ev.sample_rate }} Hz</dd>
+        <dt class="text-slate-500">Channels</dt><dd>{{ ev.channels }}</dd>
+        <dt class="text-slate-500">Bit depth</dt><dd>{{ ev.bit_depth or 'n/a' }}</dd>
+        <dt class="text-slate-500">File size</dt><dd>{{ ((ev.file_size or 0) / 1024)|round(1) }} KB</dd>
+        <dt class="text-slate-500">SHA-256</dt><dd class="font-mono truncate" title="{{ ev.sha256 }}">{{ (ev.sha256 or '')[:16] }}…</dd>
+        <dt class="text-slate-500">Processing</dt><dd>{{ ev.processing_ms }} ms</dd>
+        <dt class="text-slate-500">Python model</dt><dd class="truncate" title="{{ ev.python_model_version }}">{{ ev.python_model_version or '—' }}</dd>
+        <dt class="text-slate-500">GTM model</dt><dd class="truncate" title="{{ ev.gtm_model_version }}">{{ ev.gtm_model_version or '—' }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+{% if ev.final_category %}
+<div class="card mb-5">
+  <div class="card-title">Model prediction &amp; confidence comparison {{ cs(ev.consistency_status) }}</div>
+  <div class="grid md:grid-cols-4 gap-4 mb-5 text-sm">
+    <div class="stat"><div class="stat-label">Predicted class match</div><div class="text-lg font-semibold {{ 'text-emerald-400' if ev.class_match else 'text-orange-400' }}">{{ 'Yes' if ev.class_match else ('No' if ev.class_match == false else 'n/a') }}</div></div>
+    <div class="stat"><div class="stat-label">|Δ top-class confidence|</div><div class="text-lg font-semibold text-white">{{ ev.confidence_diff|pct }}</div></div>
+    <div class="stat"><div class="stat-label">Python top-2 margin</div><div class="text-lg font-semibold text-white">{{ ev.python_margin|pct }}</div></div>
+    <div class="stat"><div class="stat-label">GTM top-2 margin</div><div class="text-lg font-semibold text-white">{{ ev.gtm_margin|pct }}</div></div>
+  </div>
+  <div class="grid md:grid-cols-2 gap-8">
+    <div>
+      <div class="flex justify-between mb-2"><span class="text-white font-medium">🐍 Python model</span><span class="text-sm">{{ ev.python_prediction }} · {{ ev.python_confidence|pct }}</span></div>
+      <div class="text-xs text-slate-500 mb-2">Top 3: {% for c, v in top_k(ev.python_scores or {}, 3) %}{{ c }} ({{ v|pct }}){{ ', ' if not loop.last }}{% endfor %}</div>
+      {{ score_bars(ev.python_scores, ev.python_prediction, '#06b6d4') }}
+    </div>
+    <div>
+      <div class="flex justify-between mb-2"><span class="text-white font-medium">🎓 Google Teachable Machine</span><span class="text-sm">{{ ev.gtm_prediction or ev.gtm_status }} · {{ ev.gtm_confidence|pct }}</span></div>
+      <div class="text-xs text-slate-500 mb-2">Top 3: {% for c, v in top_k(ev.gtm_scores or {}, 3) %}{{ c }} ({{ v|pct }}){{ ', ' if not loop.last }}{% endfor %}</div>
+      {{ score_bars(ev.gtm_scores, ev.gtm_prediction, '#a855f7') }}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mb-5">
+  <div class="card-title">Segments ({{ ev.segments|length }})</div>
+  <div class="overflow-x-auto"><table class="table">
+    <thead><tr><th>#</th><th>Start – end</th><th>Level</th><th>Python</th><th>GTM</th><th>Listen</th></tr></thead>
+    <tbody>
+    {% for s in ev.segments %}
+      <tr class="{{ 'bg-orange-950/30' if loop.index0 == ev.python_segment_index }}">
+        <td>{{ s.index }}</td><td class="tabular-nums">{{ '%.2f'|format(s.start_s) }}s – {{ '%.2f'|format(s.end_s) }}s</td>
+        <td class="text-xs text-slate-400">{{ s.rms_db }} dB</td>
+        <td>{{ s.python_prediction or '—' }} <span class="text-xs text-slate-400">{{ s.python_confidence|pct }}</span></td>
+        <td>{{ s.gtm_prediction or '—' }} <span class="text-xs text-slate-400">{{ s.gtm_confidence|pct }}</span></td>
+        <td class="w-64">{% if s.audio_path %}<audio controls preload="none" src="{{ url_for('main.segment_media', seg_id=s.id) }}"></audio>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+{% if ev.alerts or ev.reviews %}
+<div class="grid md:grid-cols-2 gap-5">
+  <div class="card"><div class="card-title">Alerts</div>
+    {% for a in ev.alerts %}
+      <div class="text-sm mb-3"><div class="flex justify-between"><span>{{ sev(a.severity) }} {{ a.message }}</span><span class="text-xs text-slate-400">{{ a.status }}</span></div>
+        {% for x in a.actions %}<div class="text-xs text-slate-500 ml-2">{{ x.at|dt }} · {{ x.user.username }} · {{ x.action }} {{ x.note }}</div>{% endfor %}
+        {% if a.status == 'Active' and current_user.role in ['admin','security','maintenance'] %}
+        <form method="post" action="{{ url_for('alerts.act', alert_id=a.id, action='acknowledge') }}" class="mt-2 flex gap-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary btn-sm">Acknowledge</button>
+          <button class="btn btn-danger btn-sm" formaction="{{ url_for('alerts.act', alert_id=a.id, action='escalate') }}">Escalate</button>
+          <button class="btn btn-ghost btn-sm" formaction="{{ url_for('alerts.act', alert_id=a.id, action='dismiss') }}">Dismiss</button>
+        </form>{% endif %}
+      </div>
+    {% else %}<p class="text-sm text-slate-500">No alerts.</p>{% endfor %}
+  </div>
+  <div class="card"><div class="card-title">Reviews</div>
+    {% for r in ev.reviews %}
+      <div class="text-sm mb-3"><b>{{ r.decision }}</b> by {{ r.reviewer.username }} · {{ r.created_at|dt }}<br>
+        <span class="text-slate-400">{{ r.original_category }} → {{ r.decided_category }}</span>{% if r.comment %}<div class="text-xs text-slate-300 mt-1">“{{ r.comment }}”</div>{% endif %}</div>
+    {% else %}<p class="text-sm text-slate-500">Not reviewed.</p>{% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if ev.gtm_status == 'pending' and gtm.available %}
+{% include "partials/gtm_scripts.html" %}
+<script>
+(async () => {
+  const prog = document.getElementById('gtm-progress');
+  const post = body => SS.api("{{ url_for('api.api_event_gtm', audio_id=ev.audio_id) }}", { method: 'POST', json: body });
+  try {
+    await GTM.load(GTM_BASE);
+    const ev = await SS.api("{{ url_for('api.api_event', audio_id=ev.audio_id) }}");
+    const results = [];
+    for (const [i, seg] of ev.segments.entries()) {
+      prog.textContent = `Segment ${i + 1} of ${ev.segments.length}`;
+      results.push(await GTM.classify(await GTM.decodeUrl(seg.url)));
+    }
+    prog.textContent = 'Comparing models and applying alert rules…';
+    await post({ segments: results });
+  } catch (err) {
+    console.error(err);
+    await post({ error: String(err.message || err) }).catch(() => {});
+  }
+  location.reload();
+})();
+</script>
+{% endif %}
+{% endblock %}

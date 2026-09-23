@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-3">Monitoring &amp; anomaly notifications</h1>
+{% include "admin/_nav.html" %}
+<form method="post" class="mb-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm">Mark all as read</button></form>
+<div class="card"><ul class="divide-y divide-slate-800">
+  {% for n in notes %}<li class="py-3 flex gap-4"><span class="badge {{ 'sev-High' if not n.is_read else 'st' }}">{{ n.kind }}</span>
+    <div><div class="{{ 'text-white' if not n.is_read else 'text-slate-400' }} text-sm">{{ n.message }}</div><div class="text-xs text-slate-500">{{ n.at|dt }}</div></div></li>
+  {% else %}<li class="py-3 text-slate-500">No notifications.</li>{% endfor %}
+</ul></div>
+{% endblock %}

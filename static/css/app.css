@@ -1,0 +1,55 @@
+/* Small component layer on top of Tailwind (Play CDN). */
+.nav-link { padding: .4rem .7rem; border-radius: .5rem; color: #cbd5e1; display: inline-flex; align-items: center; }
+.nav-link:hover { background: #1e293b; color: #fff; }
+.nav-active { background: #0e7490; color: #fff; }
+
+.card { background: #0f172a; border: 1px solid #1e293b; border-radius: .9rem; padding: 1.25rem; }
+.card-title { font-weight: 600; color: #f1f5f9; margin-bottom: .75rem; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.stat { background: linear-gradient(180deg, #0f172a, #0b1222); border: 1px solid #1e293b; border-radius: .9rem; padding: 1rem 1.25rem; }
+.stat-label { font-size: .75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+.stat-value { font-size: 1.75rem; font-weight: 700; color: #fff; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .55rem 1rem; border-radius: .6rem; font-weight: 500; font-size: .875rem; transition: .15s; cursor: pointer; border: 1px solid transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: #0891b2; color: #fff; } .btn-primary:hover:not(:disabled) { background: #06b6d4; }
+.btn-danger { background: #dc2626; color: #fff; } .btn-danger:hover:not(:disabled) { background: #ef4444; }
+.btn-warn { background: #d97706; color: #fff; } .btn-warn:hover:not(:disabled) { background: #f59e0b; }
+.btn-ghost { background: transparent; color: #cbd5e1; border-color: #334155; } .btn-ghost:hover:not(:disabled) { background: #1e293b; }
+.btn-sm { padding: .3rem .65rem; font-size: .75rem; }
+
+.input, select.input, textarea.input { width: 100%; background: #020617; border: 1px solid #334155; border-radius: .55rem; padding: .5rem .75rem; color: #e2e8f0; font-size: .875rem; }
+.input:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 0 2px rgba(6,182,212,.25); }
+.label { display: block; font-size: .8rem; color: #94a3b8; margin-bottom: .25rem; }
+
+.table { width: 100%; font-size: .85rem; }
+.table th { text-align: left; font-weight: 500; color: #94a3b8; padding: .5rem .6rem; border-bottom: 1px solid #1e293b; white-space: nowrap; }
+.table td { padding: .55rem .6rem; border-bottom: 1px solid #111c33; vertical-align: top; }
+.table tr:hover td { background: #0b1325; }
+
+.badge { display: inline-flex; align-items: center; padding: .1rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 600; white-space: nowrap; }
+.sev-Informational { background: #1e293b; color: #94a3b8; }
+.sev-Low { background: #064e3b; color: #6ee7b7; }
+.sev-Medium { background: #713f12; color: #fde68a; }
+.sev-High { background: #7c2d12; color: #fdba74; }
+.sev-Critical { background: #7f1d1d; color: #fecaca; box-shadow: 0 0 0 1px #ef4444; }
+.q-Good { background: #064e3b; color: #6ee7b7; } .q-Acceptable { background: #1e3a8a; color: #bfdbfe; }
+.q-Poor { background: #713f12; color: #fde68a; } .q-Unusable { background: #7f1d1d; color: #fecaca; }
+.cs-Acceptable-Match { background: #064e3b; color: #6ee7b7; } .cs-Weak-Match { background: #1e3a8a; color: #bfdbfe; }
+.cs-Model-Disagreement { background: #7c2d12; color: #fdba74; } .cs-Uncertain-Result { background: #334155; color: #e2e8f0; }
+.st { background: #1e293b; color: #cbd5e1; }
+.st-Manual-Review { background: #713f12; color: #fde68a; } .st-Alert-Generated { background: #7f1d1d; color: #fecaca; }
+.st-Reviewed, .st-Closed { background: #064e3b; color: #6ee7b7; }
+
+.flash { padding: .7rem 1rem; border-radius: .6rem; font-size: .875rem; border: 1px solid; }
+.flash-success { background: #052e2b; border-color: #0f766e; color: #99f6e4; }
+.flash-error { background: #350a0a; border-color: #b91c1c; color: #fecaca; }
+.flash-warning { background: #2e1d05; border-color: #b45309; color: #fde68a; }
+.flash-info, .flash-message { background: #0c1a33; border-color: #1d4ed8; color: #bfdbfe; }
+
+.bar { height: .5rem; background: #1e293b; border-radius: 999px; overflow: hidden; }
+.bar > span { display: block; height: 100%; border-radius: 999px; }
+.alert-pulse { animation: pulse-red 1.2s infinite; }
+@keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.6);} 50% { box-shadow: 0 0 0 10px rgba(239,68,68,0);} }
+.meter { height: 8px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+.meter > div { height: 100%; background: linear-gradient(90deg,#22c55e,#eab308,#ef4444); width: 0; transition: width .08s; }
+audio { width: 100%; height: 40px; }

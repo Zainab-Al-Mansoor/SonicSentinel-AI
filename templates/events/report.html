@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SonicSentinel AI – Analysis report {{ ev.audio_id }}</title>
+<style>
+ body{font-family:Segoe UI,Arial,sans-serif;color:#0f172a;max-width:960px;margin:24px auto;padding:0 16px;font-size:14px}
+ h1{font-size:22px;margin:0} h2{font-size:16px;border-bottom:2px solid #06b6d4;padding-bottom:4px;margin-top:28px}
+ table{border-collapse:collapse;width:100%} td,th{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;font-size:12px} th{background:#f1f5f9}
+ .muted{color:#64748b} .big{font-size:26px;font-weight:700} .pill{display:inline-block;padding:2px 10px;border-radius:12px;background:#e2e8f0;font-weight:600;font-size:12px}
+ .crit{background:#fee2e2;color:#991b1b} img{max-width:100%;border-radius:6px;margin-top:8px}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px} @media print{.noprint{display:none}}
+</style></head>
+<body>
+<div style="display:flex;justify-content:space-between;align-items:flex-end">
+  <div><h1>SonicSentinel AI – Sound-Event Analysis Report</h1><div class="muted">Audio ID {{ ev.audio_id }} · generated {{ generated|dt }}</div></div>
+  <button class="noprint" onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<h2>Final decision</h2>
+<div class="big">{{ ev.display_category }} <span class="pill {{ 'crit' if ev.severity in ['High','Critical'] }}">{{ ev.severity }}</span></div>
+<table><tr><th>Confidence</th><td>{{ ev.final_confidence|pct }} ({{ ev.confidence_level }})</td><th>Alert status</th><td>{{ ev.alert_status }}</td></tr>
+<tr><th>Model agreement</th><td>{{ ev.consistency_status }}</td><th>Manual review</th><td>{{ 'Yes – ' ~ (ev.review_reasons|join('; ')) if ev.manual_review_required else 'No' }}</td></tr>
+<tr><th>Recommended action</th><td colspan="3">{{ ev.recommended_action }}</td></tr>
+{% if ev.reviewed_category %}<tr><th>Review decision</th><td colspan="3">{{ ev.reviewed_category }} (by {{ ev.reviewer.username if ev.reviewer else '' }} on {{ ev.reviewed_at|dt }}; automatic result was {{ ev.final_category }})</td></tr>{% endif %}
+</table>
+
+<h2>Audio metadata</h2>
+<table><tr><th>Filename</th><td>{{ ev.original_filename }}</td><th>Format</th><td>{{ (ev.format or '')|upper }}</td></tr>
+<tr><th>Duration</th><td>{{ ev.duration }} s</td><th>Sample rate</th><td>{{ ev.sample_rate }} Hz</td></tr>
+<tr><th>Channels</th><td>{{ ev.channels }}</td><th>Bit depth</th><td>{{ ev.bit_depth or 'n/a' }}</td></tr>
+<tr><th>File size</th><td>{{ ((ev.file_size or 0)/1024)|round(1) }} KB</td><th>Uploaded</th><td>{{ ev.uploaded_at|dt }}</td></tr>
+<tr><th>Python model</th><td>{{ ev.python_model_version }}</td><th>GTM model</th><td>{{ ev.gtm_model_version or '—' }}</td></tr></table>
+
+<h2>Model predictions and confidence</h2>
+<table><tr><th>Class</th><th>Python</th><th>GTM</th><th>Combined</th></tr>
+{% for c, v in top_k(ev.combined_scores or {}, 20) %}
+<tr><td>{{ c }}</td><td>{{ (ev.python_scores or {}).get(c)|pct }}</td><td>{{ (ev.gtm_scores or {}).get(c)|pct }}</td><td>{{ v|pct }}</td></tr>{% endfor %}
+</table>
+<p>Python predicted <b>{{ ev.python_prediction }}</b> ({{ ev.python_confidence|pct }}), GTM predicted <b>{{ ev.gtm_prediction or 'n/a' }}</b> ({{ ev.gtm_confidence|pct }}).
+Confidence difference |Python − GTM| = <b>{{ ev.confidence_diff|pct }}</b>. Top-two margins: Python {{ ev.python_margin|pct }}, GTM {{ ev.gtm_margin|pct }}.</p>
+
+<h2>Audio quality: {{ ev.quality_label }}</h2>
+{% set q = ev.quality or {} %}
+<table><tr><th>RMS</th><td>{{ q.rms_dbfs }} dBFS</td><th>Noise floor</th><td>{{ q.noise_floor_dbfs }} dBFS</td><th>SNR</th><td>{{ q.snr_db }} dB</td></tr>
+<tr><th>Clipping</th><td>{{ ((q.clipping_ratio or 0)*100)|round(2) }} %</td><th>Silence</th><td>{{ ((q.silence_ratio or 0)*100)|round(1) }} %</td><th>Gaps</th><td>{{ q.dropouts }}</td></tr></table>
+<p class="muted">{{ (q.issues or ['No issues'])|join('; ') }}</p>
+
+<h2>Waveform and spectrogram</h2>
+{% if wave %}<img src="data:image/png;base64,{{ wave }}" alt="waveform">{% endif %}
+{% if spec %}<img src="data:image/png;base64,{{ spec }}" alt="spectrogram">{% endif %}
+
+<h2>Decision trace</h2>
+<ol>{% for t in ev.decision_trace or [] %}<li>{{ t }}</li>{% endfor %}</ol>
+
+<h2>Alerts</h2>
+{% for a in ev.alerts %}<p>{{ a.created_at|dt }} – {{ a.severity }} – {{ a.message }} – status {{ a.status }}</p>{% else %}<p class="muted">No alerts.</p>{% endfor %}
+
+<p class="muted" style="margin-top:32px">SonicSentinel AI is a competition prototype and not a certified emergency-response or law-enforcement system.</p>
+</body></html>

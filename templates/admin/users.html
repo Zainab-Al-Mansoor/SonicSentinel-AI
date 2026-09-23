@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-3">Users &amp; roles</h1>
+{% include "admin/_nav.html" %}
+<div class="card overflow-x-auto"><table class="table">
+  <thead><tr><th>User ID</th><th>Username</th><th>Name / email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+  <tbody>{% for u in users %}
+  <tr><td class="font-mono text-xs">{{ u.user_code }}</td><td class="text-white">{{ u.username }}</td>
+    <td class="text-xs">{{ u.full_name or '' }}<br><span class="text-slate-500">{{ u.email }}</span></td>
+    <td><form method="post" class="flex gap-1"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="hidden" name="action" value="role">
+      <select name="role" class="input !w-44 !py-1">{% for k, v in ROLES.items() %}<option value="{{ k }}" {{ 'selected' if u.role==k }}>{{ v }}</option>{% endfor %}</select>
+      <button class="btn btn-ghost btn-sm">Save</button></form></td>
+    <td>{% if u.is_active %}<span class="badge q-Good">Active</span>{% else %}<span class="badge q-Unusable">Disabled</span>{% endif %}
+      {% if u.failed_logins %}<div class="text-xs text-amber-400">{{ u.failed_logins }} failed logins</div>{% endif %}</td>
+    <td class="text-xs">{{ u.last_login|dt }}</td>
+    <td><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="user_id" value="{{ u.id }}">
+      {% if u.is_active %}<button name="action" value="disable" class="btn btn-danger btn-sm">Disable</button>{% else %}<button name="action" value="enable" class="btn btn-primary btn-sm">Enable</button>{% endif %}</form></td></tr>
+  {% endfor %}</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Batch upload{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-white mb-1">Batch classification</h1>
+<p class="text-slate-400 text-sm mb-5">Select many clips at once. Each file is validated and analysed by both models one after another; keep this tab open until it finishes.</p>
+{% include "partials/gtm_status.html" %}
+<div class="card mb-5 flex flex-wrap items-center gap-4">
+  <input id="files" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" class="text-sm text-slate-300 file:btn file:btn-ghost file:mr-3">
+  <button id="go" class="btn btn-primary">Analyse all</button>
+  <span id="progress" class="text-sm text-slate-400"></span>
+</div>
+<div class="card overflow-x-auto"><table class="table">
+  <thead><tr><th>Audio ID / file</th><th>Python</th><th>GTM</th><th>Agreement</th><th>Final</th><th>Severity</th><th>Quality</th><th>Alert / review</th></tr></thead>
+  <tbody id="rows"></tbody></table></div>
+{% endblock %}
+{% block scripts %}
+{% if gtm.available %}{% include "partials/gtm_scripts.html" %}{% endif %}
+<script src="{{ url_for('static', filename='js/batch.js') }}"></script>
+<script>
+document.getElementById('go').onclick = async () => {
+  const files = [...document.getElementById('files').files];
+  if (!files.length) return SS.toast('Choose some files first.', 'warning');
+  document.getElementById('go').disabled = true;
+  const items = files.map(f => ({ label: f.name, analyse: () => {
+    const fd = new FormData(); fd.append('audio', f);
+    return SS.api("{{ url_for('api.api_upload') }}", { method: 'POST', body: fd });
+  }}));
+  await Batch.run(items, { tbody: document.getElementById('rows'), progress: document.getElementById('progress'),
+                           gtmAvailable: {{ 'true' if gtm.available else 'false' }} });
+  document.getElementById('go').disabled = false;
+};
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import sev, qual, status, event_row %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold text-white">Welcome, {{ current_user.full_name or current_user.username }}</h1>
+    <p class="text-slate-400 text-sm">{{ ROLES[current_user.role] }} · {{ current_user.user_code }}</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{{ url_for('main.upload') }}" class="btn btn-primary">⬆ Upload audio</a>
+    <a href="{{ url_for('main.live') }}" class="btn btn-ghost">🎙 Live monitor</a>
+  </div>
+</div>
+{% include "partials/gtm_status.html" %}
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="stat"><div class="stat-label">Total events</div><div class="stat-value">{{ stats.total }}</div></div>
+  <div class="stat"><div class="stat-label">Today</div><div class="stat-value">{{ stats.today }}</div></div>
+  <div class="stat"><div class="stat-label">Alerts raised</div><div class="stat-value text-red-400">{{ stats.alerts }}</div></div>
+  <div class="stat"><div class="stat-label">Awaiting review</div><div class="stat-value text-amber-400">{{ stats.review }}</div></div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="card lg:col-span-2">
+    <div class="card-title">Current detections <a class="text-xs text-brand-400" href="{{ url_for('main.history') }}">All history →</a></div>
+    <div class="overflow-x-auto"><table class="table">
+      <thead><tr><th>Audio ID</th><th>Detected</th><th>Conf.</th><th>Severity</th><th>Quality</th><th>Status</th><th>Time</th></tr></thead>
+      <tbody>{% for e in current %}{{ event_row(e) }}{% else %}<tr><td colspan="7" class="text-slate-500">No detections yet – upload a clip or start live monitoring.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Critical events</div>
+    <ul class="space-y-2">
+      {% for e in critical %}
+      <li><a href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}" class="flex items-center justify-between p-2 rounded-lg bg-red-950/40 border border-red-900/50 hover:border-red-700">
+        <span><span class="text-white text-sm font-medium">{{ e.display_category }}</span><br><span class="text-xs text-slate-400">{{ e.uploaded_at|dt }}</span></span>{{ sev(e.severity) }}</a></li>
+      {% else %}<li class="text-sm text-slate-500">No critical events.</li>{% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-title">Recent uploads</div>
+    <ul class="divide-y divide-slate-800 text-sm">
+      {% for e in recent_uploads %}
+      <li class="py-2 flex justify-between gap-2"><a class="truncate text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.original_filename }}</a><span class="text-slate-400 whitespace-nowrap">{{ e.display_category }}</span></li>
+      {% else %}<li class="py-2 text-slate-500">Nothing uploaded yet.</li>{% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-title">Audio-quality warnings</div>
+    <ul class="divide-y divide-slate-800 text-sm">
+      {% for e in quality %}
+      <li class="py-2 flex justify-between gap-2"><a class="truncate text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.original_filename }}</a>{{ qual(e.quality_label) }}</li>
+      {% else %}<li class="py-2 text-slate-500">No quality problems.</li>{% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-title">Manual-review records</div>
+    <ul class="divide-y divide-slate-800 text-sm">
+      {% for e in review %}
+      <li class="py-2"><a class="text-brand-400 hover:underline" href="{{ url_for('review.review', audio_id=e.audio_id) if current_user.role in ['admin','reviewer'] else url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
+        <div class="text-xs text-slate-500">{{ (e.review_reasons or [])|join('; ') }}</div></li>
+      {% else %}<li class="py-2 text-slate-500">Nothing waiting for review.</li>{% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

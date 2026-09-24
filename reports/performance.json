@@ -1,0 +1,69 @@
+{
+  "model_warm_up_s": 1.23,
+  "upload_30s": {
+    "n": 5,
+    "mean_s": 1.472,
+    "median_s": 1.487,
+    "max_s": 1.74,
+    "min_s": 1.243,
+    "target_s": 8.0,
+    "pass": true
+  },
+  "live_window_2s": {
+    "n": 15,
+    "mean_s": 0.109,
+    "median_s": 0.109,
+    "max_s": 0.122,
+    "min_s": 0.097,
+    "target_s": 3.0,
+    "pass": true
+  },
+  "scalability": {
+    "records": 20020,
+    "insert_seconds": 0.6,
+    "pages": {
+      "dashboard": {
+        "status": 200,
+        "seconds": 0.066
+      },
+      "history (unfiltered)": {
+        "status": 200,
+        "seconds": 0.182
+      },
+      "history (filtered)": {
+        "status": 200,
+        "seconds": 0.018
+      },
+      "timeline": {
+        "status": 200,
+        "seconds": 0.041
+      },
+      "admin dashboard": {
+        "status": 200,
+        "seconds": 0.481
+      },
+      "stats API (30 days)": {
+        "status": 200,
+        "seconds": 0.284
+      },
+      "events.csv export": {
+        "status": 200,
+        "seconds": 1.344
+      }
+    },
+    "pass": true
+  },
+  "concurrency": {
+    "users": 5,
+    "requests": 20,
+    "errors": [],
+    "max_request_s": 0.8,
+    "wall_s": 2.0,
+    "pass": true
+  },
+  "machine": {
+    "os": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "cpu_count": 2
+  }
+}

@@ -247,3 +247,12 @@ def test_database_tables(app):
         tables = set(db.inspect(db.engine).get_table_names())
         assert {"users", "audio_events", "segments", "alerts", "reviews", "audit_logs", "model_versions",
                 "settings", "live_sessions", "system_notifications"} <= tables
+
+
+def test_healthz_is_public_and_reports_checks(client):
+    r = client.get("/healthz")
+    assert r.status_code == 200
+    data = r.get_json()
+    assert data["status"] == "ok"
+    assert data["checks"]["database"] == "ok"
+    assert "python_model" in data["checks"] and "gtm_model" in data["checks"]

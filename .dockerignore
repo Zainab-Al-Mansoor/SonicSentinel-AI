@@ -1,0 +1,20 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+downloads
+audio_dataset
+gtm_model/training_samples
+data/*.db
+data/uploads
+data/segments
+data/images
+data/features
+data/exports
+data/reports
+screenshots
+notebooks
+Claude outputs
+_training_pack

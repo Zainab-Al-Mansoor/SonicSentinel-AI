@@ -5,25 +5,34 @@ The GTM model is trained **separately** from the Python model, but on the **same
 ## 1. Prepare samples (train split only)
 
 ```bash
-python -m gtm_model.prepare_gtm_samples --max-per-class 400 --playlist
+python -m gtm_model.prepare_gtm_samples --max-per-class 400 --zip
 ```
 
 This creates:
 
-* `gtm_model/training_samples/<Class Name>/*.wav`: 1-second, 44.1 kHz clips
-* `gtm_model/training_samples/_playlists/<Class Name>.wav`: all samples of one class joined into one file
-* `gtm_samples_metadata.csv`: every sample traced back to its Audio ID
+* `gtm_model/training_samples/_tm_upload/<Class Name>.zip`: **Teachable Machine upload files**, one per class
+* `gtm_model/training_samples/<Class Name>/*.wav`: the same 1-second, 44.1 kHz samples as WAV (for listening)
+* `gtm_samples_metadata.csv`: every sample traced back to its Audio ID; `gtm_sample_counts.csv`: samples per class
+
+Teachable Machine's audio **Upload** button only accepts archives in its own format (`samples.json` with the
+spectrogram of every sample + a `.webm` audio file). The `--zip` files use exactly that format (checked against the
+Teachable Machine web app: the archives are accepted and pass its training-data validation). The spectrograms are
+computed exactly like Teachable Machine's own recorder (44.1 kHz, FFT 2048, Blackman window, no smoothing, 1024-sample hop,
+43 frames × 232 bins), so the audio goes in **digitally** – no speaker → microphone recording, and up to 400 samples per class.
 
 ## 2. Train in Teachable Machine
 
-1. Open https://teachablemachine.withgoogle.com/train/audio
-2. Rename/add classes so the names match **exactly**:
-   `Machinery Fault, Glass Breaking, Alarm or Siren, Vehicle Horn, Animal Sound, Gunshot, Panic Scream, Aggression, Person Asking for Help` (the `Background Noise` class already exists).
-3. Add samples to each class:
-   * **If your GTM version offers a file-upload option for audio samples**, upload the WAV files from the matching `training_samples/<Class>` folder.
-   * **Otherwise**, record through the microphone input. Play `_playlists/<Class>.wav` while GTM records. A free virtual audio cable (e.g. VB-Audio Virtual Cable) lets you route the audio straight in without a speaker and mic. Record at least 20 seconds of Background Noise the same way.
-4. Click **Train Model**. Note the settings you used (epochs, batch size, learning rate) in `documentation/GTM_TRAINING_LOG.md`.
-5. Test with a few **validation** clips, then take screenshots of every class, the sample counts and the test results. These are needed for the SRS evidence.
+1. Open https://teachablemachine.withgoogle.com/train/audio in **Chrome** (keep the tab visible while training).
+2. Create 10 classes with **exactly** these names: `Background Noise` (already there),
+   `Machinery Fault, Glass Breaking, Alarm or Siren, Vehicle Horn, Animal Sound, Gunshot, Panic Scream, Aggression, Person Asking for Help`.
+3. For every class: **Upload** → *Choose files from your computer* → select `_tm_upload/<same class name>.zip`.
+   The class card then shows the number of samples (e.g. "400 Audio Samples").
+4. **Advanced**: Epochs 50 (default) – 80, keep the default batch size and learning rate (write them down). Click **Train Model** (takes a few minutes).
+5. Check *Advanced → Under the hood* (accuracy per class, confusion matrix) and take screenshots of every class card,
+   the settings and these charts for `documentation/GTM_TRAINING_LOG.md`.
+
+Old method (still possible): `--playlist` writes `_playlists/<Class>.wav`; play it into GTM's microphone recorder
+(best through a virtual audio cable such as VB-Audio Virtual Cable).
 
 ## 3. Export and install
 

@@ -99,6 +99,30 @@ def create_app(test_config: dict | None = None) -> Flask:
         db.session.rollback()
         return _err(500, "Something went wrong", "An internal error occurred. It has been logged.")
 
+    # ---- health check (NFR availability: used by Render / Docker / run_server.bat) ----
+    import time as _time
+    started = _time.time()
+
+    @app.get("/healthz")
+    def healthz():
+        from sqlalchemy import text
+        from .services.analysis import python_model, gtm_info
+        checks = {}
+        try:
+            db.session.execute(text("SELECT 1"))
+            checks["database"] = "ok"
+        except Exception as e:                      # pragma: no cover - depends on the environment
+            checks["database"] = f"error: {e.__class__.__name__}"
+        try:
+            checks["python_model"] = python_model().version
+        except Exception as e:
+            checks["python_model"] = f"unavailable: {e}"
+        g = gtm_info()
+        checks["gtm_model"] = g.get("version") if g.get("available") else "unavailable"
+        ok = checks["database"] == "ok"
+        return jsonify({"status": "ok" if ok else "error", "uptime_s": round(_time.time() - started, 1),
+                        "checks": checks}), (200 if ok else 503)
+
     with app.app_context():
         db.create_all()
         from database.init_db import seed_defaults

@@ -1,0 +1,10 @@
+# Render Blueprint – New + > Blueprint > select this repository
+services:
+  - type: web
+    name: sonicsentinel-ai
+    runtime: docker
+    plan: free            # free plan: the disk is temporary (database resets on every redeploy)
+    healthCheckPath: /healthz
+    envVars:
+      - key: SONIC_SECRET_KEY
+        generateValue: true

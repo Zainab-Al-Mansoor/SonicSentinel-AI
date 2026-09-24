@@ -70,3 +70,39 @@ The SRS requires a log of work completed, problems, dataset changes, model failu
   * Map extra everyday ESC-50 categories (typing, knocking, coughing …) to Background Noise to reduce false alarms.
   * Raise `min_confidence` / `unknown_threshold` in Admin → Settings after testing in the demo room.
 * **Tests performed:** manual upload and live-mic tests from the dashboard.
+
+### Day 2 (continued) – 2026-09-24
+* **Work completed:**
+  * Dataset rebuilt from scratch (`scripts/clean_dataset.py --yes`, re-import with per-source caps, `build_dataset.py`).
+  * **Person Asking for Help** added: 204 offline-TTS phrases + 17 team recordings.
+  * More negatives mapped to Background Noise: 35 everyday ESC-50 categories, US8K street music / children playing /
+    drilling / jackhammer, MIMII `normal`, Kaggle `NotScreaming`, calm VSD film audio.
+  * Training split balanced with augmentation (`--per-clip 1 --balance-to 600`): 5,030 augmented clips.
+  * Python model retrained on 10 classes: `train_models --fast --models rf,mlp,xgb`; **XGBoost selected**.
+  * New Mocha colour theme with glass effect across all pages.
+  * Added: performance benchmark script, Dockerfile + Render blueprint + deployment guide, microphone
+    device selection and level check in `record_samples.py`, project report, technical blog, GTM training log,
+    demo-video script, submission checklist, team contribution record.
+* **Problems encountered:**
+  * 73 Help recordings and 10 Background recordings were rejected as near-silent (−64 to −75 dBFS): the wrong
+    microphone input was selected. → `record_samples.py --list-devices` / `--input N`, and clips under −45 dBFS are no longer saved.
+  * Re-running TTS created duplicate annotation rows → `build_dataset.py` keeps the last row per filename.
+  * Cached features belonged to the wrong clips after the rebuild → cache key now includes file size and mtime.
+  * XGBoost training took ~25 minutes; SVM still skipped (hours on 38k segments).
+* **Dataset changes:** 4,629 original clips (241 rejected), ≈ 6.6 h; split train 3,240 · val 694 · test 695;
+  38,210 training segments.
+* **Model results (unseen test split, 695 clips):** accuracy **0.865**, macro precision 0.847, macro recall 0.895,
+  macro-F1 **0.863**. Critical recall: Gunshot 0.93, Panic Scream 0.93, Aggression 0.89, Help 1.00, Glass Breaking 0.83 (5/6).
+  Validation: XGB 0.844 / 0.847 F1 · MLP 0.805 / 0.818 · RF 0.769 / 0.802.
+  Most false positives: Panic Scream (32), Background (26), Animal (12).
+* **Tests performed:** `python -m pytest -q`; test-set evaluation and noise-robustness from `train_models`;
+  benchmark script tested on a copy of the project (all NFR targets met); every page checked after the theme change.
+* **Later the same day:**
+  * Training finished: model `py-xgb-20260924-0800`; noise robustness 0.81 (20 dB) · 0.71 (10 dB) · 0.66 (5 dB).
+  * `prepare_gtm_samples.py --zip`: writes Teachable Machine's own sample-archive format (samples.json + webm) for every
+    class, so GTM samples are uploaded digitally instead of being played into the microphone. Verified in the TM web app.
+  * `/healthz` health check, `run_server.bat` (waitress + automatic restart), Docker HEALTHCHECK, Render health check.
+  * Benchmark with the real model: 30-s upload 1.5 s, live window 0.11 s, 20,020 events, 5 concurrent users, 0 errors.
+  * Tests: 58 passed.
+* **Next steps:** GTM run 2 with the 10 upload archives, model-comparison Excel, more Glass Breaking (TUT Rare Sound
+  Events), screenshots, deploy, demo video.

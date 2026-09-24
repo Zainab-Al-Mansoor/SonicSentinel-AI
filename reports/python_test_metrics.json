@@ -1,90 +1,90 @@
 {
-  "version": "py-mlp-20260923-1457",
-  "accuracy": 0.9307875894988067,
-  "precision_macro": 0.8285245359908799,
-  "recall_macro": 0.811444799335354,
-  "f1_macro": 0.8188158888368966,
-  "f1_weighted": 0.9313432932969716,
+  "version": "py-xgb-20260924-0800",
+  "accuracy": 0.8647482014388489,
+  "precision_macro": 0.8468863308144963,
+  "recall_macro": 0.894627486660583,
+  "f1_macro": 0.8628304463964541,
+  "f1_weighted": 0.8671975131068695,
   "critical_recall": {
-    "Gunshot": 0.9492753623188406,
-    "Glass Breaking": 0.6666666666666666,
-    "Panic Scream": 0.9230769230769231,
-    "Aggression": 0.8,
-    "Person Asking for Help": 0.0
+    "Gunshot": 0.9272727272727272,
+    "Glass Breaking": 0.8333333333333334,
+    "Panic Scream": 0.9333333333333333,
+    "Aggression": 0.8888888888888888,
+    "Person Asking for Help": 1.0
   },
-  "critical_recall_min": 0.0,
+  "critical_recall_min": 0.8333333333333334,
   "per_class": {
     "Machinery Fault": {
+      "precision": 0.7692307692307693,
+      "recall": 1.0,
+      "f1": 0.8695652173913043
+    },
+    "Glass Breaking": {
+      "precision": 0.5555555555555556,
+      "recall": 0.8333333333333334,
+      "f1": 0.6666666666666666
+    },
+    "Alarm or Siren": {
+      "precision": 0.9285714285714286,
+      "recall": 0.9154929577464789,
+      "f1": 0.9219858156028369
+    },
+    "Vehicle Horn": {
+      "precision": 1.0,
+      "recall": 0.8727272727272727,
+      "f1": 0.9320388349514563
+    },
+    "Animal Sound": {
+      "precision": 0.8846153846153846,
+      "recall": 0.7931034482758621,
+      "f1": 0.8363636363636363
+    },
+    "Gunshot": {
+      "precision": 0.9622641509433962,
+      "recall": 0.9272727272727272,
+      "f1": 0.9444444444444444
+    },
+    "Panic Scream": {
+      "precision": 0.6363636363636364,
+      "recall": 0.9333333333333333,
+      "f1": 0.7567567567567568
+    },
+    "Aggression": {
+      "precision": 0.8888888888888888,
+      "recall": 0.8888888888888888,
+      "f1": 0.8888888888888888
+    },
+    "Person Asking for Help": {
       "precision": 1.0,
       "recall": 1.0,
       "f1": 1.0
     },
-    "Glass Breaking": {
-      "precision": 0.8,
-      "recall": 0.6666666666666666,
-      "f1": 0.7272727272727273
-    },
-    "Alarm or Siren": {
-      "precision": 0.9652777777777778,
-      "recall": 0.9391891891891891,
-      "f1": 0.952054794520548
-    },
-    "Vehicle Horn": {
-      "precision": 0.9655172413793104,
-      "recall": 0.9655172413793104,
-      "f1": 0.9655172413793104
-    },
-    "Animal Sound": {
-      "precision": 0.9121621621621622,
-      "recall": 0.9440559440559441,
-      "f1": 0.9278350515463918
-    },
-    "Gunshot": {
-      "precision": 0.9703703703703703,
-      "recall": 0.9492753623188406,
-      "f1": 0.9597069597069597
-    },
-    "Panic Scream": {
-      "precision": 0.821917808219178,
-      "recall": 0.9230769230769231,
-      "f1": 0.8695652173913043
-    },
-    "Aggression": {
-      "precision": 0.8571428571428571,
-      "recall": 0.8,
-      "f1": 0.8275862068965517
-    },
-    "Person Asking for Help": {
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1": 0.0
-    },
     "Background Noise": {
-      "precision": 0.9928571428571429,
-      "recall": 0.9266666666666666,
-      "f1": 0.9586206896551724
+      "precision": 0.8433734939759037,
+      "recall": 0.7821229050279329,
+      "f1": 0.8115942028985508
     }
   },
   "noise_robustness": [
     {
       "condition": "clean",
-      "accuracy": 0.9307875894988067,
-      "f1_macro": 0.8188158888368966
+      "accuracy": 0.8647482014388489,
+      "f1_macro": 0.8628304463964541
     },
     {
       "condition": "white noise SNR 20 dB",
-      "accuracy": 0.863961813842482,
-      "f1_macro": 0.7024061101478881
+      "accuracy": 0.8086330935251799,
+      "f1_macro": 0.7797109773746489
     },
     {
       "condition": "white noise SNR 10 dB",
-      "accuracy": 0.7649164677804295,
-      "f1_macro": 0.5415890738886161
+      "accuracy": 0.7107913669064748,
+      "f1_macro": 0.6022889401280336
     },
     {
       "condition": "white noise SNR 5 dB",
-      "accuracy": 0.6873508353221957,
-      "f1_macro": 0.46751228444855375
+      "accuracy": 0.6633093525179856,
+      "f1_macro": 0.5289380676441843
     }
   ]
 }

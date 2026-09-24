@@ -1,64 +1,424 @@
 # SonicSentinel AI
 
-**AI-powered, web-based, real-time sound-event detection** (Theme: AcousticX Intelligence · Category: NextWave AI and ML)
+**AI-powered, web-based, real-time sound-event detection and alerting system**
 
-SonicSentinel AI analyses **uploaded audio clips** and **live microphone input**. Two **independently trained** models classify every audio segment:
+Theme: *AcousticX Intelligence* · Category: *NextWave AI and ML*
+
+SonicSentinel AI listens to **uploaded audio clips** and **live microphone input**. It detects safety-critical and environmental sounds such as gunshots, screams, glass breaking, alarms and machinery faults, and raises alerts for the right people. Every audio segment is classified by **two independently trained models**:
 
 | | Python model | Google Teachable Machine (GTM) model |
 |---|---|---|
-| Runs on | Flask server | the user's browser (TensorFlow.js – the official GTM export) |
-| Input | acoustic features (MFCC, Mel, chroma, spectral …) | 1-second spectrograms of the same audio segment |
-| Trained on | `audio_dataset` TRAIN split | 1-second samples cut from the **same** TRAIN recordings |
+| Runs on | Flask server | the user's browser (TensorFlow.js, official GTM export) |
+| Input | 299 acoustic features per 2-second segment (MFCC, Mel, chroma, spectral …) | 1-second spectrograms of the same audio segment |
+| Trained on | `audio_dataset` TRAIN split (+ augmentation) | 1-second samples cut from the **same** TRAIN recordings |
+| Selected algorithm | MLP neural network (compared against Random Forest, SVM, XGBoost) | TF.js speech-commands transfer learning (Teachable Machine) |
 
-The app compares the two predictions and their confidence scores. It also checks audio quality, detects uncertain and overlapping sounds, applies configurable alert rules and assigns a severity. Doubtful results go to a manual-review queue. Everything is stored for event history, dashboards and reports.
+The app compares the two predictions and their confidence scores. It also checks audio quality, detects uncertain, unknown and overlapping sounds, applies configurable alert rules and assigns a severity (Informational → Critical). Doubtful results go to a manual-review queue. Everything is stored for event history, dashboards, reports and audit.
 
 > ⚠️ This is a competition prototype. It is **not** a certified emergency-response or law-enforcement system.
 
 ---
 
-## 1. Features (SRS mapping)
+## Table of contents
 
-| Area | What is implemented |
-|---|---|
-| Users | Registration, login/logout, lock-out after 5 failed logins, profile, unique User ID (`USR-00001`), 5 roles (user, reviewer, security, maintenance, admin) |
-| Input | Single upload, batch upload, live microphone (start / pause / stop, status: Available · Active · Paused · Disconnected · Permission denied), privacy banner while the mic is on |
-| Validation | Format (WAV/MP3/FLAC/OGG/M4A), size, duration, sample rate, channels, integrity, silence |
-| Pre-processing | Resampling, mono, normalisation, silence trimming, noise reduction, fixed-duration segmentation with timestamps, padding/truncation |
-| Quality | Silence, clipping, noise/SNR, low level, duration, encoding problems, missing frames → Good / Acceptable / Poor / Unusable |
-| Visuals | Waveform (with segments and the deciding segment highlighted) and Mel spectrogram |
-| Python ML | 299 acoustic features; SVM, Random Forest, XGBoost and MLP compared with tuning; confusion matrix, macro-F1, critical recall, noise robustness |
-| GTM | Browser-side TF.js inference on the **same** segments; the Python result is never given to GTM |
-| Comparison | Class match, \|Python top − GTM top\| confidence difference, top-2 margins, top-3 of each model, status: Acceptable Match / Weak Match / Model Disagreement / Uncertain Result |
-| Decision | Combined scores, Unknown handling, overlap detection, repeated-detection confirmation, rule engine, severity (Informational → Critical), recommended action, trace of every step |
-| Alerts | Real-time alerts, toasts, acknowledge / dismiss / escalate, alert history, alerts routed to the right role |
-| Review | Queue, segment playback, confirm/correct, comments, override (original model outputs kept) |
-| Dashboards | User, live, admin (trends, categories, confidence, quality, FP/FN, disagreements, alert response) |
-| History | Search and filter (ID, filename, class, dates, confidence, severity, quality, review status, user), timeline |
-| Reports | Downloadable per-event report (HTML → print to PDF), CSV/Excel exports, model-comparison report |
-| Admin | Thresholds and settings, alert-rule editor (JSON), users and roles, audit trail, anomaly notifications, model versions, data retention |
-| Integrity | SHA-256 duplicate detection, near-duplicate detection (re-encoded / trimmed / volume-changed copies), model version stored with every prediction |
+1. [Problem statement and objectives](#1-problem-statement-and-objectives)
+2. [Sound classes](#2-sound-classes)
+3. [System architecture and technology stack](#3-system-architecture-and-technology-stack)
+4. [Functional requirements](#4-functional-requirements)
+5. [Non-functional requirements](#5-non-functional-requirements)
+6. [Dataset](#6-dataset)
+7. [Audio pipeline and features](#7-audio-pipeline-and-features)
+8. [Python model – training and results](#8-python-model--training-and-results)
+9. [Google Teachable Machine model](#9-google-teachable-machine-model)
+10. [Decision logic and alert rules](#10-decision-logic-and-alert-rules)
+11. [Users and roles](#11-users-and-roles)
+12. [Database](#12-database)
+13. [Installation](#13-installation)
+14. [Building the dataset and training (step by step)](#14-building-the-dataset-and-training-step-by-step)
+15. [Running the application](#15-running-the-application)
+16. [How to use](#16-how-to-use)
+17. [Testing](#17-testing)
+18. [Project structure](#18-project-structure)
+19. [Limitations and future work](#19-limitations-and-future-work)
+20. [Ethics, licences and AI usage](#20-ethics-licences-and-ai-usage)
 
 ---
 
-## 2. Requirements
+## 1. Problem statement and objectives
 
-* Windows 10/11 (also works on Linux and macOS)
-* **Python 3.10 – 3.12** (Anaconda is fine)
-* **FFmpeg** (needed for MP3/M4A). On Windows run `winget install Gyan.FFmpeg`, or download it from ffmpeg.org and add the `bin` folder to PATH.
-* Chrome or Edge (live microphone + GTM run in the browser)
-* 8 GB RAM minimum (16 GB recommended for training)
+Security staff and facility operators cannot listen to every camera, corridor or machine room all the time. Dangerous events are often **heard before they are seen**: a gunshot, a scream, breaking glass or a failing machine.
 
-## 3. Installation
+**Objectives**
 
-```bash
-cd "SonicSentinel AI"
-python -m venv .venv
-.venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
-python -m database.init_db        # creates data/sonicsentinel.db + default accounts
+* Detect 10 sound categories in uploaded clips and in a live microphone stream.
+* Give a confidence score for every category from **two independent models** and compare them openly.
+* Turn detections into **actionable alerts** with severity, recommended action and target role, while limiting false alarms (confidence thresholds, repeated-detection confirmation, model agreement, audio-quality checks).
+* Send doubtful results to **human reviewers** instead of silently guessing.
+* Keep a complete, searchable **history and audit trail**, with dashboards and downloadable reports.
+
+---
+
+## 2. Sound classes
+
+Names must be **identical** in the Python model, the GTM model and `config/settings.py`.
+
+| # | Class | Default severity | Alert | Who is notified | Recommended action (short) |
+|---|---|---|---|---|---|
+| 1 | Machinery Fault | High → Critical after 5 repeats | yes | maintenance | stop/isolate the machine, schedule inspection |
+| 2 | Glass Breaking | High → Critical after 3 repeats | yes | security | check location / CCTV for break-in |
+| 3 | Alarm or Siren | High | yes | security, maintenance | verify source, follow emergency procedure |
+| 4 | Vehicle Horn | Low | logged only | – | traffic sound, no action |
+| 5 | Animal Sound | Low | logged only | – | non-critical, check context |
+| 6 | Gunshot | **Critical** | yes | security | alert security immediately, keep people away |
+| 7 | Panic Scream | **Critical** | yes | security | send staff, check for injury |
+| 8 | Aggression | High | yes | security | dispatch security, de-escalate |
+| 9 | Person Asking for Help | **Critical** | yes | security | respond to the location immediately |
+| 10 | Background Noise | Informational | no | – | no action |
+| – | Unknown | Low | no | – | manual review |
+
+**Critical-recall classes** (recall matters most): Gunshot, Glass Breaking, Panic Scream, Aggression, Person Asking for Help.
+
+---
+
+## 3. System architecture and technology stack
+
+```mermaid
+flowchart TD
+  A[Uploaded clip / live mic window] --> B[Web UI – Flask + Tailwind]
+  B --> C[Validation: format · size · duration · SR · channels · integrity · silence]
+  C --> D[Duplicate check: SHA-256 + fingerprint]
+  C --> Q[Audio-quality analysis]
+  C --> P[Pre-processing: resample · mono · normalise · trim · noise reduction]
+  P --> S[Fixed-duration segments with timestamps]
+  S --> F[Feature extraction – 299 features]
+  F --> PY[Python model → scores for all classes]
+  S --> G[Same segments at 44.1 kHz → browser]
+  G --> GTM[GTM TF.js model → scores for all classes]
+  PY --> CMP[Prediction & confidence comparison]
+  GTM --> CMP
+  Q --> DEC
+  CMP --> DEC[Decision: combined scores · Unknown · overlap · uncertainty]
+  DEC --> R[Critical-event rule engine – alert_rules.json]
+  R --> OUT[Category · severity · alert · action · manual review]
+  OUT --> DB[(SQLite: events · segments · alerts · reviews · audit)]
+  DB --> UI[Dashboards · history · timeline · reports · exports]
 ```
 
-Default accounts (**change the passwords** after the first login):
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.10–3.12, Flask 3, Flask-SQLAlchemy, Flask-Login |
+| Database | SQLite (PostgreSQL possible via `SQLALCHEMY_DATABASE_URI`) |
+| Audio | librosa, soundfile, soxr, noisereduce, SciPy, FFmpeg (MP3/M4A) |
+| Machine learning | scikit-learn (MLP, Random Forest, SVM), XGBoost, joblib |
+| GTM inference | TensorFlow.js 1.3.1 + speech-commands 0.4.0 (in the browser) |
+| Frontend | Jinja2 templates, Tailwind CSS, vanilla JavaScript (Web Audio API) |
+| Reports | matplotlib, openpyxl (Excel), HTML → print to PDF |
+| Serving | `python run.py` (dev), waitress (Windows), gunicorn (Linux) |
+| Tests | pytest (55 automated tests) |
+
+More detail: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md).
+
+---
+
+## 4. Functional requirements
+
+Status: ✅ implemented · ⚠️ implemented, needs more data/tuning · ❌ not done yet
+
+### 4.1 Users, authentication and roles
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-01 | Users can register, log in, log out and edit their profile | ✅ |
+| FR-02 | Each user gets a unique User ID (`USR-00001`, …) | ✅ |
+| FR-03 | Five roles: Normal User, Audio Reviewer, Security Operator, Maintenance Operator, Administrator | ✅ |
+| FR-04 | Account is locked temporarily after 5 failed logins | ✅ |
+| FR-05 | Pages and API endpoints are restricted by role (403 page otherwise) | ✅ |
+| FR-06 | Administrator can create users, change roles and deactivate accounts | ✅ |
+
+### 4.2 Audio input
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-07 | Single file upload with drag-and-drop and preview (play / pause / seek / volume) | ✅ |
+| FR-08 | Batch upload of several files | ✅ |
+| FR-09 | Live microphone monitoring with Start / Pause / Stop | ✅ |
+| FR-10 | Microphone status shown: Available · Active · Paused · Disconnected · Permission denied | ✅ |
+| FR-11 | Privacy banner visible while the microphone is on | ✅ |
+
+### 4.3 Validation and pre-processing
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-12 | Validate format (WAV, MP3, FLAC, OGG, M4A), size (≤ 25 MB), duration (0.5 s – 300 s), sample rate, channels, file integrity and silence | ✅ |
+| FR-13 | Clear, user-friendly error messages for rejected files | ✅ |
+| FR-14 | Pre-processing: resampling (22.05 kHz), mono conversion, peak normalisation, silence trimming, noise reduction | ✅ |
+| FR-15 | Fixed-duration segmentation (2 s, 1 s hop) with timestamps; padding/truncation of the last segment | ✅ |
+
+### 4.4 Audio quality and visualisation
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-16 | Detect silence, clipping, noise/low SNR, low level, too-short duration, encoding problems, missing frames | ✅ |
+| FR-17 | Quality label per file: Good / Acceptable / Poor / Unusable, with the list of issues | ✅ |
+| FR-18 | Waveform image with segments and the deciding segment highlighted | ✅ |
+| FR-19 | Mel spectrogram image | ✅ |
+
+### 4.5 Classification and model comparison
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-20 | Python model returns a confidence score for **every** class per segment | ✅ |
+| FR-21 | GTM model runs in the browser on the **same** segments, without seeing the Python result | ✅ |
+| FR-22 | Show top-3 classes of each model, all scores, \|Python top − GTM top\| difference and top-2 margins | ✅ |
+| FR-23 | Comparison status: Acceptable Match / Weak Match / Model Disagreement / Uncertain Result | ✅ |
+| FR-24 | Confidence level: High ≥ 85 %, Medium ≥ minimum confidence (60 %), Low below | ✅ |
+| FR-25 | Unknown-sound handling when the combined confidence is below the unknown threshold | ✅ |
+| FR-26 | Overlapping-sound detection (two or more non-background classes above the overlap threshold) | ✅ |
+| FR-27 | Detect all 10 classes | ⚠️ Person Asking for Help has no training data yet |
+
+### 4.6 Decision, alerts and review
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-28 | Configurable alert-rule engine per class (confidence, margin, repeats, model agreement, minimum quality, escalation, audience) | ✅ |
+| FR-29 | Repeated-detection confirmation within a time window for live monitoring | ✅ |
+| FR-30 | Severity assignment and escalation (Informational → Critical) and recommended action | ✅ |
+| FR-31 | Real-time alerts with toast notifications on every page | ✅ |
+| FR-32 | Alerts can be acknowledged, escalated or dismissed; alerts are routed to the correct role | ✅ |
+| FR-33 | Alert history | ✅ |
+| FR-34 | Manual review queue with segment playback, confirm/correct label, comments and override (original model outputs are kept) | ✅ |
+| FR-35 | Every step of the decision is stored as a trace | ✅ |
+
+### 4.7 History, dashboards, reports and administration
+
+| ID | Requirement | Status |
+|---|---|---|
+| FR-36 | Search and filter history (ID, file name, class, dates, confidence, severity, quality, review status, user) | ✅ |
+| FR-37 | Event timeline | ✅ |
+| FR-38 | Dashboards: user, live, admin (trends, categories, confidence, quality, FP/FN, disagreements, alert response) | ✅ |
+| FR-39 | Downloadable per-event report (HTML → print to PDF) | ✅ |
+| FR-40 | CSV / Excel exports; model-comparison report on the test split (≥ 10 unseen clips per class) | ✅ |
+| FR-41 | Admin can change thresholds and settings at runtime | ✅ |
+| FR-42 | Admin alert-rule editor (JSON) with validation | ✅ |
+| FR-43 | Audit trail of logins, uploads, reviews, alert actions and setting changes | ✅ |
+| FR-44 | Anomaly notifications for administrators | ✅ |
+| FR-45 | Model versions shown and stored with every prediction | ✅ |
+| FR-46 | Data retention (audio 90 days, records 365 days by default) | ✅ |
+| FR-47 | Exact-duplicate (SHA-256) and near-duplicate (re-encoded / trimmed / volume-changed) detection | ✅ |
+
+---
+
+## 5. Non-functional requirements
+
+| ID | Category | Requirement | How it is met / current status |
+|---|---|---|---|
+| NFR-01 | Accuracy | Test accuracy ≥ 85 % | ✅ **93.1 %** (Python MLP, 844-clip unseen test split) |
+| NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | ✅ **0.819** over 10 classes (≈ 0.91 over the 9 classes that have data) |
+| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | ⚠️ Gunshot 0.95 ✅ · Panic Scream 0.92 ✅ · Aggression 0.80 · Glass Breaking 0.67 · Person Asking for Help – no data |
+| NFR-04 | Robustness | Keep working with background noise | ⚠️ accuracy 0.86 at 20 dB SNR, 0.76 at 10 dB, 0.69 at 5 dB (see §8.4) |
+| NFR-05 | Performance | Near-real-time live detection | 2-second live windows; each window is classified and returned to the browser; GTM runs locally in the browser so it adds no server load |
+| NFR-06 | Reliability | No crash on bad input | Validation rejects corrupt, empty, silent, too short and unsupported files with a clear message (tested) |
+| NFR-07 | Reliability | Works when one model is missing | Without GTM the result uses the Python model only and is marked *Uncertain Result* |
+| NFR-08 | Security | Protect accounts and data | Werkzeug password hashing, password policy (≥ 8 chars, letters + numbers), CSRF tokens on every POST, HttpOnly + SameSite session cookies, role checks, login lock-out, protected media routes |
+| NFR-09 | Privacy | Users know when they are recorded | Red privacy banner while the mic is active; audio retention limits; anonymous speaker codes for recordings |
+| NFR-10 | Usability | Simple web interface | Responsive Tailwind UI, drag-and-drop upload, colour-coded severity/quality badges, toasts |
+| NFR-11 | Maintainability | Easy to change classes, thresholds, rules | All settings in `config/settings.py`, runtime settings in Admin, rules in `alert_rules/alert_rules.json`; modular packages; documentation folder |
+| NFR-12 | Traceability | Reproduce any decision | Model version, both models' scores, quality, rule trace and reviewer changes stored per event; audit log |
+| NFR-13 | Portability | Run on common machines | Windows 10/11, Linux, macOS; Python 3.10–3.12; Chrome or Edge |
+| NFR-14 | Scalability | Grow beyond one server | SQLite for a single server; switch to PostgreSQL for many users; gunicorn/waitress for production |
+| NFR-15 | Testability | Automated tests | 55 pytest tests on a temporary database and a tiny test-only model |
+| NFR-16 | Data integrity | No train/test leakage | Split by original clip; augmented copies and segments stay in their parent's split; CV grouped by Audio ID |
+| NFR-17 | Ethics | Responsible data use | Licensed datasets only, licence recorded per clip, consent for recordings, no real emergencies recorded |
+
+---
+
+## 6. Dataset
+
+### 6.1 Sources
+
+| Dataset | Used for | Licence | Link |
+|---|---|---|---|
+| UrbanSound8K | Alarm or Siren (`siren`), Vehicle Horn (`car_horn`), Animal Sound (`dog_bark`), Gunshot (`gun_shot`), Background Noise (`air_conditioner`, `engine_idling`) | CC BY-NC 3.0 | https://urbansounddataset.weebly.com/urbansound8k.html |
+| ESC-50 | Glass Breaking (`glass_breaking`), Alarm or Siren (`siren`, `clock_alarm`), Vehicle Horn (`car_horn`) | CC BY-NC 3.0 | https://github.com/karolpiczak/ESC-50 |
+| MIMII (6 dB) | Machinery Fault (only `abnormal` files) | CC BY-SA 4.0 | https://zenodo.org/records/3384388 |
+| Kaggle gunshot audio dataset | Gunshot (9 weapons: AK-12, AK-47, IMI Desert Eagle, M16, M249, M4, MG-42, MP5, Zastava M92) | see Kaggle page | Kaggle |
+| Kaggle Human Screaming Detection | Panic Scream (`Screaming` folder only) | see Kaggle page | Kaggle |
+| VSD – Violence Sound Dataset | Aggression (one clip per annotated violence interval, ≤ 6 s, from `VSD.xlsx`) | see dataset page | – |
+| Team recordings | Background Noise of our own rooms | own recordings | – |
+
+The raw downloads live in `downloads/` and are **not committed** (several GB). The label mapping is in `config/dataset_mapping.json`; the licence of every clip is written to `audio_dataset/raw/annotations.csv`.
+
+### 6.2 Clips per class (original clips, after validation and de-duplication)
+
+| Class | UrbanSound8K | ESC-50 | MIMII | Kaggle gunshot | Kaggle scream | VSD | Team | **Total** |
+|---|---|---|---|---|---|---|---|---|
+| Machinery Fault | | | 138 | | | | | **138** |
+| Glass Breaking | | 40 | | | | | | **40** |
+| Alarm or Siren | 912 | 71 | | | | | | **983** |
+| Vehicle Horn | 350 | 40 | | | | | | **390** |
+| Animal Sound | 950 | | | | | | | **950** |
+| Gunshot | 349 | | | 572 | | | | **921** |
+| Panic Scream | | | | | 862 | | | **862** |
+| Aggression | | | | | | 298 | | **298** |
+| Person Asking for Help | | | | | | | | **0** |
+| Background Noise | 1,000 | | | | | | 40 | **1,040** |
+| **Total** | **3,561** | **151** | **138** | **572** | **862** | **298** | **40** | **5,622** |
+
+* **Split** (stratified by class, by original clip): train 3,935 · validation 843 · test 844 (70 / 15 / 15).
+* **Total audio:** ≈ 7.2 hours · mean clip length 4.6 s (0.5 s – 360 s).
+* **Quality:** Good 4,549 · Acceptable 772 · Poor 301.
+* **Rejected:** 235 files (exact duplicates, silent/near-silent, shorter than 0.5 s) – listed in `data/dataset_rejected.csv`.
+* **Class imbalance ratio:** 26 : 1 (largest vs smallest class with data).
+* **Format:** every clip is converted to 44.1 kHz mono 16-bit WAV and gets a unique Audio ID (`AUD-000001` …).
+
+> The currently installed Python model (`py-mlp-20260923-1457`) was trained on the previous build of this dataset (5,582 clips, without the 40 team recordings). Retrain to include them (see §14).
+
+### 6.3 Augmentation (training split only)
+
+`python -m augmentation.augment --per-clip 1` creates one augmented copy per training clip with a random mix of: background-noise mixing at a random SNR, time shift, pitch shift (±2 semitones), time stretch (0.85–1.15×), volume change (−12 to +6 dB), synthetic room reverberation, distance simulation and device (band-pass) simulation. Augmented copies keep their parent's Audio ID in `parent_audio_id`, so they never leak into validation or test.
+
+For the installed model: **7,814 training clips** (3,907 originals + 3,907 augmented) → **31,355 training segments** × 299 features.
+
+### 6.4 Known gaps
+
+* **Person Asking for Help:** 0 clips – needs voluntary recordings (`scripts/record_samples.py`) and TTS (`scripts/generate_help_phrases_tts.py`).
+* **Glass Breaking:** only 40 clips – add FSD50K `Shatter`/`Glass`, TUT Rare Sound Events or safe own recordings.
+* **Machinery Fault:** 138 clips from one MIMII recording set – add more MIMII machine types / SNR levels.
+
+---
+
+## 7. Audio pipeline and features
+
+1. **Load** – soundfile for WAV/FLAC/OGG, FFmpeg for MP3/M4A.
+2. **Validate** – format, size, duration, sample rate, channels, integrity, silence.
+3. **Quality analysis** – RMS level, clipping ratio, estimated SNR/noise floor, silence ratio, missing frames → Good/Acceptable/Poor/Unusable.
+4. **Pre-process** – mono, resample to 22,050 Hz, peak-normalise, trim silence, spectral-gating noise reduction.
+5. **Segment** – 2.0 s windows with a 1.0 s hop; last segment padded.
+6. **Extract 299 features per segment:**
+
+| Feature group | Values |
+|---|---|
+| 40 MFCC – mean and standard deviation | 80 |
+| 40 delta-MFCC – mean | 40 |
+| 64 log-Mel bands – mean and standard deviation | 128 |
+| 12 chroma bins – mean and standard deviation | 24 |
+| 7 spectral-contrast bands – mean | 7 |
+| ZCR, RMS, spectral centroid, bandwidth, roll-off, onset strength – mean / std / max | 18 |
+| Spectral flatness (mean) and tempo | 2 |
+| **Total** | **299** |
+
+7. **Clip-level aggregation** (same rule for both models): if any segment has a non-background class at or above the minimum confidence, the clip takes the scores of the strongest such segment; otherwise the mean of all segments. A short gunshot in a long clip is therefore not averaged away.
+
+---
+
+## 8. Python model – training and results
+
+### 8.1 Training procedure
+
+* Candidates: **SVM (RBF)**, **Random Forest**, **XGBoost**, **MLP** (256-128 hidden units, early stopping), each inside a `StandardScaler` pipeline.
+* Tuning: `GridSearchCV` with **GroupKFold(3)** grouped by original Audio ID, scored by macro-F1.
+* Selection: best **clip-level macro-F1 on the validation split** (critical-class recall breaks ties).
+* The test split is used **once**, for the final report.
+* Quiet segments of event clips are dropped from training (a silent part of a gunshot clip is not a gunshot).
+
+Run used for the installed model: `python -m python_models.train_models --fast --models rf,mlp`. SVM was skipped because it takes hours on 31k segments. XGBoost is skipped automatically while a class has no training data.
+
+### 8.2 Model comparison (validation split, 837 clips)
+
+| Model | CV macro-F1 | Val accuracy | Val macro-F1 | Val macro precision | Val macro recall | Training time |
+|---|---|---|---|---|---|---|
+| **MLP** (α = 0.001) ✅ selected | 0.843 | **0.931** | **0.797** | 0.852 | 0.778 | 111 s |
+| Random Forest (300 trees) | 0.762 | 0.870 | 0.690 | 0.737 | 0.677 | 681 s |
+
+### 8.3 Final test results (838 unseen clips) – model `py-mlp-20260923-1457`
+
+| Metric | Value |
+|---|---|
+| Accuracy | **0.931** |
+| Macro precision / recall / F1 | 0.829 / 0.811 / **0.819** |
+| Weighted F1 | 0.931 |
+
+| Class | Precision | Recall | F1 | Test clips |
+|---|---|---|---|---|
+| Machinery Fault | 1.00 | 1.00 | 1.00 | 20 |
+| Glass Breaking | 0.80 | 0.67 | 0.73 | 6 |
+| Alarm or Siren | 0.97 | 0.94 | 0.95 | 148 |
+| Vehicle Horn | 0.97 | 0.97 | 0.97 | 58 |
+| Animal Sound | 0.91 | 0.94 | 0.93 | 143 |
+| Gunshot | 0.97 | 0.95 | 0.96 | 138 |
+| Panic Scream | 0.82 | 0.92 | 0.87 | 130 |
+| Aggression | 0.86 | 0.80 | 0.83 | 45 |
+| Person Asking for Help | – | – | – | 0 |
+| Background Noise | 0.99 | 0.93 | 0.96 | 150 |
+
+Confusion matrix: `reports/confusion_matrix_python.png`.
+
+### 8.4 Noise robustness (white noise added to the test clips)
+
+| Condition | Accuracy | Macro-F1 |
+|---|---|---|
+| Clean | 0.931 | 0.819 |
+| SNR 20 dB | 0.864 | 0.702 |
+| SNR 10 dB | 0.765 | 0.542 |
+| SNR 5 dB | 0.687 | 0.468 |
+
+Report files: `reports/python_model_comparison.csv`, `python_test_metrics.json`, `python_classwise_test.csv`, `noise_robustness.csv`, `confusion_matrix_python.png`. The Admin → **Models** page shows them.
+
+---
+
+## 9. Google Teachable Machine model
+
+* **Classes (9):** Aggression, Alarm or Siren, Animal Sound, Background Noise, Glass Breaking, Gunshot, Machinery Fault, Panic Scream, Vehicle Horn. Person Asking for Help will be added when it has data.
+* **Training data:** 1-second, 44.1 kHz samples cut from the **same TRAIN recordings** as the Python model (`python -m gtm_model.prepare_gtm_samples --max-per-class 400 --playlist`). Teachable Machine's audio *Upload* only accepts its own sample zips, so the samples were recorded through the microphone input while playing the per-class playlists (`gtm_model/training_samples/_playlists/<Class>.wav`). Background Noise was recorded in the room itself.
+* **Export:** TensorFlow.js (`speech-commands` 0.4.0, model name TMv2), installed in `gtm_model/model/` (`model.json`, `metadata.json`, `weights.bin`).
+* **Inference in the app:** `static/js/gtm.js` loads the model with `speechCommands.create("BROWSER_FFT", …)`. For uploads and live windows it computes the same spectrogram the Web Audio `AnalyserNode` would produce (44.1 kHz, FFT 2048, 43 frames × 232 bins) and calls `recognizer.recognize()`. Segments longer than 1 s are classified in 1-s windows with a 0.5-s hop and averaged. Scores are posted to `/api/events/<id>/gtm`.
+* **Independence:** GTM never receives the Python prediction; the server combines the two only after both are stored.
+
+Full steps: [gtm_model/README.md](gtm_model/README.md).
+
+---
+
+## 10. Decision logic and alert rules
+
+1. **Compare** the top class and confidence of each model (`|py_top − gtm_top|`):
+   * both below minimum confidence → **Uncertain Result**
+   * same class, difference ≤ 0.20, both confident → **Acceptable Match**
+   * same class otherwise → **Weak Match**
+   * different classes → **Model Disagreement**
+2. **Combine** – average of the two score vectors; below the unknown threshold → **Unknown**.
+3. **Overlap** – two or more non-background classes above the overlap threshold → overlapping sounds.
+4. **Rule check** for the category (`alert_rules/alert_rules.json`): minimum confidence, top-2 margin, minimum quality, optional model agreement, repeated detection (N consecutive windows **or** both models above `strong_confidence`), escalation after repeats.
+5. **Alert** when all conditions hold; otherwise *Pending Confirmation* and manual review for critical classes.
+6. **Manual review** when models disagree, confidence is low, quality is poor, top-2 scores are close, sounds overlap, the sound is unknown, or a critical event is unconfirmed.
+
+| Rule | Severity | Alert | Min conf. | Consecutive | Strong conf. | Audience |
+|---|---|---|---|---|---|---|
+| Machinery Fault | High | yes | 0.65 | 2 | 0.85 | maintenance |
+| Glass Breaking | High | yes | 0.65 | 2 | 0.80 | security |
+| Alarm or Siren | High | yes | 0.65 | 2 | 0.85 | security, maintenance |
+| Vehicle Horn | Low | no | 0.60 | 1 | – | security |
+| Animal Sound | Low | no | 0.60 | 1 | – | security |
+| Gunshot | Critical | yes | 0.70 | 2 | 0.85 | security |
+| Panic Scream | Critical | yes | 0.65 | 1 | – | security |
+| Aggression | High | yes | 0.65 | 1 | – | security |
+| Person Asking for Help | Critical | yes | 0.65 | 1 | – | security |
+| Background Noise | Informational | no | 0.50 | 1 | – | – |
+
+**Runtime settings (Admin → Settings):** segment 2.0 s · hop 1.0 s · live window 2.0 s · min confidence 0.60 · top-2 margin 0.15 · acceptable-match difference 0.20 · unknown threshold 0.35 · overlap threshold 0.25 · repeat window 10 s · noise reduction on · background-noise limit −20 dB · audio retention 90 days · record retention 365 days.
+
+---
+
+## 11. Users and roles
+
+| Role | Can do |
+|---|---|
+| Normal User | upload, live monitoring, own events, own dashboard and reports |
+| Audio Reviewer | + review queue: listen, confirm/correct labels, comment, override |
+| Security Operator | + security alerts: acknowledge, escalate, dismiss |
+| Maintenance Operator | + maintenance alerts (Machinery Fault, alarms) |
+| Administrator | everything: users, settings, alert rules, models, evaluation, exports, audit trail, retention |
+
+Default accounts created by `python -m database.init_db` (**change the passwords after the first login**):
 
 | Username | Password | Role |
 |---|---|---|
@@ -66,122 +426,185 @@ Default accounts (**change the passwords** after the first login):
 | reviewer | Review@12345 | Audio reviewer |
 | security | Secure@12345 | Security operator |
 | maintenance | Maint@12345 | Maintenance operator |
-| evaluator | Eval@12345 | Normal user (for evaluators) |
+| evaluator | Eval@12345 | Normal user |
 
-Optional environment variables: `SONIC_SECRET_KEY` (always set this in production), `SONIC_DB_PATH`, `SONIC_DATA_DIR`, `PORT`, `HOST`.
+---
 
-## 4. Building the dataset (at least 3,000 original clips, 300 per class)
+## 12. Database
 
-See **documentation/DATASET_GUIDE.md** for sources, licences and ethics. Short version:
+SQLite file `data/sonicsentinel.db` (not committed). Tables:
 
-```bash
-# 1. put clips in audio_dataset/raw/<Class Name>/  – from any of:
-python scripts/import_public_datasets.py --urbansound8k D:/data/UrbanSound8K --esc50 D:/data/ESC-50-master
-python scripts/import_public_datasets.py --mimii D:/data/mimii --fsd50k D:/data/FSD50K
-python scripts/record_samples.py --class "Person Asking for Help" --speaker S01 --count 20   # voluntary
-python scripts/generate_help_phrases_tts.py --per-phrase 10                              # synthetic
+| Table | Stores |
+|---|---|
+| `users` | accounts, roles, password hashes, lock-out state |
+| `live_sessions` | microphone sessions |
+| `audio_events` | one row per upload / live window: metadata, quality, both models' scores, comparison, decision, severity, status, model versions |
+| `segments` | per-segment timestamps and scores |
+| `alerts` / `alert_actions` | raised alerts and acknowledge / escalate / dismiss actions |
+| `reviews` | reviewer decisions, corrected labels, comments |
+| `audit_logs` | who did what and when |
+| `system_notifications` | anomaly notifications for admins |
+| `settings` | runtime settings |
+| `model_versions` | registered Python and GTM model versions |
 
-# 2. validate, de-duplicate, assign Audio IDs, 70/15/15 stratified split
-python scripts/build_dataset.py
+Column-level details: [documentation/DATA_DICTIONARY.md](documentation/DATA_DICTIONARY.md) · schema: `database/schema.sql`.
 
-# 3. augment TRAINING clips only (they stay in the train split)
-python -m augmentation.augment --per-clip 2
+---
+
+## 13. Installation
+
+**Requirements:** Windows 10/11 (Linux/macOS also work), **Python 3.10–3.12** (Anaconda is fine), **FFmpeg** on PATH (`winget install Gyan.FFmpeg`), Chrome or Edge, 8 GB RAM (16 GB recommended for training).
+
+```powershell
+cd "C:\Users\CZ\Desktop\SonicSentinel AI"
+python -m venv .venv
+.venv\Scripts\Activate.ps1          # Anaconda users can use the base environment instead
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m database.init_db           # creates data/sonicsentinel.db + default accounts
+python -m pytest -q                  # 55 tests should pass
 ```
 
-Outputs: `data/dataset_metadata.csv`, `data/dataset_statistics.json`, `data/dataset_quality_report.csv`, `data/dataset_rejected.csv`, and `audio_dataset/processed/<split>/<class>/AUD-xxxxxx.wav`.
+> Always quote version specifiers on the command line (`pip install "flask>=3.0"`), otherwise Windows treats `>` as a redirect and creates empty files named `3.0`, `2.0` …
 
-## 5. Training the Python model
+Optional environment variables: `SONIC_SECRET_KEY` (always set in production), `SONIC_DB_PATH`, `SONIC_DATA_DIR`, `SONIC_MODEL_PATH`, `SONIC_GTM_DIR`, `SONIC_RULES_PATH`, `PORT`, `HOST`.
 
-```bash
-python -m python_models.train_models            # full grids (slower)
-python -m python_models.train_models --fast     # quick check
+---
+
+## 14. Building the dataset and training (step by step)
+
+Detailed guide in Urdu/English: [RUN_AND_TRAIN_GUIDE.md](RUN_AND_TRAIN_GUIDE.md).
+
+```powershell
+# 1. Put the public datasets in downloads/ (see §6.1), then import them
+python scripts\import_local_downloads.py --max-per-class 1000 --per-source 1000
+#    (official folder layouts / FSD50K:  python scripts\import_public_datasets.py --fsd50k D:\data\FSD50K)
+
+# 2. Optional own recordings / synthetic help phrases
+pip install sounddevice pyttsx3
+python scripts\record_samples.py --class "Background Noise" --speaker S00 --count 30 --seconds 5
+python scripts\record_samples.py --class "Person Asking for Help" --speaker S01 --count 30
+python scripts\generate_help_phrases_tts.py --per-phrase 15
+
+# 3. Validate, de-duplicate, assign Audio IDs, 70/15/15 split
+python scripts\build_dataset.py --min-per-class 10
+
+# 4. Augment the TRAIN split only
+python -m augmentation.augment --per-clip 1
+
+# 5. Train and evaluate the Python model
+python -m python_models.train_models --fast --models rf,mlp     # used for the installed model
+python -m python_models.train_models                            # full grids, all models (slow)
+
+# 6. Prepare GTM samples, then train in Teachable Machine (see gtm_model/README.md)
+python -m gtm_model.prepare_gtm_samples --max-per-class 400 --playlist
 ```
 
-This saves `python_models/saved/sonic_model.joblib` and writes reports to `reports/`: model comparison, test metrics, class-wise scores, confusion matrix and noise robustness. The admin **Models** page shows them.
+Features are cached in `data/features/`, so re-running training does not re-extract them.
 
-## 6. Training and installing the GTM model
+---
 
-Full steps are in **gtm_model/README.md**:
+## 15. Running the application
 
-1. Run `python -m gtm_model.prepare_gtm_samples --playlist`. It creates 1-second samples from the **TRAIN** split only.
-2. Go to https://teachablemachine.withgoogle.com → *Audio Project*. Create classes with **exactly** the names in `config/settings.py` (`Background Noise` already exists), add the samples, then train.
-3. Choose *Export Model* → *TensorFlow.js* → *Download*. Unzip `model.json`, `metadata.json` and `weights.bin` into `gtm_model/model/`.
-4. Restart the app. The admin dashboard shows the GTM version and warns if any class is missing.
-
-## 7. Running
-
-```bash
-python run.py                       # open http://127.0.0.1:5000
-python run.py --host 0.0.0.0        # LAN access (the microphone needs https or localhost)
+```powershell
+python run.py                         # http://127.0.0.1:5000
+python run.py --host 0.0.0.0          # LAN access (the microphone needs https or localhost)
+waitress-serve --port 5000 run:app    # production on Windows
+gunicorn -w 2 -b 0.0.0.0:$PORT run:app   # production on Linux
 ```
 
-Production on Windows: `waitress-serve --port 5000 run:app`. On Linux (Render/Railway): `gunicorn -w 2 -b 0.0.0.0:$PORT run:app`.
+---
 
-## 8. How to use
+## 16. How to use
 
 | Task | Where |
 |---|---|
 | Register / log in | `/register`, `/login` |
-| Upload and preview audio | **Upload** (drag and drop, preview with play/pause/seek/volume) |
-| Metadata, waveform, spectrogram | event page after the upload |
-| Python and GTM predictions | event page → *Model prediction & confidence comparison* (top-3, all scores, \|Δconf\|, margins) |
-| Confidence | High ≥ 85 %, Medium ≥ minimum confidence (60 % default), Low below that |
-| Audio quality | event page → *Audio quality* (issues are listed) |
-| Live monitoring | **Live** → Start. Chrome asks for mic permission, and a red banner stays on while the mic is active |
-| Alerts | **Alerts** (security/maintenance/admin) → Acknowledge / Escalate / Dismiss; toasts appear on every page |
-| Manual review | **Review** (reviewer/admin) → listen, confirm or correct, comment, close |
-| Dashboards | **Dashboard** (all users), **Live**, **Admin** |
-| Search history | **History** filters and **Timeline** |
-| Reports | event page → *Download report*; Admin → exports (CSV/Excel) |
-| Model comparison report | Admin → *Model comparison* → *Run test-set evaluation* (≥ 10 unseen test clips per class) → Export Excel |
-| Thresholds / rules | Admin → *Settings*, Admin → *Alert rules* |
+| Upload and preview audio | **Upload** (drag and drop) or **Batch** |
+| Metadata, waveform, spectrogram, quality | event page after the upload |
+| Python and GTM predictions | event page → *Model prediction & confidence comparison* |
+| Live monitoring | **Live** → Start (allow the microphone; a red banner stays on while it is active) |
+| Alerts | **Alerts** → Acknowledge / Escalate / Dismiss; toasts appear on every page |
+| Manual review | **Review** → listen, confirm or correct, comment, close |
+| Dashboards | **Dashboard**, **Live**, **Admin** |
+| History and timeline | **History** filters, **Timeline** |
+| Reports and exports | event page → *Download report*; Admin → CSV/Excel exports |
+| Model comparison report | Admin → *Model comparison* → *Run test-set evaluation* → export Excel |
+| Thresholds and rules | Admin → *Settings*, Admin → *Alert rules* |
 
-## 9. Tests
+**Common modifications**
 
-```bash
-python -m pytest -q
-```
-
-The tests cover functional, integration, boundary, negative, security (CSRF, roles, lock-out), database, audio-format, silence, clipping, noise, pre-processing, feature, model, comparison, alert-rule, duplicate, low-confidence, overlap and live-window cases. They run on a temporary database with a tiny test-only model, so they never touch your data.
-
-## 10. Common surprise modifications
-
-| Request | What to change |
+| Change | How |
 |---|---|
-| New sound category | add it to `CLASSES` in `config/settings.py`, add a folder in `audio_dataset/raw/`, rebuild the dataset, retrain both models (same name in GTM), add a rule in Admin → Alert rules |
-| Change confidence threshold | Admin → Settings → *min confidence* (or the per-class value in Alert rules) |
-| New audio format | add the extension to `SUPPORTED_FORMATS` (FFmpeg decodes almost anything) |
+| New sound class | add it to `CLASSES` in `config/settings.py`, add data under `audio_dataset/raw/<Class>/`, rebuild, retrain both models (same name in GTM), add a rule in Admin → Alert rules |
+| Confidence threshold | Admin → Settings → *min confidence* (or per class in Alert rules) |
+| New audio format | add the extension to `SUPPORTED_FORMATS` |
 | Segment duration | Admin → Settings → *segment seconds* / *live window seconds*, then retrain the Python model |
-| Add an alert rule / change repeated detection | Admin → Alert rules (`required_consecutive`, `strong_confidence`, `escalate_after_repeats`) |
-| Add a dashboard filter | `filtered_events()` in `src/routes/main.py` and the form in `templates/history.html` |
 
-## 11. Project structure
+---
+
+## 17. Testing
+
+```powershell
+python -m pytest -q        # 55 passed
+```
+
+Covered: functional and integration (upload → Python → GTM → decision → review → alerts → live), boundary (too-short clip, last-segment padding, exact thresholds), negative (unsupported / empty / corrupt / silent files, wrong password, bad CSRF), security (CSRF, role access, lock-out, protected media), database, audio formats (WAV, FLAC, OGG, MP3, stereo), silence / clipping / noise, pre-processing and features, model aggregation, comparison and alert rules, duplicates, low confidence, unknown and overlapping sounds, live windows.
+
+Synthetic test files for manual checks are in `sample_audio/test_cases/` (silent, too short, corrupted, not audio, clipped, very low level, white noise, missing frames, stereo FLAC).
+
+Details and the manual checklist: [documentation/TESTING.md](documentation/TESTING.md).
+
+---
+
+## 18. Project structure
 
 ```
-config/               settings, class list, dataset label mapping
-audio_preprocessing/  loader, validation, pre-processing, quality analysis
-feature_extraction/   acoustic features, waveform/spectrogram images, fingerprints
-augmentation/         training-only augmentation
-python_models/        training/tuning/evaluation script, inference wrapper, saved model
-gtm_model/            GTM sample preparation, exported model goes in gtm_model/model/
 alert_rules/          alert_rules.json (editable in the admin UI)
+audio_dataset/        raw/<Class>/ and processed/<split>/<Class>/  (not committed)
+audio_preprocessing/  loader, validation, pre-processing, quality analysis
+augmentation/         training-only augmentation
+config/               settings, class list, dataset label mapping
+data/                 database, uploads, features cache (not committed) + dataset metadata/statistics
 database/             init_db.py, schema.sql
-src/                  Flask app: models, routes, services (analysis, decision, rules, audit …)
-templates/, static/   Tailwind UI, gtm.js (browser GTM), live.js, batch.js
-scripts/              dataset import / build / recording / TTS
-tests/                pytest suite
+documentation/        architecture, data dictionary, dataset guide, testing
+downloads/            downloaded public datasets (not committed)
+feature_extraction/   299-value features, waveform/spectrogram images, fingerprints
+gtm_model/            GTM sample preparation; exported model in gtm_model/model/
 notebooks/            exploration notebook
-documentation/        dataset guide, data dictionary, architecture, testing
-reports/              generated model reports
-sample_audio/         small test clips (silent, clipped, short, tone)
+python_models/        training script, inference wrapper, saved/sonic_model.joblib
+reports/              model comparison, test metrics, class-wise scores, confusion matrix, noise robustness
+sample_audio/         synthetic test clips
+scripts/              dataset import (local + public), build, recording, TTS
+src/                  Flask app: models, routes, services (analysis, decision, rules, audit …)
+static/, templates/   Tailwind UI, gtm.js (browser GTM), live.js, batch.js
+tests/                pytest suite
+RUN_AND_TRAIN_GUIDE.md  step-by-step setup and training guide
+DEVELOPMENT_LOG.md      daily log (work, problems, dataset changes, results)
+AI_USAGE.md             AI tool usage declaration
 ```
 
-## 12. Assumptions and limitations
+---
 
-* GTM runs in the browser, so uploads need a browser tab open to get GTM scores. Without GTM the result is marked *Uncertain Result* and uses the Python model only.
-* The Python model classifies fixed segments. Very short events in long noisy recordings may still be missed.
-* Help-phrase detection works only for the defined safety phrases in the training data. It is not speech recognition.
-* Accuracy targets (≥ 85 % accuracy, macro-F1 ≥ 0.80, critical recall ≥ 85 %) depend on the size and quality of the collected dataset.
-* SQLite suits a single server. Use PostgreSQL (`SQLALCHEMY_DATABASE_URI`) for many concurrent users.
+## 19. Limitations and future work
 
-AI tools used during development are declared in **AI_USAGE.md**.
+* **Person Asking for Help** has no training data yet, so neither model can detect it.
+* **Glass Breaking** (40 clips) and **Machinery Fault** (138 clips, one recording set) are small; their scores are less reliable.
+* The training data comes from public datasets, not from the demo room. In live tests, room noise was sometimes classified as Animal Sound. Recording the real environment as Background Noise and mapping everyday ESC-50 sounds (typing, knocking, coughing …) to Background Noise will reduce false alarms.
+* The **GTM model** was trained from speaker playback through the microphone with few samples per class, so it is less accurate than the Python model and often disagrees with it.
+* Accuracy drops with strong noise (0.69 at 5 dB SNR).
+* GTM runs in the browser, so uploads need an open browser tab to get GTM scores.
+* The Python model classifies fixed segments; very short events in long noisy recordings may still be missed.
+* Help-phrase detection is not speech recognition; it only knows the trained phrases.
+* SQLite suits a single server; use PostgreSQL for many concurrent users.
+
+**Next steps:** record help phrases and demo-room background noise, add Glass Breaking and MIMII data, retrain both models (including SVM/XGBoost once all classes have data), tune thresholds on the validation split, and fill in `AI_USAGE.md` and `DEVELOPMENT_LOG.md`.
+
+---
+
+## 20. Ethics, licences and AI usage
+
+* Only licensed public datasets are used; the licence of every clip is recorded. Raw audio is **not redistributed** in this repository.
+* People are recorded only with consent and anonymous speaker codes (`S01`); no real emergencies are recorded.
+* AI tools used during development are declared in [AI_USAGE.md](AI_USAGE.md). The application itself calls **no** generative-AI API: classification comes only from the team's Python and GTM models.
+* Project licence: see [LICENSE](LICENSE).

@@ -1,4 +1,4 @@
-<!doctype html>
+{% from "partials/icons.html" import icon %}<!doctype html>
 <html lang="en" class="h-full">
 <head>
   <meta charset="utf-8">
@@ -49,21 +49,21 @@
       </a>
       <button id="nav-toggle" class="md:hidden p-2 nav-toggle text-xl leading-none" aria-label="Menu">☰</button>
       <div id="nav-links" class="hidden md:flex items-center gap-1 text-sm w-full md:w-auto">
-        {% macro nav(endpoint, label, badge=0, badge_color='bg-red-500') -%}
-          <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'nav-active' if request.endpoint == endpoint }}">{{ label }}
+        {% macro nav(endpoint, label, badge=0, badge_color='bg-red-500', ic='spark') -%}
+          <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'nav-active' if request.endpoint == endpoint }}">{{ icon(ic, 'w-4 h-4 hidden 2xl:inline') }}{{ label }}
             {% if badge %}<span class="ml-1 {{ badge_color }} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ badge }}</span>{% endif %}
           </a>
         {%- endmacro %}
-        {{ nav('main.dashboard', 'Dashboard') }}
-        {{ nav('main.upload', 'Upload') }}
-        {% if current_user.role != 'user' %}{{ nav('main.batch', 'Batch') }}{% endif %}
-        {{ nav('main.live', 'Live') }}
-        {{ nav('main.lab', 'Lab') }}
-        {{ nav('main.history', 'History') }}
-        {{ nav('main.timeline', 'Timeline') }}
-        {% if current_user.role in ['admin','security','maintenance'] %}<span id="nav-alerts-wrap">{{ nav('alerts.index', 'Alerts', nav_active_alerts) }}</span>{% endif %}
-        {% if current_user.role in ['admin','reviewer'] %}{{ nav('review.queue', 'Review', nav_reviews, 'bg-amber-500') }}{% endif %}
-        {% if current_user.role == 'admin' %}{{ nav('admin.dashboard', 'Admin', nav_notifications, 'bg-fuchsia-500') }}{% endif %}
+        {{ nav('main.dashboard', 'Dashboard', ic='dashboard') }}
+        {{ nav('main.upload', 'Upload', ic='upload') }}
+        {% if current_user.role != 'user' %}{{ nav('main.batch', 'Batch', ic='batch') }}{% endif %}
+        {{ nav('main.live', 'Live', ic='live') }}
+        {{ nav('main.lab', 'Lab', ic='lab') }}
+        {{ nav('main.history', 'History', ic='history') }}
+        {{ nav('main.timeline', 'Timeline', ic='timeline') }}
+        {% if current_user.role in ['admin','security','maintenance'] %}<span id="nav-alerts-wrap">{{ nav('alerts.index', 'Alerts', nav_active_alerts, ic='bell') }}</span>{% endif %}
+        {% if current_user.role in ['admin','reviewer'] %}{{ nav('review.queue', 'Review', nav_reviews, 'bg-amber-500', ic='review') }}{% endif %}
+        {% if current_user.role == 'admin' %}{{ nav('admin.dashboard', 'Admin', nav_notifications, 'bg-fuchsia-500', ic='admin') }}{% endif %}
         <div class="relative ml-2 group">
           <button class="user-chip flex items-center gap-2 px-2.5 py-1.5 rounded-xl">
             <span class="avatar w-8 h-8 rounded-full grid place-items-center text-xs font-bold">{{ current_user.username[:2]|upper }}</span>
@@ -83,6 +83,7 @@
 </nav>
 {% endif %}
 
+{% block main %}
 <main class="max-w-7xl mx-auto px-3 sm:px-4">
  <div class="page-sheet">
   {% with msgs = get_flashed_messages(with_categories=true) %}
@@ -95,6 +96,7 @@
   {% block content %}{% endblock %}
  </div>
 </main>
+{% endblock %}
 
 <div id="toast-root" class="fixed bottom-4 right-4 z-50 space-y-2 w-80"></div>
 <footer class="site-footer text-center text-xs pb-8 pt-2">SonicSentinel AI · competition prototype – not a certified emergency-response or law-enforcement system</footer>

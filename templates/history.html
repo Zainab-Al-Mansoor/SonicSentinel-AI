@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import event_row %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Event history{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold text-white mb-4">Event history</h1>
+<div class="eyebrow mb-1">{{ icon("history", "w-3.5 h-3.5") }} Search & export</div><h1 class="text-2xl font-semibold text-white mb-4">Event history</h1>
 <form class="card mb-5 grid grid-cols-2 md:grid-cols-6 gap-3 text-sm" method="get">
   <div><label class="label">Audio ID</label><input class="input" name="audio_id" value="{{ args.get('audio_id','') }}"></div>
   <div><label class="label">Filename</label><input class="input" name="filename" value="{{ args.get('filename','') }}"></div>

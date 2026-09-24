@@ -1,0 +1,11 @@
+pair,event,event_clips,lookalike_clips,lookalike_train_clips,event_recall,event_passed_gap,false_alarm_rate,lookalike_correct,flagged_for_review
+Gunshot vs fireworks,Gunshot,110,1,6,0.9272727272727272,0.9272727272727272,0.0,1.0,0.0
+Gunshot vs vehicle backfire,Gunshot,110,0,0,0.9272727272727272,0.9272727272727272,,,
+Gunshot vs door slam / knock,Gunshot,110,1,6,0.9272727272727272,0.9272727272727272,0.0,1.0,0.0
+Panic scream vs normal shouting / voices,Panic Scream,60,42,179,0.9333333333333333,0.9333333333333333,0.3333333333333333,0.5476190476190477,0.0
+Aggression vs normal conversation,Aggression,45,26,96,0.8888888888888888,0.8888888888888888,0.038461538461538464,0.8846153846153846,0.0
+Glass breaking vs metal impact,Glass Breaking,6,2,5,0.8333333333333334,0.8333333333333334,1.0,0.0,0.0
+Alarm vs vehicle horn,Alarm or Siren,71,55,255,0.9154929577464789,0.9154929577464789,0.01818181818181818,0.8727272727272727,0.0
+Vehicle horn vs alarm,Vehicle Horn,55,71,331,0.8727272727272727,0.8727272727272727,0.0,0.9154929577464789,0.0
+Machinery fault vs normal machinery,Machinery Fault,20,37,177,1.0,1.0,0.13513513513513514,0.8648648648648649,0.0
+Help request vs ordinary speech,Person Asking for Help,33,41,173,1.0,1.0,0.0,0.5609756097560976,0.0

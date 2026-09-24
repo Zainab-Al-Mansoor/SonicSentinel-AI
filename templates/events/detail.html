@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import sev, qual, cs, status, score_bars %}
+{% from "partials/icons.html" import icon, class_icon %}
 {% block title %}{{ ev.audio_id }}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
   <div>
     <div class="text-xs text-slate-500"><a href="{{ url_for('main.history') }}" class="hover:underline">History</a> / {{ ev.source|capitalize }}</div>
-    <h1 class="text-2xl font-semibold text-white font-mono">{{ ev.audio_id }}</h1>
+    <h1 class="text-2xl font-semibold text-white font-mono" style="font-family:ui-monospace,Consolas,monospace;font-weight:700">{{ ev.audio_id }}</h1>
     <div class="text-sm text-slate-400">{{ ev.original_filename }} · uploaded {{ ev.uploaded_at|dt }} by {{ ev.user.username if ev.user else '—' }}</div>
     <div class="flex flex-wrap gap-2 mt-2">{{ status(ev.status) }} {{ sev(ev.severity) }} {{ qual(ev.quality_label) }} {{ cs(ev.consistency_status) }}</div>
   </div>
@@ -33,7 +34,7 @@
     <div class="card-title">Final sound-event decision</div>
     <div class="flex flex-wrap items-end gap-6">
       <div><div class="text-xs text-slate-500">Detected category</div>
-        <div class="text-3xl font-bold text-white">{{ ev.display_category }}</div>
+        <div class="flex items-center gap-3"><span class="cls-dot cls-{{ ev.display_category|replace(' ', '-')|lower }}" style="width:3rem;height:3rem;background:var(--c-bg)">{{ class_icon(ev.display_category, 'w-7 h-7') }}</span><span class="text-3xl font-bold text-white">{{ ev.display_category }}</span></div>
         {% if ev.reviewed_category and ev.reviewed_category != ev.final_category %}<div class="text-xs text-amber-400">Reviewer override · model said {{ ev.final_category }}</div>{% endif %}</div>
       <div><div class="text-xs text-slate-500">Confidence</div><div class="text-2xl font-semibold text-white">{{ ev.final_confidence|pct }}</div><div class="text-xs text-slate-400">{{ ev.confidence_level }}</div></div>
       <div><div class="text-xs text-slate-500">Severity</div><div class="mt-1">{{ sev(ev.severity) }}</div></div>
@@ -44,6 +45,9 @@
     {% if ev.manual_review_required %}
     <div class="mt-3 p-3 rounded-lg bg-amber-950/50 border border-amber-800 text-sm text-amber-200"><b>Manual review required:</b> {{ ev.review_reasons|join('; ') }}</div>
     {% endif %}
+    {% set la = [] %}{% for t in (ev.decision_trace or []) %}{% if t is string and t.startswith('Look-alike check') %}{% set _ = la.append(t) %}{% endif %}{% endfor %}
+    {% if la %}<div class="mt-3 p-3 rounded-lg bg-slate-800/60 text-xs"><div class="font-semibold text-white mb-1">🔎 Look-alike check (similar events)</div>
+      {% for t in la %}<div class="{{ 'text-emerald-400' if 'distinguished' in t else 'text-amber-300' }}">{{ t[18:] }}</div>{% endfor %}</div>{% endif %}
     {% if ev.overlap_detected %}<div class="mt-2 text-sm text-orange-300">Overlapping sounds: {{ ev.overlap_classes|join(', ') }}</div>{% endif %}
     {% if ev.uncertain %}<div class="mt-2 text-xs text-slate-400">Uncertainty: {{ ev.uncertain_reasons|join('; ') }}</div>{% endif %}
     {% if ev.actual_class %}<div class="mt-2 text-sm">Ground truth (evaluation): <b class="{{ 'text-emerald-400' if ev.actual_class == ev.display_category else 'text-red-400' }}">{{ ev.actual_class }}</b></div>{% endif %}

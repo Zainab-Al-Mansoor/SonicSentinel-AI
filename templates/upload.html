@@ -1,16 +1,21 @@
 {% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Upload audio{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold text-white mb-1">Upload audio</h1>
-<p class="text-slate-400 text-sm mb-6">WAV, MP3, FLAC, OGG or M4A · max 25 MB · 0.5 s – 5 min. The clip is validated, cleaned, split into {{ settings.segment_seconds }}-second segments and analysed by both models.</p>
+<div class="page-head"><div>
+  <div class="eyebrow">{{ icon('upload', 'w-3.5 h-3.5') }} Analyse a recording</div>
+  <h1 class="page-title mt-1">Upload audio</h1>
+  <p class="page-sub">WAV, MP3, FLAC, OGG or M4A · max 25 MB · 0.5 s – 5 min. The clip is validated, cleaned, split into {{ settings.segment_seconds }}-second segments and analysed by both models.</p>
+</div></div>
 {% include "partials/gtm_status.html" %}
 <div class="grid lg:grid-cols-5 gap-6">
   <form method="post" enctype="multipart/form-data" class="card lg:col-span-3" id="upload-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label id="drop" for="audio" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl p-10 cursor-pointer hover:border-brand-500 transition">
-      <div class="text-4xl mb-2">🎧</div>
-      <div class="text-white font-medium">Drop an audio file here or click to choose</div>
-      <div class="text-xs text-slate-500 mt-1" id="fname">No file selected</div>
+    <label id="drop" for="audio" class="dropzone flex flex-col items-center justify-center p-8 cursor-pointer text-center">
+      <img src="{{ url_for('static', filename='img/drop.svg') }}" alt="" class="w-40 mb-3">
+      <div class="text-white font-semibold text-lg">Drop an audio file here</div>
+      <div class="text-sm text-slate-400">or <span class="text-brand-400 font-semibold underline">browse your computer</span></div>
+      <div class="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-500 px-3 py-1 rounded-full bg-slate-800/60" id="fname">No file selected</div>
       <input id="audio" name="audio" type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" class="hidden" required>
     </label>
     <div id="preview-wrap" class="hidden mt-4">
@@ -18,20 +23,20 @@
       <audio id="preview" controls></audio>
     </div>
     <div class="mt-4 flex items-center justify-between">
-      <p class="text-xs text-slate-500">Files are stored securely and only visible to you and authorised staff.</p>
-      <button class="btn btn-primary" id="submit-btn">Analyse</button>
+      <p class="text-xs text-slate-500 inline-flex items-center gap-1.5">{{ icon('lock', 'w-3.5 h-3.5') }} Stored securely · visible only to you and authorised staff</p>
+      <button class="btn btn-primary" id="submit-btn">{{ icon('spark') }} Analyse</button>
     </div>
   </form>
-  <div class="card lg:col-span-2 text-sm text-slate-300 space-y-3">
+  <div class="card lg:col-span-2">
     <div class="card-title">What happens next</div>
-    <ol class="list-decimal list-inside space-y-1.5 text-slate-400">
-      <li>Validation: format, size, duration, sample rate, channels, integrity, silence</li>
-      <li>Duplicate check (SHA-256) and near-duplicate check</li>
-      <li>Quality check: clipping, noise, low level, missing frames</li>
-      <li>Pre-processing: resample, mono, normalise, trim, noise reduction, segments</li>
-      <li>Python model scores every segment</li>
-      <li>GTM model scores the same segments in your browser</li>
-      <li>Comparison, alert rules, severity, manual-review routing</li>
+    <ol class="steps">
+      <li><span><b>Validation</b> – format, size, duration, sample rate, channels, integrity, silence</span></li>
+      <li><span><b>Duplicate check</b> – SHA-256 and near-duplicate fingerprint</span></li>
+      <li><span><b>Quality check</b> – clipping, noise, low level, missing frames</span></li>
+      <li><span><b>Pre-processing</b> – resample, mono, normalise, trim, noise reduction, segments</span></li>
+      <li><span><b>Python model</b> scores every segment on the server</span></li>
+      <li><span><b>Teachable Machine</b> scores the same segments in your browser</span></li>
+      <li><span><b>Decision</b> – comparison, look-alike check, alert rules, severity, manual review</span></li>
     </ol>
   </div>
 </div>
@@ -45,8 +50,8 @@ function show(f) {
   document.getElementById('preview-wrap').classList.remove('hidden');
 }
 input.onchange = () => input.files[0] && show(input.files[0]);
-['dragover', 'dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('border-brand-500'); }));
-['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('border-brand-500'); }));
+['dragover', 'dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('drag'); }));
 drop.addEventListener('drop', ev => { input.files = ev.dataTransfer.files; if (input.files[0]) show(input.files[0]); });
 document.getElementById('upload-form').onsubmit = () => {
   const b = document.getElementById('submit-btn'); b.disabled = true; b.textContent = 'Analysing…';

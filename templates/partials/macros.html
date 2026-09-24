@@ -1,3 +1,4 @@
+{% from "partials/icons.html" import class_chip %}
 {% macro sev(s) -%}{% if s %}<span class="badge sev-{{ s|replace(' ', '-') }}">{{ s }}</span>{% endif %}{%- endmacro %}
 {% macro qual(q) -%}{% if q %}<span class="badge q-{{ q }}">{{ q }}</span>{% endif %}{%- endmacro %}
 {% macro cs(c) -%}{% if c %}<span class="badge cs-{{ c|replace(' ', '-') }}">{{ c }}</span>{% endif %}{%- endmacro %}
@@ -19,13 +20,13 @@
 
 {% macro event_row(e) -%}
   <tr>
-    <td><a class="text-brand-400 hover:underline font-mono text-xs" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
+    <td><a class="text-brand-400 hover:underline font-mono text-xs whitespace-nowrap" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
       <div class="text-xs text-slate-500 truncate max-w-[14rem]">{{ e.original_filename }}</div></td>
-    <td class="text-white">{{ e.display_category }}{% if e.reviewed_category and e.reviewed_category != e.final_category %} <span class="text-xs text-amber-400">(reviewed)</span>{% endif %}</td>
+    <td>{{ class_chip(e.display_category, true) }}{% if e.reviewed_category and e.reviewed_category != e.final_category %} <span class="text-xs text-amber-400">(reviewed)</span>{% endif %}</td>
     <td class="tabular-nums">{{ e.final_confidence|pct }}</td>
     <td>{{ sev(e.severity) }}</td>
     <td>{{ qual(e.quality_label) }}</td>
     <td>{{ status(e.status) }}</td>
-    <td class="text-xs text-slate-400 whitespace-nowrap">{{ e.uploaded_at|dt }}</td>
+    <td class="text-xs text-slate-400 whitespace-nowrap">{{ e.uploaded_at.strftime('%d %b %Y') if e.uploaded_at }}<div class="text-[11px] text-slate-500">{{ e.uploaded_at.strftime('%H:%M:%S') if e.uploaded_at }}</div></td>
   </tr>
 {%- endmacro %}

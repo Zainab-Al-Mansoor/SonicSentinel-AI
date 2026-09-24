@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import sev %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Alerts{% endblock %}
 {% block content %}
 <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
-  <div><h1 class="text-2xl font-semibold text-white">Alerts</h1><p class="text-sm text-slate-400">Acknowledge, escalate or dismiss alerts assigned to your role.</p></div>
+  <div><div class="eyebrow mb-1">{{ icon("bell", "w-3.5 h-3.5") }} Security & maintenance</div><h1 class="text-2xl font-semibold text-white">Alerts</h1><p class="text-sm text-slate-400">Acknowledge, escalate or dismiss alerts assigned to your role.</p></div>
   <div class="flex gap-1 text-sm">{% for s in ['Active','Acknowledged','Escalated','Dismissed','all'] %}
     <a href="{{ url_for('alerts.index', status=s) }}" class="nav-link {{ 'nav-active' if status == s }}">{{ s|capitalize }}</a>{% endfor %}
     <a href="{{ url_for('alerts.history') }}" class="btn btn-ghost btn-sm ml-2">History</a></div>

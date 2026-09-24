@@ -1,0 +1,20 @@
+{% from "partials/icons.html" import icon %}
+<aside class="auth-art">
+  <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2.5 no-underline">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" class="w-9 h-9" alt="">
+    <span class="brand-word text-lg" style="color:#FFF2DF">SonicSentinel <span class="accent">AI</span></span>
+  </a>
+  <div class="mt-8">
+    <div class="eyebrow" style="color:#D3A376"><span class="eq" style="color:#D3A376"><span></span><span></span><span></span><span></span></span> AcousticX Intelligence</div>
+    <h1 class="mt-2">Hear the danger<br>before you see it.</h1>
+    <p class="mt-3 max-w-md">Real-time detection of gunshots, screams, breaking glass, calls for help and machinery faults –
+      checked by two independent AI models and explained, not just labelled.</p>
+  </div>
+  <img class="art" src="{{ url_for('static', filename='img/auth-art.svg') }}" alt="Sound rings around the SonicSentinel shield with the ten sound classes">
+  <div class="auth-feats">
+    <div class="auth-feat">{{ icon('split') }}<span><b>Two models</b><br>Python + Teachable Machine, compared</span></div>
+    <div class="auth-feat">{{ icon('eye') }}<span><b>Explainable</b><br>where and why a sound was detected</span></div>
+    <div class="auth-feat">{{ icon('live') }}<span><b>Live monitoring</b><br>2-second windows from any microphone</span></div>
+    <div class="auth-feat">{{ icon('shield') }}<span><b>Human in the loop</b><br>alerts, review queue and audit trail</span></div>
+  </div>
+</aside>

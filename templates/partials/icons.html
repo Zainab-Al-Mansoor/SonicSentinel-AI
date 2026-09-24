@@ -1,0 +1,53 @@
+{# SonicSentinel AI – original line-icon set (24 × 24, stroke = currentColor) and sound-class icons. #}
+{% set _ui = {
+  'dashboard': '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  'upload': '<path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+  'batch': '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17.5 9 4.5 9-4.5"/>',
+  'live': '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+  'lab': '<path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+  'history': '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/>',
+  'timeline': '<path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/>',
+  'bell': '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  'review': '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1Z"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+  'admin': '<path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><path d="M20 18h0"/><circle cx="18" cy="18" r="2"/>',
+  'wave': '<path d="M2 12h2"/><path d="M6 8v8"/><path d="M10 4v16"/><path d="M14 7v10"/><path d="M18 10v4"/><path d="M22 12h0"/>',
+  'shield': '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+  'cpu': '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  'spark': '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>',
+  'check': '<path d="m5 12 5 5L20 7"/>',
+  'alert': '<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
+  'eye': '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  'arrow': '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+  'file': '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/>',
+  'lock': '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  'user': '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  'logout': '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>',
+  'filter': '<path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/>',
+  'download': '<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/>',
+  'split': '<path d="M12 3v18"/><path d="M5 8h4M5 12h4M5 16h4M15 8h4M15 12h4M15 16h4"/>',
+} %}
+{% set _cls = {
+  'Machinery Fault': '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>',
+  'Glass Breaking': '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="m12 3-1.5 5 3 3-2 4 1.5 6"/><path d="m10.5 8-6.5 2M13.5 11l6.5-1.5M11.5 15 4 17"/>',
+  'Alarm or Siren': '<path d="M7 19v-6a5 5 0 0 1 10 0v6"/><path d="M5 19h14v2H5z"/><path d="M12 3v2M4.2 6.2l1.4 1.4M19.8 6.2l-1.4 1.4M2 12h2M20 12h2"/>',
+  'Vehicle Horn': '<path d="M3 16v-4l2.5-5h9L17 12v4"/><path d="M3 16h14"/><circle cx="6.5" cy="17.5" r="1.5"/><circle cx="13.5" cy="17.5" r="1.5"/><path d="M19.5 8.5c1 1 1 5 0 6M21.5 6.5c2 2 2 9 0 11"/>',
+  'Animal Sound': '<ellipse cx="12" cy="16" rx="4.2" ry="3.6"/><circle cx="6" cy="10.5" r="1.8"/><circle cx="18" cy="10.5" r="1.8"/><circle cx="9.3" cy="6" r="1.8"/><circle cx="14.7" cy="6" r="1.8"/>',
+  'Gunshot': '<path d="m12 2 1.8 5.2L19 4l-2.2 5.2L22 12l-5.2 1.8L19 20l-5.2-2.2L12 22l-1.8-4.2L5 20l2.2-6.2L2 12l5.2-2.8L5 4l5.2 3.2L12 2Z"/><circle cx="12" cy="12" r="2.2"/>',
+  'Panic Scream': '<circle cx="12" cy="12" r="9"/><path d="M8 9.5h.01M16 9.5h.01"/><ellipse cx="12" cy="15.5" rx="2.2" ry="2.8"/><path d="M6.5 6.5 8.5 8M17.5 6.5 15.5 8"/>',
+  'Aggression': '<path d="M4 5h11a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="m10 7-2 3h3l-2 3"/><path d="M19 9h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v3l-3.5-3"/>',
+  'Person Asking for Help': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
+  'Background Noise': '<path d="M2 9c2.5-2 4.5 2 7 0s4.5-2 7 0 4.5 2 6 0"/><path d="M2 14c2.5-2 4.5 2 7 0s4.5-2 7 0 4.5 2 6 0"/><path d="M2 19c2.5-2 4.5 2 7 0s4.5-2 7 0 4.5 2 6 0" opacity=".5"/>',
+  'Unknown': '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/>',
+} %}
+
+{% macro icon(name, cls='w-4 h-4') -%}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ _ui.get(name, _ui['spark'])|safe }}</svg>
+{%- endmacro %}
+
+{% macro class_icon(name, cls='w-5 h-5') -%}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ _cls.get(name, _cls['Unknown'])|safe }}</svg>
+{%- endmacro %}
+
+{% macro class_chip(name, small=false) -%}
+{% if name %}<span class="cls-chip cls-{{ name|replace(' ', '-')|lower }} {{ 'cls-chip-sm' if small }}"><span class="cls-dot">{{ class_icon(name, 'w-3.5 h-3.5' if small else 'w-4 h-4') }}</span>{{ name }}</span>{% endif %}
+{%- endmacro %}

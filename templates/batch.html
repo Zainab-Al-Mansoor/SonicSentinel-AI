@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Batch upload{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold text-white mb-1">Batch classification</h1>
+<div class="eyebrow mb-1">{{ icon("batch", "w-3.5 h-3.5") }} Many files at once</div><h1 class="text-2xl font-semibold text-white mb-1">Batch classification</h1>
 <p class="text-slate-400 text-sm mb-5">Select many clips at once. Each file is validated and analysed by both models one after another; keep this tab open until it finishes.</p>
 {% include "partials/gtm_status.html" %}
 <div class="card mb-5 flex flex-wrap items-center gap-4">

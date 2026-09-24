@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import sev, status %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Timeline{% endblock %}
 {% block content %}
 <div class="flex items-end justify-between mb-5">
-  <div><h1 class="text-2xl font-semibold text-white">Event timeline</h1><p class="text-sm text-slate-400">Chronological view of detected sound events (background noise hidden).</p></div>
+  <div><div class="eyebrow mb-1">{{ icon("timeline", "w-3.5 h-3.5") }} Chronology</div><h1 class="text-2xl font-semibold text-white">Event timeline</h1><p class="text-sm text-slate-400">Chronological view of detected sound events (background noise hidden).</p></div>
   <form><select class="input" name="days" onchange="this.form.submit()">{% for d in [1,7,30,90] %}<option value="{{ d }}" {{ 'selected' if d==days }}>Last {{ d }} day{{ 's' if d>1 }}</option>{% endfor %}</select></form>
 </div>
 {% for day, evs in groups.items() %}

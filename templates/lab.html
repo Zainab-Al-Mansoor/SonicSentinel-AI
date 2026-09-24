@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
 {% block title %}Robustness Lab{% endblock %}
 {% block content %}
 <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
   <div>
-    <h1 class="text-2xl font-semibold text-white">🧪 Robustness Lab</h1>
+    <div class="eyebrow mb-1">{{ icon("lab", "w-3.5 h-3.5") }} Hidden-test readiness</div><h1 class="text-2xl font-semibold text-white">Robustness Lab</h1>
     <p class="text-sm text-slate-400 max-w-3xl">Take one recording and make it worse on purpose: add noise, a busy street, echo, distance,
       a cheap microphone or cut off the start. Both models classify the modified audio live, so you can see exactly
       when and why a prediction changes. Nothing here is stored as an event.</p>

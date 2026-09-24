@@ -1,67 +1,103 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import sev, qual, status, event_row %}
+{% from "partials/icons.html" import icon, class_icon, class_chip %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-  <div>
-    <h1 class="text-2xl font-semibold text-white">Welcome, {{ current_user.full_name or current_user.username }}</h1>
-    <p class="text-slate-400 text-sm">{{ ROLES[current_user.role] }} · {{ current_user.user_code }}</p>
+<section class="hero mb-6">
+  <div class="hero-body">
+    <div class="eyebrow"><span class="eq"><span></span><span></span><span></span><span></span></span> Acoustic safety monitoring</div>
+    <h1 class="mt-2">Welcome back, {{ (current_user.full_name or current_user.username).split(' ')[0] }}.</h1>
+    <p>Two independent models listen to every recording – our Python classifier and a Google Teachable Machine model –
+      compare their confidence and raise explainable alerts for the sounds that matter.</p>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <span class="pill"><span class="dot {{ '' if py_version else 'warn' }}"></span>Python · {{ py_version or 'no model' }}</span>
+      <span class="pill"><span class="dot {{ '' if gtm.available and not gtm.missing else 'warn' }}"></span>GTM · {{ (gtm.labels|length ~ ' classes') if gtm.available else 'not installed' }}</span>
+      <span class="pill">{{ icon('user', 'w-3.5 h-3.5') }}{{ ROLES[current_user.role] }} · {{ current_user.user_code }}</span>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-5">
+      <a href="{{ url_for('main.upload') }}" class="btn btn-cream">{{ icon('upload') }} Analyse a recording</a>
+      <a href="{{ url_for('main.live') }}" class="btn btn-outline-cream">{{ icon('live') }} Start live monitor</a>
+    </div>
   </div>
-  <div class="flex gap-2">
-    <a href="{{ url_for('main.upload') }}" class="btn btn-primary">⬆ Upload audio</a>
-    <a href="{{ url_for('main.live') }}" class="btn btn-ghost">🎙 Live monitor</a>
-  </div>
-</div>
+  <img class="hero-art" src="{{ url_for('static', filename='img/hero-sound.svg') }}" alt="">
+</section>
 {% include "partials/gtm_status.html" %}
 
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="stat"><div class="stat-label">Total events</div><div class="stat-value">{{ stats.total }}</div></div>
-  <div class="stat"><div class="stat-label">Today</div><div class="stat-value">{{ stats.today }}</div></div>
-  <div class="stat"><div class="stat-label">Alerts raised</div><div class="stat-value text-red-400">{{ stats.alerts }}</div></div>
-  <div class="stat"><div class="stat-label">Awaiting review</div><div class="stat-value text-amber-400">{{ stats.review }}</div></div>
+  <div class="stat kpi"><div class="kpi-icon">{{ icon('wave', 'w-5 h-5') }}</div><div><div class="kpi-value">{{ stats.total }}</div><div class="kpi-label">Total events</div></div></div>
+  <div class="stat kpi"><div class="kpi-icon">{{ icon('history', 'w-5 h-5') }}</div><div><div class="kpi-value">{{ stats.today }}</div><div class="kpi-label">Today</div></div></div>
+  <a href="{{ url_for('alerts.index') if current_user.role in ['admin','security','maintenance'] else url_for('main.history', severity='Critical') }}" class="stat kpi no-underline"><div class="kpi-icon red">{{ icon('bell', 'w-5 h-5') }}</div><div><div class="kpi-value text-red-400">{{ stats.alerts }}</div><div class="kpi-label">Alerts raised</div></div></a>
+  <a href="{{ url_for('review.queue') if current_user.role in ['admin','reviewer'] else url_for('main.history', review='pending') }}" class="stat kpi no-underline"><div class="kpi-icon amber">{{ icon('review', 'w-5 h-5') }}</div><div><div class="kpi-value text-amber-400">{{ stats.review }}</div><div class="kpi-label">Awaiting review</div></div></a>
 </div>
 
-<div class="grid lg:grid-cols-3 gap-6">
-  <div class="card lg:col-span-2">
-    <div class="card-title">Current detections <a class="text-xs text-brand-400" href="{{ url_for('main.history') }}">All history →</a></div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  {% for ep, ic, title, desc in [('main.upload','upload','Upload & analyse','Waveform, spectrogram, both models and alert rules for one clip.'),
+                                 ('main.live','live','Live monitor','Continuous 2-second windows from your microphone.'),
+                                 ('main.lab','lab','Robustness Lab','Add noise, echo or distance and watch both models react.'),
+                                 ('main.history','history','Event history','Search, filter and export every analysed sound.')] %}
+  <a href="{{ url_for(ep) }}" class="card qtile">
+    <span class="qtile-icon">{{ icon(ic, 'w-5 h-5') }}</span>
+    <span class="qtile-title">{{ title }} {{ icon('arrow') }}</span>
+    <span class="qtile-desc">{{ desc }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="card mb-6">
+  <div class="card-title">Sound classes <span class="text-xs font-normal text-slate-500 ml-1">events per detected class · click to filter</span></div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    {% for c in CLASSES %}
+    <a href="{{ url_for('main.history', category=c) }}" class="class-tile cls-{{ c|replace(' ', '-')|lower }} {{ 'crit' if c in CRITICAL }}">
+      <span class="cls-dot">{{ class_icon(c, 'w-5 h-5') }}</span>
+      <span class="class-tile-count">{{ class_counts.get(c, 0) }}</span>
+      <span class="class-tile-name">{{ c }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-title">Latest detections <a class="ml-auto text-xs text-brand-400 inline-flex items-center gap-1" href="{{ url_for('main.history') }}">All history {{ icon('arrow', 'w-3.5 h-3.5') }}</a></div>
+    {% if current %}
     <div class="overflow-x-auto"><table class="table">
       <thead><tr><th>Audio ID</th><th>Detected</th><th>Conf.</th><th>Severity</th><th>Quality</th><th>Status</th><th>Time</th></tr></thead>
-      <tbody>{% for e in current %}{{ event_row(e) }}{% else %}<tr><td colspan="7" class="text-slate-500">No detections yet – upload a clip or start live monitoring.</td></tr>{% endfor %}</tbody>
+      <tbody>{% for e in current %}{{ event_row(e) }}{% endfor %}</tbody>
     </table></div>
-  </div>
+    {% else %}
+    <div class="empty"><img src="{{ url_for('static', filename='img/empty.svg') }}" alt=""><b class="text-slate-300">No detections yet</b>Upload a clip or start live monitoring.</div>
+    {% endif %}
+</div>
+
+<div class="grid md:grid-cols-2 gap-6">
   <div class="card">
     <div class="card-title">Critical events</div>
-    <ul class="space-y-2">
-      {% for e in critical %}
-      <li><a href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}" class="flex items-center justify-between p-2 rounded-lg bg-red-950/40 border border-red-900/50 hover:border-red-700">
-        <span><span class="text-white text-sm font-medium">{{ e.display_category }}</span><br><span class="text-xs text-slate-400">{{ e.uploaded_at|dt }}</span></span>{{ sev(e.severity) }}</a></li>
-      {% else %}<li class="text-sm text-slate-500">No critical events.</li>{% endfor %}
-    </ul>
+    {% for e in critical %}
+      <a href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}" class="list-row">
+        <span class="flex flex-col items-start gap-0.5 min-w-0">{{ class_chip(e.display_category, true) }}<span class="text-[11px] text-slate-500 whitespace-nowrap pl-1">{{ e.uploaded_at.strftime('%d %b %H:%M') if e.uploaded_at }}</span></span>
+        {{ sev(e.severity) }}
+      </a>
+    {% else %}
+      <div class="empty"><span class="kpi-icon">{{ icon('shield', 'w-5 h-5') }}</span><b class="text-slate-300">All quiet</b>No critical events.</div>
+    {% endfor %}
   </div>
   <div class="card">
     <div class="card-title">Recent uploads</div>
-    <ul class="divide-y divide-slate-800 text-sm">
-      {% for e in recent_uploads %}
-      <li class="py-2 flex justify-between gap-2"><a class="truncate text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.original_filename }}</a><span class="text-slate-400 whitespace-nowrap">{{ e.display_category }}</span></li>
-      {% else %}<li class="py-2 text-slate-500">Nothing uploaded yet.</li>{% endfor %}
-    </ul>
+    {% for e in recent_uploads %}
+      <div class="list-row"><a class="truncate text-sm text-brand-400 hover:underline inline-flex items-center gap-1.5 min-w-0" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ icon('file', 'w-3.5 h-3.5 flex-none') }}<span class="truncate">{{ e.original_filename }}</span></a>{{ class_chip(e.display_category, true) }}</div>
+    {% else %}<div class="empty"><img src="{{ url_for('static', filename='img/drop.svg') }}" alt="" style="width:120px">Nothing uploaded yet.</div>{% endfor %}
   </div>
   <div class="card">
     <div class="card-title">Audio-quality warnings</div>
-    <ul class="divide-y divide-slate-800 text-sm">
-      {% for e in quality %}
-      <li class="py-2 flex justify-between gap-2"><a class="truncate text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.original_filename }}</a>{{ qual(e.quality_label) }}</li>
-      {% else %}<li class="py-2 text-slate-500">No quality problems.</li>{% endfor %}
-    </ul>
+    {% for e in quality %}
+      <div class="list-row"><a class="truncate text-sm text-brand-400 hover:underline" href="{{ url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.original_filename }}</a>{{ qual(e.quality_label) }}</div>
+    {% else %}<div class="empty"><span class="kpi-icon">{{ icon('check', 'w-5 h-5') }}</span>No quality problems.</div>{% endfor %}
   </div>
   <div class="card">
-    <div class="card-title">Manual-review records</div>
-    <ul class="divide-y divide-slate-800 text-sm">
-      {% for e in review %}
-      <li class="py-2"><a class="text-brand-400 hover:underline" href="{{ url_for('review.review', audio_id=e.audio_id) if current_user.role in ['admin','reviewer'] else url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
-        <div class="text-xs text-slate-500">{{ (e.review_reasons or [])|join('; ') }}</div></li>
-      {% else %}<li class="py-2 text-slate-500">Nothing waiting for review.</li>{% endfor %}
-    </ul>
+    <div class="card-title">Manual-review queue</div>
+    {% for e in review %}
+      <div class="list-row flex-col items-start gap-0.5"><a class="text-sm text-brand-400 hover:underline font-mono" href="{{ url_for('review.review', audio_id=e.audio_id) if current_user.role in ['admin','reviewer'] else url_for('main.event_detail', audio_id=e.audio_id) }}">{{ e.audio_id }}</a>
+        <span class="text-xs text-slate-500">{{ (e.review_reasons or [])|join(' · ') }}</span></div>
+    {% else %}<div class="empty"><span class="kpi-icon">{{ icon('review', 'w-5 h-5') }}</span>Nothing waiting for review.</div>{% endfor %}
   </div>
 </div>
 {% endblock %}

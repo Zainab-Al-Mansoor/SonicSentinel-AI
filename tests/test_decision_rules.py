@@ -128,3 +128,38 @@ def test_python_weight_changes_the_combined_score():
     assert abs(combine(py, gtm, 0.8)["Gunshot"] - 0.8) < 1e-9
     assert combine(py, None, 0.2)["Gunshot"] == 0.9                         # no GTM -> Python only
     assert abs(combine(py, gtm, 7)["Gunshot"] - 0.9) < 1e-9                 # clamped to 0..1
+
+
+def _scores(**kw):
+    d = {c: 0.0 for c in CLASSES}
+    for k, v in kw.items():
+        d[k.replace("_", " ")] = v
+    return d
+
+
+def _decide(py, gtm):
+    s = dict(DEFAULT_RUNTIME_SETTINGS)
+    return decide(py, gtm, quality="Good", noise_db=None, repeated_for=lambda c: 3, rules=load_rules(), settings=s)
+
+
+def test_lookalike_check_distinguishes_clear_gunshot():
+    d = _decide(_scores(Gunshot=0.95, Background_Noise=0.05), _scores(Gunshot=0.9, Background_Noise=0.1))
+    chk = d["lookalike_checks"][0]
+    assert chk["passed"] and "fireworks" in chk["lookalike"]
+    assert not any(r.startswith("Possible look-alike") for r in d["review_reasons"])
+    assert any(t.startswith("Look-alike check") and "distinguished" in t for t in d["trace"])
+
+
+def test_lookalike_check_flags_close_call_for_review():
+    d = _decide(_scores(Gunshot=0.55, Background_Noise=0.45), _scores(Gunshot=0.5, Background_Noise=0.5))
+    assert d["final_category"] == "Gunshot"
+    assert not d["lookalike_checks"][0]["passed"]
+    assert d["manual_review_required"] and any("fireworks" in r for r in d["review_reasons"])
+
+
+def test_alarm_vs_horn_and_hidden_event_behind_background():
+    d = _decide(_scores(Alarm_or_Siren=0.52, Vehicle_Horn=0.44), _scores(Alarm_or_Siren=0.5, Vehicle_Horn=0.46))
+    assert any("vehicle horn" in r for r in d["review_reasons"])
+    d = _decide(_scores(Background_Noise=0.55, Gunshot=0.45), _scores(Background_Noise=0.5, Gunshot=0.4))
+    assert d["final_category"] == "Background Noise"
+    assert any(r.startswith("Possible Gunshot") for r in d["review_reasons"]) and d["manual_review_required"]

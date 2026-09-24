@@ -21,6 +21,10 @@ Layout that is read (missing folders are simply skipped):
                                                                             (random 5-s chunks: normal conversation)
     downloads/glass_extra/**              -> Glass Breaking
     downloads/extra/<Class Name>/**       -> that class (any clips you add by hand: Freesound, FSD50K, own recordings …)
+    --sources lookalikes                  -> ALL ESC-50 look-alike categories (fireworks, door knock, can opening,
+                                             laughing, crying baby, …) + all NotScreaming voices -> Background Noise
+                                             (SRS step 14 – similar events), e.g.:
+        python scripts/import_local_downloads.py --sources lookalikes
 
 Usage (from the project folder):
     python scripts/import_local_downloads.py --dry-run
@@ -207,9 +211,39 @@ def extra(rng):
     return out
 
 
+# SRS Step 14 look-alikes: real-world sounds that are easily confused with a critical class.
+# They are Background Noise, but the default Background cap keeps only a few of each, so
+# `--sources lookalikes` adds ALL of them (up to --lookalike-per-source per source).
+LOOKALIKE_ESC = {
+    "fireworks": "gunshot look-alike", "door_wood_knock": "gunshot / impact look-alike",
+    "can_opening": "metal impact (glass look-alike)", "clock_tick": "metal click",
+    "laughing": "loud voices (scream look-alike)", "crying_baby": "scream look-alike",
+    "coughing": "ordinary vocal sound", "sneezing": "ordinary vocal sound", "clapping": "impulsive sound",
+}
+
+
+def lookalikes(rng):
+    out = []
+    root = DL / "esc50"
+    csv_path = next((p for p in (root / "esc50.csv", root / "meta" / "esc50.csv") if p.exists()), None)
+    audio_dir = next((p for p in (root / "audio" / "audio", root / "audio") if p.exists() and any(p.glob("*.wav"))), None)
+    if csv_path and audio_dir:
+        lic = MAPPING["esc50"]["license"]
+        for _, r in pd.read_csv(csv_path).iterrows():
+            if r["category"] in LOOKALIKE_ESC and (audio_dir / r["filename"]).exists():
+                out.append(cand(BACKGROUND_CLASS, audio_dir / r["filename"], f"esc50_{r['filename']}",
+                                f"ESC-50:{r['src_file']}:{r['category']}", lic, group=r["category"]))
+    # ordinary voices / normal shouting (Panic Scream and Help look-alikes)
+    for c in scream_not(rng):
+        c["group"] = "NotScreaming"
+        out.append(c)
+    return out
+
+
 SOURCES = {"urbansound8k": urbansound8k, "esc50": esc50, "mimii": mimii, "mimii_normal": mimii_normal,
            "gunshot": gunshot, "scream": scream, "scream_not": scream_not, "vsd": vsd, "vsd_calm": vsd_calm,
-           "glass_extra": glass_extra, "extra": extra}
+           "glass_extra": glass_extra, "extra": extra, "lookalikes": lookalikes}
+DEFAULT_SOURCES = [k for k in SOURCES if k != "lookalikes"]
 
 
 # ---------------------------------------------------------------- selection + copy
@@ -250,7 +284,9 @@ def save_annotations(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sources", default=",".join(SOURCES), help="comma list: " + ",".join(SOURCES))
+    ap.add_argument("--sources", default=",".join(DEFAULT_SOURCES), help="comma list: " + ",".join(SOURCES))
+    ap.add_argument("--lookalike-per-source", type=int, default=400,
+                    help="cap for --sources lookalikes (may exceed --max-per-class on purpose)")
     ap.add_argument("--max-per-class", type=int, default=1200, help="total cap per class folder")
     ap.add_argument("--per-source", type=int, default=400, help="cap per class from ONE source")
     ap.add_argument("--bg-per-source", type=int, default=250, help="cap per source for Background Noise")
@@ -273,9 +309,12 @@ def main():
         print(f"[{name}] found {len(cands)} candidate clips")
         for cls, items in by_cls.items():
             cap = args.bg_per_source if cls == BACKGROUND_CLASS else args.per_source
+            limit = args.max_per_class
+            if name == "lookalikes":
+                cap, limit = args.lookalike_per_source, 10 ** 9
             added = 0
             for c in round_robin(items, rng):
-                if added >= cap or counts[cls] >= args.max_per_class:
+                if added >= cap or counts[cls] >= limit:
                     break
                 if (RAW_DATASET_DIR / cls / c["dst"]).exists():
                     continue

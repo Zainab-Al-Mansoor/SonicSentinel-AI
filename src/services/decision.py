@@ -6,7 +6,7 @@ Inputs : Python scores, GTM scores (or None), audio quality, noise level,
 Output : everything the SRS "Final Sound Event Decision" needs, plus a
          human-readable `trace` explaining each step.
 """
-from config.settings import CLASSES, BACKGROUND_CLASS, UNKNOWN_CLASS, SEVERITY_LEVELS
+from config.settings import CLASSES, BACKGROUND_CLASS, UNKNOWN_CLASS, SEVERITY_LEVELS, LOOKALIKE_PAIRS
 from python_models.inference import top_k, top_margin
 from .rules import evaluate_rule, default_rule, quality_ok
 
@@ -134,6 +134,30 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         if weakest < 0.20:
             review_reasons.append("Possible false alarm (one model gives this class < 0.20)")
 
+    # ---- look-alike check (SRS Step 14) --------------------------------
+    lookalike = []
+    lm = float(s.get("lookalike_margin", 0.20))
+    for alt, what in LOOKALIKE_PAIRS.get(category, []):
+        gap = comb.get(category, 0.0) - comb.get(alt, 0.0)
+        ok = gap >= lm
+        lookalike.append({"class": category, "lookalike": what, "via": alt, "gap": round(gap, 3), "passed": ok})
+        trace.append(f"Look-alike check: {category} vs {what} ({alt}) – gap {gap:.2f} "
+                     + ("≥" if ok else "<") + f" {lm:.2f} → " + ("distinguished" if ok else "could be " + what))
+        if not ok:
+            review_reasons.append(f"Possible look-alike: could be {what}")
+    if category == BACKGROUND_CLASS:
+        # a real event hiding behind its look-alike (e.g. a gunshot that looks like fireworks)
+        for cls, pairs in LOOKALIKE_PAIRS.items():
+            if cls == category:
+                continue
+            for alt, what in pairs:
+                if alt == category and comb.get(cls, 0.0) >= s["unknown_threshold"]:
+                    lookalike.append({"class": cls, "lookalike": what, "via": alt,
+                                      "gap": round(comb.get(category, 0) - comb.get(cls, 0), 3), "passed": False})
+                    trace.append(f"Look-alike check: looks like {what}, but {cls} scores {comb[cls]:.2f} "
+                                 f"≥ {s['unknown_threshold']:.2f} → check for a real {cls}")
+                    review_reasons.append(f"Possible {cls} that sounds like {what}")
+
     # ---- manual-review routing (SRS Step 17) ---------------------------
     if gtm and not cmp["class_match"]:
         review_reasons.append("Different predictions from the two models")
@@ -149,7 +173,8 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         review_reasons.append("Unsupported / unknown sound pattern")
     # Background noise that is clearly background noise needs no human.
     if category == BACKGROUND_CLASS and alert_status == "No Alert":
-        review_reasons = [r for r in review_reasons if r in ("Different predictions from the two models",)]
+        review_reasons = [r for r in review_reasons
+                          if r == "Different predictions from the two models" or r.startswith("Possible ")]
     review_reasons = list(dict.fromkeys(review_reasons))
     manual = bool(review_reasons)
 
@@ -172,6 +197,7 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         "repeated_count": repeated, "severity": severity, "alert_status": alert_status,
         "recommended_action": action, "manual_review_required": manual, "review_reasons": review_reasons,
         "status": status, "rule_checks": ev["checks"], "audience": rule.get("audience", []),
+        "lookalike_checks": lookalike,
         "trace": trace,
     }
 

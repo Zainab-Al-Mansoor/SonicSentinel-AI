@@ -103,7 +103,8 @@ segment / aggregation / comparison logic:**
 * Diagnostic: a new classification head trained on the same Teachable Machine base model and the same upload samples
   (SGD, learning rate 0.01, 50 epochs) reaches **≈ 64 % test accuracy**. That is roughly the ceiling of GTM's 1-second
   speech-commands transfer model on these environmental sounds; it will not reach the 85 % that the Python model reaches.
-* **Run 3 (to do):** new Teachable Machine project → upload the 10 zips → *Advanced*: epochs 100 → Train with the tab
+* **Run 3 (done, export 2026-09-24T20:51):** test accuracy **0.606** (was 0.158), macro-F1 0.607; ≈ 80 % on its own training samples. Best classes: Alarm or Siren (F1 0.82), Help (0.73), Vehicle Horn (0.72); weakest: Panic Scream (0.41), Machinery Fault precision (0.29). Combining both models with `python_weight` 0.7 gives 0.868 accuracy – better than either model alone.
+* **Run 3 steps that were used:** new Teachable Machine project → upload the 10 zips → *Advanced*: epochs 100 → Train with the tab
   visible → wait for "Model Trained" → check *Under the hood* (training accuracy should be > 90 %) → test 2–3 classes in
   the preview → Export → replace `gtm_model/model/`.
 
@@ -128,7 +129,7 @@ The complete comparison is produced by Admin → **Model comparison** → *Run t
 |---|---|---|---|---|
 | 1 | 2026-09-24 | 9 | first model, playlist playback, default settings | works end-to-end, low accuracy, often disagrees with Python |
 | 2 | 2026-09-24 | 10 | + Help, digital upload with `--zip` (up to 400 samples per class) | all 10 labels ✅; under-trained export: 15.8 % test accuracy |
-| 3 | _fill in_ | 10 | same zips, epochs 100, train until finished | _fill in_ |
+| 3 | 2026-09-24 | 10 | same `--zip` uploads, training fix, epochs 50, trained to *Model Trained* | **test accuracy 0.606, macro-F1 0.607** (695 unseen clips); combined with Python (weight 0.7): **0.868 / 0.866** |
 
 ## 7. Integration evidence
 

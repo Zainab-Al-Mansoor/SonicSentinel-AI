@@ -57,8 +57,18 @@ def dashboard():
         "alerts": q.filter(AudioEvent.alert_status == "Alert Generated").count(),
         "review": q.filter(AudioEvent.status == "Manual Review").count(),
     }
+    from sqlalchemy import func
+    cat = func.coalesce(AudioEvent.reviewed_category, AudioEvent.final_category)
+    class_counts = dict(q.with_entities(cat, func.count(AudioEvent.id)).filter(cat.isnot(None)).group_by(cat).all())
+    try:
+        from ..services.analysis import python_model
+        py_version = python_model().version
+    except Exception:
+        py_version = None
     return render_template("dashboard.html", recent_uploads=recent_uploads, current=current, critical=critical,
-                           quality=quality, review=review, stats=stats, gtm=gtm_info())
+                           quality=quality, review=review, stats=stats, gtm=gtm_info(), class_counts=class_counts,
+                           py_version=py_version, CRITICAL=["Gunshot", "Panic Scream", "Aggression",
+                                                            "Person Asking for Help", "Glass Breaking"])
 
 
 @bp.route("/upload", methods=["GET", "POST"])

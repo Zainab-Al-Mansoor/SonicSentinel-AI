@@ -91,11 +91,27 @@ DEFAULT_RUNTIME_SETTINGS = {
     "unknown_threshold": 0.35,       # below this combined confidence -> Unknown
     "overlap_threshold": 0.25,       # >=2 non-background classes above this -> overlap
     "python_weight": 0.5,            # share of the Python model in the combined score (GTM gets 1 - this)
+    "lookalike_margin": 0.20,        # min gap between a class and its look-alike (SRS Step 14) before it is trusted
     "repeat_window_seconds": 10,     # time period used for repeated-detection confirmation
     "noise_reduction": True,
     "background_noise_limit_db": -20.0,   # estimated noise floor above this -> alert
     "audio_retention_days": 90,
     "record_retention_days": 365,
+}
+
+# SRS Step 14 – similar events the application must try to tell apart.
+# class -> [(look-alike class in our label set, what that look-alike is in the real world)]
+# The real-world look-alikes are trained as Background Noise (fireworks, voices, normal machinery …)
+# or are another class (alarm <-> horn).
+LOOKALIKE_PAIRS = {
+    "Gunshot": [("Background Noise", "fireworks / vehicle backfire / door slam")],
+    "Panic Scream": [("Background Noise", "normal shouting or loud voices")],
+    "Aggression": [("Background Noise", "normal conversation")],
+    "Glass Breaking": [("Background Noise", "metal impact or other impact sounds")],
+    "Alarm or Siren": [("Vehicle Horn", "a vehicle horn")],
+    "Vehicle Horn": [("Alarm or Siren", "an alarm or siren")],
+    "Machinery Fault": [("Background Noise", "normal machinery")],
+    "Person Asking for Help": [("Background Noise", "ordinary speech")],
 }
 
 SECRET_KEY = os.environ.get("SONIC_SECRET_KEY", "change-this-secret-key-in-production")

@@ -8,21 +8,21 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 
 | Section of the SRS | Items | Score | % |
 |---|---|---|---|
-| 1.2 Development phase (Steps 1–20) | 20 | 19.5 | **98 %** |
+| 1.2 Development phase (Steps 1–20) | 20 | 20 | **100 %** |
 | Hint – dataset requirements | 8 | 7 | **88 %** |
-| 1.6 Functional requirements (i – lxxx + responsive UI) | 81 | 80 | **99 %** |
+| 1.6 Functional requirements (i – lxxx + responsive UI) | 81 | 81 | **100 %** |
 | 1.7 Non-functional requirements | 5 | 4.5 | **90 %** |
 | 1.8 Competition integrity (checkable items) | 8 | 7 | **88 %** |
 | 1.9 Interface requirements | 2 | 2 | **100 %** |
-| 1.10 Project deliverables | 16 | 11.5 | **72 %** |
-| **Overall** | **140** | **131.5** | **≈ 94 %** (was 86 %) |
+| 1.10 Project deliverables | 16 | 12 | **75 %** |
+| **Overall** | **140** | **133.5** | **≈ 95 %** (was 86 %) |
 
 * **Application, data and Python model: ≈ 98 %.** All ten classes are trained; three models were compared; the Python model meets the accuracy and macro-F1 targets.
 * **What is left can only be done by the team:** GTM retraining with 10 classes, the model-comparison Excel, more Glass Breaking clips, deployment, the demo video, screenshots, filling names in `AI_USAGE.md` / `TEAM_CONTRIBUTIONS.md`, and commits from every member. See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
 
 ---
 
-## 1. Development phase (SRS 1.2, Steps 1–20) – 98 %
+## 1. Development phase (SRS 1.2, Steps 1–20) – 100 %
 
 | Step | Requirement | Status | Evidence / what is missing |
 |---|---|---|---|
@@ -34,7 +34,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | 6 | Features: MFCC, Mel, chroma, ZCR, RMS, centroid, bandwidth, roll-off, onset, tempo | ✅ | 299 features, `feature_extraction/features.py` |
 | 7 | Train and compare **at least three** models; select by accuracy, precision, recall, F1, macro-F1, CM, class-wise, critical recall, noise robustness | ✅ | **XGBoost, MLP and Random Forest compared** (`reports/python_model_comparison.csv`); XGBoost selected by validation macro-F1. SVM available but skipped (hours on 38k segments) |
 | 8 | Python model gives scores for all ten classes | ✅ | scores for all 10 classes; Help recall 1.00 on the test split |
-| 9 | GTM audio project with the same 10 class names, trained on the same TRAIN recordings | ⚠️ | installed export has 9 classes. **Tooling complete:** `prepare_gtm_samples --zip` writes Teachable Machine upload archives for all 10 classes (format verified in the TM web app) – upload, train, export (≈ 15 min, steps in `gtm_model/README.md`) |
+| 9 | GTM audio project with the same 10 class names, trained on the same TRAIN recordings | ✅ | run 2 export (2026-09-24 15:50) has all 10 labels, trained from the `--zip` TRAIN-split archives (400 samples per class; Glass 75, Help 292) |
 | 10 | GTM predicts independently; Python result not given to GTM | ✅ | `static/js/gtm.js`, `/api/events/<id>/gtm` |
 | 11 | Compare categories, all-class confidences, match status, \|top diff\|, top-2 diff | ✅ | event page comparison panel |
 | 12 | Continuous live windows (1–3 s): validate → preprocess → Python → GTM → compare → rules → live dashboard | ✅ | 2-s live windows |
@@ -60,7 +60,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | Segments and augmented copies stay in the parent's split; augmented not counted as originals | ✅ | `parent_audio_id`, GroupKFold |
 | Augmentation: noise, shift, pitch, stretch, volume, reverb, distance, device | ✅ | `augmentation/augment.py` |
 
-## 3. Functional requirements (SRS 1.6) – 99 %
+## 3. Functional requirements (SRS 1.6) – 100 %
 
 | # | Requirement | Status | Note |
 |---|---|---|---|
@@ -90,10 +90,10 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | xxiv | Hyperparameter tuning | ✅ | GridSearchCV + GroupKFold |
 | xxv | Python model predicts one of the **ten** classes | ✅ | |
 | xxvi | Python confidence for all classes | ✅ | |
-| xxvii | Separately trained GTM audio model | ⚠️ | 9 of 10 classes; 10-class upload archives ready (`--zip`) – one Teachable Machine run left |
+| xxvii | Separately trained GTM audio model | ✅ | 10-class Teachable Machine export in `gtm_model/model/` |
 | xxviii | GTM integrated into the web app | ✅ | TF.js export in `gtm_model/model/` |
 | xxix | GTM classifies the same segment independently | ✅ | |
-| xxx | GTM confidence for **all** classes | ⚠️ | app already shows all 10 (missing labels = 0); becomes complete with the 10-class export |
+| xxx | GTM confidence for **all** classes | ✅ | all 10 labels, no missing / extra labels (Admin → Models) |
 | xxxi | Prediction comparison | ✅ | |
 | xxxii | Absolute top-class confidence difference | ✅ | |
 | xxxiii | Consistency status (4 values) | ✅ | |
@@ -146,7 +146,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | lxxx | Configurable data retention | ✅ | |
 | – | Responsive UI (desktop, tablet, mobile browsers) | ✅ | Tailwind + viewport meta; every page checked at 1440 px and 390 px (phone) width after the theme change |
 
-**Result:** 79 ✅ · 2 ⚠️ → 80 / 81 = **99 %**. Both ⚠️ items are the same GTM export: after run 2 → **81 / 81 = 100 %**.
+**Result:** 81 ✅ → 81 / 81 = **100 %**
 
 ## 4. Non-functional requirements (SRS 1.7) – 90 %
 
@@ -155,7 +155,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | 1 | Performance: 30-s clip in ≤ 8 s; live window prediction ≤ 3 s | ✅ | measured with the real model (`py-xgb-20260924-0800`) and real test recordings: 30-s upload **mean 1.47 s, max 1.74 s**; live window **mean 0.11 s, max 0.12 s** (2-CPU test server) – `reports/performance.md` |
 | 2 | Scalability: ≥ 20,000 event records, multiple concurrent users | ✅ | **20,020 events** stored; dashboard 0.07 s, history 0.18 s, filtered history 0.02 s, timeline 0.04 s, admin 0.48 s, CSV export 1.3 s; **5 concurrent users, 0 errors** – `reports/performance.md` |
 | 3 | Usability | ✅ | role-specific dashboards, drag-and-drop, badges, toasts, new professional theme |
-| 4 | Accuracy for **both** models: ≥ 85 % accuracy, macro-F1 ≥ 0.80, critical recall ≥ 85 % | ⚠️ | Python: accuracy **0.865 ✅**, macro-F1 **0.863 ✅**, recall Gunshot 0.93 ✅, Panic Scream 0.93 ✅, Aggression 0.89 ✅, Help 1.00 ✅, Glass 0.83 (5 of 6 test clips – one clip short). **GTM:** measure after run 2 with Admin → Model comparison. Fix for Glass: add TUT Rare Sound Events `glassbreak` clips to `downloads/glass_extra/` and retrain |
+| 4 | Accuracy for **both** models: ≥ 85 % accuracy, macro-F1 ≥ 0.80, critical recall ≥ 85 % | ⚠️ | Python: accuracy **0.865 ✅**, macro-F1 **0.863 ✅**, recall Gunshot 0.93 ✅, Panic Scream 0.93 ✅, Aggression 0.89 ✅, Help 1.00 ✅, Glass 0.83 (5 of 6 clips). **GTM run 2: accuracy 0.158, macro-F1 0.174 ❌** – the export is under-trained (≈ 20 % even on its own training samples); a correctly trained head on the same Teachable Machine base reaches ≈ 64 %. Retrain (run 3, epochs 100); the 1-s speech-commands model is not expected to reach 85 % on these sounds – documented as a limitation |
 | 5 | Availability ≥ 99 % during evaluation hours | ✅ | `run_server.bat`: waitress (8 threads) with automatic restart and a log in `logs/server.log`; `/healthz` checks database + both models; Docker `HEALTHCHECK`; Render health check on `/healthz`. (Public deployment itself is deliverable 12.) |
 
 ## 5. Competition integrity (SRS 1.8) – 88 %
@@ -184,7 +184,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | Hardware (i5/i7, 8–16 GB RAM …) | ✅ | runs on the team laptop |
 | Software stack | ✅ | HTML/CSS/JS (Tailwind), Flask, SQLite, Python/Anaconda/VS Code, scikit-learn, XGBoost, GTM, librosa, soundfile, SciPy, NumPy, Pandas, Matplotlib, Joblib, pytest, Git/GitHub |
 
-## 7. Project deliverables (SRS 1.10) – 72 %
+## 7. Project deliverables (SRS 1.10) – 75 %
 
 | # | Deliverable | Status | What exists / what is missing |
 |---|---|---|---|
@@ -193,7 +193,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | 3 | Dataset (audio, metadata, IDs, labels, source, split, statistics, data dictionary, augmentation scripts, quality report) | ⚠️ | everything except the audio in the repo (too large) – **upload a zip and add the link** |
 | 4 | Python model evidence | ✅ | 3 models, hyperparameters, CV/val/test results, CM, class-wise, critical recall, saved model, version (`reports/`) |
 | 5 | GTM evidence | ⚠️ | export, labels, integration ✅; `documentation/GTM_TRAINING_LOG.md` has the observations and retraining plan – **screenshots, sample counts, run 2** by the team |
-| 6 | Model prediction & confidence comparison report (≥ 100 unseen clips, ≥ 10 per class) | ❌ | feature ready (Admin → Model comparison → Excel); **not generated**; Glass Breaking has 6 test clips (needs ≥ 70 clips in total) |
+| 6 | Model prediction & confidence comparison report (≥ 100 unseen clips, ≥ 10 per class) | ⚠️ | generated on all **695 unseen test clips** with every SRS column + summary + per-class + both confusion matrices (`reports/model_comparison_report.xlsx`, GTM run 2). Regenerate after GTM run 3; Glass Breaking has only 6 test clips (SRS asks ≥ 10) |
 | 7 | Alert-rule file with all required fields | ✅ | `alert_rules/alert_rules.json` |
 | 8 | Test cases (all categories + hidden-test checklist) | ✅ | pytest suite + `documentation/TESTING.md` + benchmark |
 | 9 | Installation instructions incl. troubleshooting | ✅ | README §13, §21–23, `RUN_AND_TRAIN_GUIDE.md`, `documentation/DEPLOYMENT.md` |
@@ -211,7 +211,7 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 
 | Priority | Task | Fixes |
 |---|---|---|
-| 1 | `python -m gtm_model.prepare_gtm_samples --max-per-class 400 --zip` → Teachable Machine: Upload each `<Class>.zip` → Train → Export → `gtm_model/model/`; screenshots | Step 9, FR xxvii/xxx (**FR → 100 %**), deliverable 5 |
+| 1 | GTM run 3: new TM project → upload the 10 zips → epochs 100 → train until *Model Trained* (Under the hood > 90 %) → Export → `gtm_model/model/`; screenshots | NFR 4 (GTM accuracy), deliverable 5 |
 | 2 | Add ≈ 30+ **Glass Breaking** clips (FSD50K / TUT) → rebuild → augment → retrain | balance, Glass recall, ≥ 10 test clips per class |
 | 3 | Admin → Model comparison → run → export Excel → `reports/model_comparison_report.xlsx` | deliverable 6, NFR 4 (GTM accuracy → **NFR 100 %** together with item 2) |
 | 4 | Optional: re-run `python scripts/benchmark_performance.py` on the demo PC | NFR 1–2 (already measured) |

@@ -25,10 +25,14 @@ computed exactly like Teachable Machine's own recorder (44.1 kHz, FFT 2048, Blac
 1. Open https://teachablemachine.withgoogle.com/train/audio in **Chrome** (keep the tab visible while training).
 2. Create 10 classes with **exactly** these names: `Background Noise` (already there),
    `Machinery Fault, Glass Breaking, Alarm or Siren, Vehicle Horn, Animal Sound, Gunshot, Panic Scream, Aggression, Person Asking for Help`.
-3. For every class: **Upload** → *Choose files from your computer* → select `_tm_upload/<same class name>.zip`.
+3. **Windows only – once, after creating all 10 classes:** Chrome on Windows labels .zip files as
+   `application/x-zip-compressed`, which Teachable Machine rejects ("File Input Error: You can only upload zip files …").
+   Press **F12 → Console**, paste the one line from `gtm_model/tm_upload_fix.js`, press Enter
+   (type `allow pasting` first if Chrome asks). The console prints "SonicSentinel upload fix is ON"; new classes are fixed automatically until the page is reloaded.
+4. For every class: **Upload** → *Choose files from your computer* → select `_tm_upload/<same class name>.zip`.
    The class card then shows the number of samples (e.g. "400 Audio Samples").
-4. **Advanced**: Epochs 50 (default) – 80, keep the default batch size and learning rate (write them down). Click **Train Model** (takes a few minutes).
-5. Check *Advanced → Under the hood* (accuracy per class, confusion matrix) and take screenshots of every class card,
+5. **Advanced**: Epochs 50 (default) – 80, keep the default batch size and learning rate (write them down). Click **Train Model** (takes a few minutes).
+6. Check *Advanced → Under the hood* (accuracy per class, confusion matrix) and take screenshots of every class card,
    the settings and these charts for `documentation/GTM_TRAINING_LOG.md`.
 
 Old method (still possible): `--playlist` writes `_playlists/<Class>.wav`; play it into GTM's microphone recorder

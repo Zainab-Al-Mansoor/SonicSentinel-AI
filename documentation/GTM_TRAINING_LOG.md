@@ -35,16 +35,16 @@ at least 20 background samples).
 
 | Class | Run 1 (9 classes) | Run 2 (10 classes) |
 |---|---|---|
-| Background Noise | _fill in_ | from `gtm_sample_counts.csv` |
-| Machinery Fault | _fill in_ | _fill in_ |
-| Glass Breaking | _fill in_ | _fill in_ |
-| Alarm or Siren | _fill in_ | _fill in_ |
-| Vehicle Horn | _fill in_ | _fill in_ |
-| Animal Sound | _fill in_ | _fill in_ |
-| Gunshot | _fill in_ | _fill in_ |
-| Panic Scream | _fill in_ | _fill in_ |
-| Aggression | _fill in_ | _fill in_ |
-| Person Asking for Help | – (no data yet) | _fill in_ |
+| Background Noise | _fill in_ | 400 |
+| Machinery Fault | _fill in_ | 400 |
+| Glass Breaking | _fill in_ | 75 |
+| Alarm or Siren | _fill in_ | 400 |
+| Vehicle Horn | _fill in_ | 400 |
+| Animal Sound | _fill in_ | 400 |
+| Gunshot | _fill in_ | 400 |
+| Panic Scream | _fill in_ | 400 |
+| Aggression | _fill in_ | 400 |
+| Person Asking for Help | – (no data yet) | 292 |
 
 (Read the counts from each class card in GTM, e.g. "42 Audio Samples", and take a screenshot of every card.)
 
@@ -88,7 +88,24 @@ Screenshot the **Advanced** panel and the **Under the hood** accuracy/loss chart
    version up after a restart (Admin → Models shows labels and version).
 7. Measure accuracy: Admin → **Model comparison** → *Run test-set evaluation* (unseen TEST split) → *Export Excel*.
 
-_fill in after run 2: observations, per-class accuracy from "Under the hood", remaining problems._
+**Run 2 result (export 2026-09-24T15:50, 10 classes) – checked on the unseen TEST split (695 clips) with the app's own
+segment / aggregation / comparison logic:**
+
+| Model | Accuracy | Macro-F1 |
+|---|---|---|
+| Python (XGBoost) | 0.865 | 0.863 |
+| GTM run 2 export | **0.158** | 0.174 |
+| Final combined decision | 0.845 | 0.846 |
+
+* The exported GTM model also scores only ≈ 20 % on **its own training samples** (from the `_tm_upload` zips), with low
+  confidence (top score ≈ 0.5). A correctly trained head reaches ≈ 99 % on training samples, so this export is
+  **under-trained** (training stopped early, too few epochs / very low learning rate, or exported before training finished).
+* Diagnostic: a new classification head trained on the same Teachable Machine base model and the same upload samples
+  (SGD, learning rate 0.01, 50 epochs) reaches **≈ 64 % test accuracy**. That is roughly the ceiling of GTM's 1-second
+  speech-commands transfer model on these environmental sounds; it will not reach the 85 % that the Python model reaches.
+* **Run 3 (to do):** new Teachable Machine project → upload the 10 zips → *Advanced*: epochs 100 → Train with the tab
+  visible → wait for "Model Trained" → check *Under the hood* (training accuracy should be > 90 %) → test 2–3 classes in
+  the preview → Export → replace `gtm_model/model/`.
 
 ## 5. Incorrect classifications (test evidence)
 
@@ -110,7 +127,8 @@ The complete comparison is produced by Admin → **Model comparison** → *Run t
 | Run | Date | Classes | Change | Result |
 |---|---|---|---|---|
 | 1 | 2026-09-24 | 9 | first model, playlist playback, default settings | works end-to-end, low accuracy, often disagrees with Python |
-| 2 | _fill in_ | 10 | + Help, digital upload with `--zip` (up to 400 samples per class) | _fill in_ |
+| 2 | 2026-09-24 | 10 | + Help, digital upload with `--zip` (up to 400 samples per class) | all 10 labels ✅; under-trained export: 15.8 % test accuracy |
+| 3 | _fill in_ | 10 | same zips, epochs 100, train until finished | _fill in_ |
 
 ## 7. Integration evidence
 

@@ -1,0 +1,80 @@
+{
+  "total_original_clips": 5622,
+  "per_class": {
+    "Machinery Fault": 138,
+    "Glass Breaking": 40,
+    "Alarm or Siren": 983,
+    "Vehicle Horn": 390,
+    "Animal Sound": 950,
+    "Gunshot": 921,
+    "Panic Scream": 862,
+    "Aggression": 298,
+    "Person Asking for Help": 0,
+    "Background Noise": 1040
+  },
+  "per_split": {
+    "train": 3935,
+    "test": 844,
+    "val": 843
+  },
+  "per_class_split": {
+    "Aggression": {
+      "test": 45,
+      "train": 208,
+      "val": 45
+    },
+    "Alarm or Siren": {
+      "test": 148,
+      "train": 688,
+      "val": 147
+    },
+    "Animal Sound": {
+      "test": 143,
+      "train": 665,
+      "val": 142
+    },
+    "Background Noise": {
+      "test": 156,
+      "train": 728,
+      "val": 156
+    },
+    "Glass Breaking": {
+      "test": 6,
+      "train": 28,
+      "val": 6
+    },
+    "Gunshot": {
+      "test": 138,
+      "train": 645,
+      "val": 138
+    },
+    "Machinery Fault": {
+      "test": 20,
+      "train": 97,
+      "val": 21
+    },
+    "Panic Scream": {
+      "test": 130,
+      "train": 603,
+      "val": 129
+    },
+    "Vehicle Horn": {
+      "test": 58,
+      "train": 273,
+      "val": 59
+    }
+  },
+  "duration_seconds": {
+    "total": 26154.554,
+    "mean": 4.652179651369619,
+    "min": 0.5,
+    "max": 360.0
+  },
+  "quality": {
+    "Good": 4549,
+    "Acceptable": 772,
+    "Poor": 301
+  },
+  "rejected": 235,
+  "imbalance_ratio": 26.0
+}

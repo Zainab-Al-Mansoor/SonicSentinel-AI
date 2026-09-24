@@ -191,10 +191,18 @@ def main():
     ytr = np.array([label_to_idx[c] for c in ytr_s])
     print(f"Training segments: {Xtr.shape}")
 
+    wanted = set(args.models.split(","))
+    missing = [c for c in CLASSES if c not in set(ytr_s)]
+    if missing:
+        print(f"[warn] no training data for: {', '.join(missing)} -> the model cannot predict these classes")
+        if "xgb" in wanted:
+            print("[warn] XGBoost needs every class present; skipping xgb for this run")
+            wanted.discard("xgb")
+
     n_groups = len(set(groups))
     cv = GroupKFold(n_splits=min(3, n_groups))
     results, fitted = [], {}
-    for name, (clf, grid) in candidates(args.fast, set(args.models.split(","))).items():
+    for name, (clf, grid) in candidates(args.fast, wanted).items():
         t0 = time.time()
         pipe = Pipeline([("scaler", StandardScaler()), ("clf", clf)])
         gs = GridSearchCV(pipe, grid, scoring="f1_macro", cv=cv, n_jobs=1, refit=True)

@@ -26,3 +26,12 @@ gtm_model/training_samples/
 Thumbs.db
 .vscode/
 .idea/
+
+# Downloaded public datasets (several GB) – never commit, see RUN_AND_TRAIN_GUIDE.md section 6
+downloads/
+_training_pack/
+
+# Editor swap / temp files
+*.swp
+*.swo
+*~

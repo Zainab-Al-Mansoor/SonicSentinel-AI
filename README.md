@@ -21,6 +21,18 @@ The app compares the two predictions and their confidence scores. It also checks
 
 > ⚠️ This is a competition prototype. It is **not** a certified emergency-response or law-enforcement system.
 
+### Standout features
+
+* **🔍 Why this prediction? (Explainable AI)** – every event page shows *where* the sound is ("Gunshot located at 1.29–1.85 s",
+  highlighted on the spectrogram with per-segment Python and GTM confidence) and *why*: exact XGBoost TreeSHAP contributions
+  grouped into 13 acoustic properties (onset, loudness, brightness, low/mid/high-frequency energy, timbre, pitch …), each
+  marked high/low compared with the training data. API: `GET /api/events/<audio_id>/explain` · code: `src/services/explain.py`.
+* **🧪 Robustness Lab** (`/lab`) – load your own clip or a random **unseen test** recording, then degrade it with sliders and
+  presets (white noise, real background noise, echo, distance, volume, cheap phone microphone, cut-off start). The Python model
+  (server) and the Teachable Machine model (browser) classify the modified audio live, and a one-click **stress test** plots both
+  models' confidence from clean to 0 dB SNR. Uses the same augmentation code as training; nothing is stored as an event.
+  Code: `src/services/lab.py`, `static/js/lab.js`, `templates/lab.html`.
+
 ---
 
 ## Table of contents
@@ -123,7 +135,7 @@ flowchart TD
 | Frontend | Jinja2 templates, Tailwind CSS, vanilla JavaScript (Web Audio API) |
 | Reports | matplotlib, openpyxl (Excel), HTML → print to PDF |
 | Serving | `python run.py` (dev), waitress (Windows), gunicorn (Linux) |
-| Tests | pytest (58 automated tests) |
+| Tests | pytest (66 automated tests) |
 
 More detail: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md).
 
@@ -235,7 +247,7 @@ Status: ✅ implemented · ⚠️ implemented, needs more data/tuning · ❌ not
 | NFR-12 | Traceability | Reproduce any decision | Model version, both models' scores, quality, rule trace and reviewer changes stored per event; audit log |
 | NFR-13 | Portability | Run on common machines | Windows 10/11, Linux, macOS; Python 3.10–3.12; Chrome or Edge |
 | NFR-14 | Scalability | ≥ 20,000 events, concurrent users | ✅ 20,020 events: every page < 0.5 s, CSV export 1.3 s; 5 concurrent users, 0 errors. Benchmark inserts 20,000 events and times dashboard / history / filters / exports, plus 5 concurrent users; indexed columns; for larger installs point `SQLALCHEMY_DATABASE_URI` (`src/__init__.py`) to PostgreSQL; gunicorn/waitress |
-| NFR-15 | Testability | Automated tests | 58 pytest tests on a temporary database and a tiny test-only model |
+| NFR-15 | Testability | Automated tests | 66 pytest tests on a temporary database and a tiny test-only model |
 | NFR-18 | Availability | ≥ 99 % during evaluation hours | ✅ `run_server.bat` (waitress, 8 threads, automatic restart), `/healthz` health check (database + both models), Docker `HEALTHCHECK`, Render health check |
 | NFR-16 | Data integrity | No train/test leakage | Split by original clip; augmented copies and segments stay in their parent's split; CV grouped by Audio ID |
 | NFR-17 | Ethics | Responsible data use | Licensed datasets only, licence recorded per clip, consent for recordings, no real emergencies recorded |
@@ -476,7 +488,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python -m database.init_db           # creates data/sonicsentinel.db + default accounts
-python -m pytest -q                  # 58 tests should pass
+python -m pytest -q                  # 66 tests should pass
 ```
 
 > Always quote version specifiers on the command line (`pip install "flask>=3.0"`), otherwise Windows treats `>` as a redirect and creates empty files named `3.0`, `2.0` …
@@ -562,7 +574,7 @@ gunicorn -w 2 -b 0.0.0.0:$PORT run:app   # production on Linux
 ## 17. Testing
 
 ```powershell
-python -m pytest -q        # 58 passed
+python -m pytest -q        # 66 passed
 ```
 
 Covered: functional and integration (upload → Python → GTM → decision → review → alerts → live), boundary (too-short clip, last-segment padding, exact thresholds), negative (unsupported / empty / corrupt / silent files, wrong password, bad CSRF), security (CSRF, role access, lock-out, protected media), database, audio formats (WAV, FLAC, OGG, MP3, stereo), silence / clipping / noise, pre-processing and features, model aggregation, comparison and alert rules, duplicates, low confidence, unknown and overlapping sounds, live windows.

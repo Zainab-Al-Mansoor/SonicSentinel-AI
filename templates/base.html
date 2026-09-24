@@ -58,6 +58,7 @@
         {{ nav('main.upload', 'Upload') }}
         {% if current_user.role != 'user' %}{{ nav('main.batch', 'Batch') }}{% endif %}
         {{ nav('main.live', 'Live') }}
+        {{ nav('main.lab', 'Lab') }}
         {{ nav('main.history', 'History') }}
         {{ nav('main.timeline', 'Timeline') }}
         {% if current_user.role in ['admin','security','maintenance'] %}<span id="nav-alerts-wrap">{{ nav('alerts.index', 'Alerts', nav_active_alerts) }}</span>{% endif %}

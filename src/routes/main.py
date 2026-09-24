@@ -154,11 +154,24 @@ def event_report(audio_id):
 # ---------------------------------------------------------------------------
 # Protected media (audio is never served from /static)
 # ---------------------------------------------------------------------------
+@bp.route("/lab")
+@login_required
+def lab():
+    from ..services import lab as lab_service
+    from ..services.analysis import gtm_info
+    return render_template("lab.html", has_test_split=lab_service.test_split_available(), gtm=gtm_info(),
+                           CLASSES=CLASSES)
+
+
 @bp.route("/media/event/<audio_id>/<kind>")
 @login_required
 def event_media(audio_id, kind):
     ev = get_event_or_404(audio_id)
-    path = {"audio": ev.stored_path, "wave": ev.waveform_path, "spec": ev.spectrogram_path}.get(kind)
+    if kind == "explain":
+        from ..services.explain import image_path
+        path = image_path(ev)
+    else:
+        path = {"audio": ev.stored_path, "wave": ev.waveform_path, "spec": ev.spectrogram_path}.get(kind)
     if not path or not Path(path).exists():
         abort(404)
     return send_file(path, conditional=True)

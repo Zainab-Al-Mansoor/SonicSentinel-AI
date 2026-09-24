@@ -70,6 +70,26 @@ def api_event(audio_id):
     return jsonify(event_json(_event(audio_id), include_segments=True))
 
 
+@bp.route("/events/<audio_id>/explain")
+@login_required
+def api_event_explain(audio_id):
+    """'Why this prediction?' – where the event is and which acoustic properties drove the Python model."""
+    from ..services.analysis import python_model
+    from ..services.explain import explain_event
+    ev = _event(audio_id)
+    if not ev.segments:
+        return jsonify({"error": "This event has no analysed segments."}), 422
+    try:
+        out = explain_event(ev, python_model())
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception as e:                                  # never break the event page
+        return jsonify({"error": f"Explanation failed: {e}"}), 500
+    out = dict(out)
+    out["image_url"] = url_for("main.event_media", audio_id=ev.audio_id, kind="explain")
+    return jsonify(out)
+
+
 @bp.route("/events/<audio_id>/gtm", methods=["POST"])
 @login_required
 def api_event_gtm(audio_id):
@@ -215,3 +235,93 @@ def testset_file():
     if not ev:
         return jsonify({"error": " ".join(msgs)}), 422
     return jsonify({"event": event_json(ev, True)})
+
+
+# ---------------------------------------------------------------------------
+# Robustness Lab (no events are stored – see src/services/lab.py)
+# ---------------------------------------------------------------------------
+def _lab_owner_ok(token: str) -> bool:
+    from ..services import lab
+    try:
+        _, meta = lab.load_token(token)
+    except lab.LabError:
+        return False
+    return meta.get("user_id") == current_user.id or current_user.role == "admin"
+
+
+@bp.route("/lab/load", methods=["POST"])
+@login_required
+def lab_load():
+    from ..services import lab
+    from audio_preprocessing import validate_file
+    import tempfile
+    try:
+        f = request.files.get("audio")
+        if f and f.filename:
+            suffix = Path(f.filename).suffix.lower()
+            with tempfile.TemporaryDirectory() as d:
+                p = Path(d) / f"lab{suffix}"
+                f.save(p)
+                v = validate_file(p, f.filename)
+                if not v.ok:
+                    return jsonify({"error": " ".join(v.errors)}), 422
+                token, meta = lab.load_file(p, f.filename, current_user.id)
+        else:
+            data = request.get_json(silent=True) or {}
+            token, meta = lab.load_test_clip(data.get("class_label") or None, current_user.id)
+    except lab.LabError as e:
+        return jsonify({"error": str(e)}), 422
+    audit.log("lab", "clip", token, f"{meta.get('source')}: {meta.get('filename')}")
+    return jsonify({"token": token, "meta": meta})
+
+
+def _lab_result_urls(res: dict) -> dict:
+    res = dict(res)
+    if "audio_name" in res:
+        res["audio_url"] = url_for("api.lab_audio", name=res["audio_name"])
+    for pt in res.get("points", []):
+        pt["audio_url"] = url_for("api.lab_audio", name=pt["audio_name"])
+    return res
+
+
+@bp.route("/lab/run", methods=["POST"])
+@login_required
+def lab_run():
+    from ..services import lab
+    from ..services.analysis import python_model
+    data = request.get_json(silent=True) or {}
+    token = data.get("token", "")
+    if not _lab_owner_ok(token):
+        return jsonify({"error": "Unknown or expired lab clip – load a clip first."}), 404
+    try:
+        return jsonify(_lab_result_urls(lab.run(token, data.get("params"), python_model())))
+    except (lab.LabError, ValueError) as e:
+        return jsonify({"error": str(e)}), 422
+
+
+@bp.route("/lab/sweep", methods=["POST"])
+@login_required
+def lab_sweep():
+    from ..services import lab
+    from ..services.analysis import python_model
+    data = request.get_json(silent=True) or {}
+    token = data.get("token", "")
+    if not _lab_owner_ok(token):
+        return jsonify({"error": "Unknown or expired lab clip – load a clip first."}), 404
+    try:
+        return jsonify(_lab_result_urls(lab.sweep(token, data.get("params"), python_model(), data.get("kind", "noise_snr"))))
+    except (lab.LabError, ValueError) as e:
+        return jsonify({"error": str(e)}), 422
+
+
+@bp.route("/lab/audio/<name>")
+@login_required
+def lab_audio(name):
+    from flask import send_file
+    from ..services import lab
+    if not _lab_owner_ok((name or "")[:16]):
+        abort(404)
+    try:
+        return send_file(lab.audio_path(name), mimetype="audio/wav", conditional=True)
+    except lab.LabError:
+        abort(404)

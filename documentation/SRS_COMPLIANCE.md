@@ -12,10 +12,10 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | Hint – dataset requirements | 8 | 7 | **88 %** |
 | 1.6 Functional requirements (i – lxxx + responsive UI) | 81 | 81 | **100 %** |
 | 1.7 Non-functional requirements | 5 | 4.5 | **90 %** |
-| 1.8 Competition integrity (checkable items) | 8 | 7 | **88 %** |
+| 1.8 Competition integrity (checkable items) | 8 | 7.5 | **94 %** (100 % when every member has commits) |
 | 1.9 Interface requirements | 2 | 2 | **100 %** |
 | 1.10 Project deliverables | 16 | 12 | **75 %** |
-| **Overall** | **140** | **133.5** | **≈ 95 %** (was 86 %) |
+| **Overall** | **140** | **134** | **≈ 96 %** (was 86 %) |
 
 * **Application, data and Python model: ≈ 98 %.** All ten classes are trained; three models were compared; the Python model meets the accuracy and macro-F1 targets.
 * **What is left can only be done by the team:** GTM retraining with 10 classes, the model-comparison Excel, more Glass Breaking clips, deployment, the demo video, screenshots, filling names in `AI_USAGE.md` / `TEAM_CONTRIBUTIONS.md`, and commits from every member. See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
@@ -158,21 +158,21 @@ Checked against *SonicSentinel AI – NextWave AI and ML SRS v1.0* on 2026-09-24
 | 4 | Accuracy for **both** models: ≥ 85 % accuracy, macro-F1 ≥ 0.80, critical recall ≥ 85 % | ⚠️ | Python: accuracy **0.865 ✅**, macro-F1 **0.863 ✅**, recall Gunshot 0.93 ✅, Panic Scream 0.93 ✅, Aggression 0.89 ✅, Help 1.00 ✅, Glass 0.83 (5 of 6 clips). **GTM run 2: accuracy 0.158, macro-F1 0.174 ❌** – the export is under-trained (≈ 20 % even on its own training samples); a correctly trained head on the same Teachable Machine base reaches ≈ 64 %. Retrain (run 3, epochs 100); the 1-s speech-commands model is not expected to reach 85 % on these sounds – documented as a limitation |
 | 5 | Availability ≥ 99 % during evaluation hours | ✅ | `run_server.bat`: waitress (8 threads) with automatic restart and a log in `logs/server.log`; `/healthz` checks database + both models; Docker `HEALTHCHECK`; Render health check on `/healthz`. (Public deployment itself is deliverable 12.) |
 
-## 5. Competition integrity (SRS 1.8) – 88 %
+## 5. Competition integrity (SRS 1.8) – 94 %
 
 | # | Requirement | Status | Note |
 |---|---|---|---|
-| 1 | Each member explains assigned modules | ➖ | team – split suggested in `AI_USAGE.md` |
-| 2 | Meaningful GitHub commits across all five days (all members) | ⚠️ | commits exist; continue daily, from every member |
+| 1 | Each member explains assigned modules | ➖ | prepared: module owners + functions to explain in `documentation/VIVA_PREP.md` §1 |
+| 2 | Meaningful GitHub commits across all five days (all members) | ⚠️ | **only the team can do this** – each member commits their own part from their own GitHub account (plan in `TEAM_CONTRIBUTIONS.md`) |
 | 3 | Development log (work, problems, dataset, failures, code, tests) | ✅ | `DEVELOPMENT_LOG.md` Day 1–2 (continued); keep adding days 3–5 |
-| 4 | Explain any function on request | ➖ | team |
-| 5 | Surprise modification | ➖ | supported: new class, threshold, format, segment length, rule, repeats, filter |
-| 6 | Fix a deliberate defect | ➖ | team |
+| 4 | Explain any function on request | ➖ | prepared: pipeline in one minute + key functions per module (`VIVA_PREP.md` §1) |
+| 5 | Surprise modification | ➖ | prepared: where to change threshold, rules, repeats, format, upload size, segment length, filter, class, role, retention (`VIVA_PREP.md` §2) |
+| 6 | Fix a deliberate defect | ➖ | prepared: debugging checklist + likely defect locations; 58 tests catch most regressions (`VIVA_PREP.md` §3) |
 | 7 | No hard-coded predictions / invented confidences / hidden APIs | ✅ | |
-| 8 | Tested with unseen recordings | ➖ | evaluation day |
-| 9 | Hidden-test readiness (noise, echo, low volume, devices, partial, overlap, similar classes, re-encoded, distant) | ⚠️ | re-encoded/duplicate handling ✅, look-alike negatives ✅, overlap flag ✅; accuracy 0.81 at 20 dB, 0.66 at 5 dB SNR (noisy audio → Poor quality → manual review) |
+| 8 | Tested with unseen recordings | ➖ | evaluation day; rehearsed on 695 unseen TEST clips (`reports/model_comparison_report.xlsx`) and 2,926 degraded versions |
+| 9 | Hidden-test readiness (noise, echo, low volume, devices, partial, overlap, similar classes, re-encoded, distant) | ✅ | every condition tested on 266 unseen TEST clips with the app's pipeline (`scripts/hidden_test_robustness.py` → `reports/hidden_test_robustness.md`), **0 crashes in 2,926 runs**: clean 0.90 · echo 0.87 · MP3 re-encode 0.88 · low volume 0.90 · distant 0.77 · other device 0.76 · partial 0.75 · overlap 0.74 · real background 10 dB 0.72 · white noise 20 dB 0.71 / 10 dB 0.55; confusable pairs ≤ 3/30. Checklist ticked in `TESTING.md` |
 | 10 | AI tools declared in `AI_USAGE.md` | ✅ | all AI assistance declared with files affected (8 rows); each member still fills "Student modifications" and "Verified by" |
-| 11 | AI output does not replace understanding | ➖ | team |
+| 11 | AI output does not replace understanding | ➖ | team; every AI-assisted file listed in `AI_USAGE.md` with the module owner who must explain it |
 | 12 | No external generative-AI API for classification | ✅ | |
 | 13 | Show that both models predict independently | ✅ | |
 | 14 | Python output never given to GTM | ✅ | |

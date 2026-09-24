@@ -39,11 +39,15 @@ def compare_models(py: dict, gtm: dict | None, s: dict) -> dict:
     return out
 
 
-def combine(py: dict, gtm: dict | None) -> dict:
-    """Average of both models' confidence vectors (Python only if GTM unavailable)."""
+def combine(py: dict, gtm: dict | None, python_weight: float = 0.5) -> dict:
+    """Weighted average of both models' confidence vectors (Python only if GTM unavailable).
+
+    python_weight = 0.5 is a plain average. Admins can give the more accurate model more weight
+    (Admin -> Settings), e.g. 0.7 when the Python model is clearly more reliable on the test split."""
     if not gtm:
         return {c: float(py.get(c, 0.0)) for c in CLASSES}
-    return {c: (float(py.get(c, 0.0)) + float(gtm.get(c, 0.0))) / 2 for c in CLASSES}
+    w = min(1.0, max(0.0, float(python_weight)))
+    return {c: w * float(py.get(c, 0.0)) + (1 - w) * float(gtm.get(c, 0.0)) for c in CLASSES}
 
 
 def confidence_level(c: float, s: dict) -> str:
@@ -60,10 +64,12 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
                     f"|Δconf| = {cmp['confidence_diff']:.2f} → {cmp['consistency_status']}"
                     if gtm else "GTM result unavailable → Uncertain Result"))
 
-    comb = combine(py, gtm)
+    w = float(s.get("python_weight", 0.5))
+    comb = combine(py, gtm, w)
     best, conf = top_k(comb, 1)[0]
     margin = top_margin(comb)
-    trace.append(f"Combined scores → {best} ({conf:.2f}), top-2 margin {margin:.2f}")
+    trace.append(f"Combined scores" + (f" (Python {w:.0%} / GTM {1 - w:.0%})" if gtm else "")
+                 + f" → {best} ({conf:.2f}), top-2 margin {margin:.2f}")
 
     category = best
     if conf < s["unknown_threshold"]:

@@ -29,11 +29,16 @@ Run all automated tests with `python -m pytest -q`. The tests use a temporary da
 
 ## Hidden-test readiness checklist
 
-- [ ] Trained with background noise / echo / distance / device augmentation
-- [ ] Tested with quiet and distant recordings (quality warnings, not crashes)
-- [ ] Tested with re-encoded files (MP3 ↔ WAV) → near-duplicate notice and a correct class
-- [ ] Tested with partial events (a clip that starts mid-event)
-- [ ] Tested overlapping sounds (e.g. siren + horn) → overlap + manual review
-- [ ] Tested the confusable pairs from the SRS (gunshot vs fireworks, scream vs shouting, alarm vs horn …)
-- [ ] Thresholds tuned on the **validation** split, never on the test split
-- [ ] Noise-robustness table in `reports/noise_robustness.csv` reviewed
+Measured with `python scripts/hidden_test_robustness.py` (266 unseen TEST clips, same pipeline as the app) →
+`reports/hidden_test_robustness.md`. **0 crashes in 2,926 runs.**
+
+- [x] Trained with background noise / echo / distance / device augmentation (`augmentation/augment.py`, train split only)
+- [x] Quiet recordings (−30 dB): accuracy 0.90, 63 % rated Poor/Unusable → quality warning + manual review, no crash
+- [x] Distant source (15 m): 0.77 · other device (band-pass mic): 0.76 · echo (RT60 0.6 s): 0.87
+- [x] Re-encoded files (MP3 64 kbps): 0.88 → plus near-duplicate notice when the original was uploaded before
+- [x] Partial events (first 40 % cut): 0.75
+- [x] Overlapping sounds (two classes mixed at 0 dB): one of the two classes found in 74 %; overlap flag + manual review when both score ≥ 0.25
+- [x] Confusable SRS pairs on clean test clips: at most 3 of 30 confused (scream vs voices), all others 0–1 of 30
+- [x] Noise: 0.71 at 20 dB and real background at 10 dB, 0.55 with white noise at 10 dB (see `reports/noise_robustness.csv`) – known limitation
+- [x] Thresholds tuned on the **validation** split, never on the test split
+- [ ] On the day: record 30 s of the demo room as Background Noise and check Admin → Settings thresholds

@@ -14,8 +14,8 @@ def get_settings() -> dict:
 
 def update_settings(values: dict) -> dict:
     for k, v in values.items():
-        if k not in DEFAULT_RUNTIME_SETTINGS:
-            continue
+        if k not in DEFAULT_RUNTIME_SETTINGS or (v is None and not isinstance(DEFAULT_RUNTIME_SETTINGS[k], bool)):
+            continue                       # unknown key, or a field missing from the form -> keep current value
         default = DEFAULT_RUNTIME_SETTINGS[k]
         if isinstance(default, bool):
             v = v in (True, "on", "true", "1", 1)

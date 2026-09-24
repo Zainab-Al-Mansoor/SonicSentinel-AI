@@ -46,7 +46,9 @@ with narration (OBS Studio, or Windows `Win + Alt + R` / Xbox Game Bar). Every t
 | 30 | 9:10 | **Event history** | History filters (class, severity, date, confidence) + Timeline | |
 | 31 | 9:30 | **Report generation** | event → Download report; Admin → CSV/Excel exports; Model comparison Excel | |
 | 32 | 9:50 | Admin | Settings (thresholds), Alert rules editor, Models page (metrics, confusion matrix) | configurable without code |
-| 33 | 10:15 | Close | limitations + future work, repository and deployment URLs | |
+| 32a | 10:15 | ⭐ Explainable AI | event page → *Why this prediction?*: highlighted event span, property bars | "our system says not only *what* but *why* and *where*" |
+| 32b | 10:35 | ⭐ Robustness Lab | Lab → random Gunshot test clip → presets Busy street / Worst case → stress test chart | hidden-test readiness live: when each model breaks |
+| 33 | 11:15 | Close | limitations + future work, repository and deployment URLs | |
 
 All 29 items required by SRS §1.10-13 are **bold** in the table.
 

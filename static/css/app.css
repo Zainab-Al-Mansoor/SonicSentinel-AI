@@ -278,3 +278,23 @@ body.app-body::after {
 }
 /* primary button gets a subtle glass sheen */
 .btn-primary { background-image: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0)); }
+
+/* ---------- Explainable AI panel + Robustness Lab ------------------------ */
+.xai-headline { font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+.xai-track { height: 8px; border-radius: 999px; background: rgba(211, 163, 118, .18); overflow: hidden; }
+.xai-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--mocha), var(--espresso)); transition: width .35s ease; }
+.xai-bar.xai-neg { background: linear-gradient(90deg, #E7A9A0, #B5483B); }
+.xai-chip { display: inline-block; font-size: 10px; line-height: 1; padding: 3px 6px; border-radius: 999px; margin-left: 4px; vertical-align: 1px; font-weight: 600; }
+.xai-hi { background: rgba(211, 163, 118, .3); color: var(--caramel-dark); }
+.xai-lo { background: rgba(140, 110, 99, .18); color: var(--ink-2); }
+
+.lab-slider { width: 100%; accent-color: var(--espresso); }
+.lab-row { display: grid; grid-template-columns: 1fr auto; gap: .25rem .75rem; align-items: center; }
+.lab-row label { font-size: .8rem; font-weight: 600; color: var(--ink); }
+.lab-val { font-size: .75rem; font-variant-numeric: tabular-nums; color: var(--ink-2); min-width: 4.5rem; text-align: right; }
+.lab-hint { grid-column: 1 / -1; font-size: 11px; color: var(--ink-3); margin-top: -2px; }
+.lab-preset { font-size: .75rem; padding: .35rem .65rem; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .6); color: var(--ink); }
+.lab-preset:hover { background: var(--sand); }
+.lab-big { font-size: 1.6rem; font-weight: 800; color: var(--ink); line-height: 1.1; }
+.lab-delta-up { color: #2F7A4F; } .lab-delta-down { color: #B5483B; }
+.lab-busy { opacity: .55; transition: opacity .2s; }

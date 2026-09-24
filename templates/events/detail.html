@@ -57,6 +57,35 @@
 </div>
 {% endif %}
 
+{% if ev.final_category and ev.segments %}
+<div class="card mb-5" id="xai">
+  <div class="card-title">🔍 Why this prediction? <span class="text-xs font-normal text-slate-500 ml-1">Explainable AI · Python model</span>
+    <button type="button" class="btn btn-ghost btn-sm hidden ml-auto" id="xai-retry">Retry</button></div>
+  <div id="xai-loading" class="flex items-center gap-3 text-sm text-slate-400">
+    <div class="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin"></div>
+    Analysing which sounds and acoustic properties led to this decision…
+  </div>
+  <div id="xai-error" class="hidden text-sm text-amber-300"></div>
+  <div id="xai-body" class="hidden">
+    <div class="xai-headline" id="xai-headline"></div>
+    <p class="text-sm text-slate-300 mt-1" id="xai-summary"></p>
+    <p class="text-xs text-slate-400 mt-1" id="xai-against"></p>
+    <div class="grid lg:grid-cols-5 gap-6 mt-4">
+      <div class="lg:col-span-2">
+        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">What pushed the model towards <b id="xai-target"></b></div>
+        <div id="xai-bars" class="space-y-2"></div>
+        <div class="text-[11px] text-slate-500 mt-3">Bar = share of the model's evidence. <span class="xai-chip xai-hi">high</span>/<span class="xai-chip xai-lo">low</span> = compared with an average training clip. Negative bars argue against the class.</div>
+      </div>
+      <div class="lg:col-span-3">
+        <img id="xai-img" class="w-full rounded-lg" alt="Spectrogram with the detected event highlighted and per-segment confidence">
+        <div class="text-[11px] text-slate-500 mt-2" id="xai-seginfo"></div>
+      </div>
+    </div>
+    <div class="text-[11px] text-slate-500 mt-4" id="xai-method"></div>
+  </div>
+</div>
+{% endif %}
+
 <div class="grid lg:grid-cols-3 gap-5 mb-5">
   <div class="card lg:col-span-2">
     <div class="card-title">Waveform &amp; spectrogram</div>
@@ -168,6 +197,43 @@
 {% endblock %}
 
 {% block scripts %}
+{% if ev.final_category and ev.segments %}
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  async function loadXai() {
+    $('xai-loading').classList.remove('hidden'); $('xai-error').classList.add('hidden'); $('xai-retry').classList.add('hidden');
+    try {
+      const x = await SS.api("{{ url_for('api.api_event_explain', audio_id=ev.audio_id) }}");
+      $('xai-headline').textContent = x.headline;
+      $('xai-summary').textContent = x.summary;
+      $('xai-against').textContent = x.against || '';
+      $('xai-target').textContent = x.target;
+      const groups = x.groups.filter(g => Math.abs(g.share) >= 0.02).slice(0, 7);
+      const max = Math.max(...groups.map(g => Math.abs(g.share)), 0.01);
+      $('xai-bars').innerHTML = groups.map(g => {
+        const w = Math.round(Math.abs(g.share) / max * 100), neg = g.share < 0;
+        return `<div><div class="flex justify-between text-xs mb-0.5"><span class="text-slate-200">${SS.esc(g.label)}
+                  <span class="xai-chip ${g.level === 'high' ? 'xai-hi' : 'xai-lo'}">${g.level}</span></span>
+                  <span class="tabular-nums ${neg ? 'text-red-400' : 'text-slate-300'}">${neg ? '−' : '+'}${Math.abs(g.share * 100).toFixed(0)}%</span></div>
+                <div class="xai-track"><div class="xai-bar ${neg ? 'xai-neg' : ''}" style="width:${w}%"></div></div>
+                <div class="text-[11px] text-slate-500">${SS.esc(g.description)}</div></div>`;
+      }).join('');
+      $('xai-img').src = x.image_url + '?v=' + encodeURIComponent(x.cache_key || '');
+      $('xai-seginfo').textContent = `Explained segment ${x.segment_used.start.toFixed(2)}–${x.segment_used.end.toFixed(2)} s · `
+        + `${x.segments_over_threshold} of ${x.segments.length} segment(s) above the confidence threshold for ${x.target}.`;
+      $('xai-method').textContent = `Method: ${x.method}. Model ${x.model_version}`
+        + (x.event_model_version && x.event_model_version !== x.model_version ? ` (event was classified by ${x.event_model_version}).` : '.');
+      $('xai-body').classList.remove('hidden');
+    } catch (e) {
+      $('xai-error').textContent = e.message; $('xai-error').classList.remove('hidden'); $('xai-retry').classList.remove('hidden');
+    } finally { $('xai-loading').classList.add('hidden'); }
+  }
+  $('xai-retry').addEventListener('click', loadXai);
+  {% if ev.gtm_status != 'pending' or not gtm.available %}loadXai();{% else %}$('xai-loading').lastChild.textContent = ' Waiting for Google Teachable Machine to finish…';{% endif %}
+})();
+</script>
+{% endif %}
 {% if ev.gtm_status == 'pending' and gtm.available %}
 {% include "partials/gtm_scripts.html" %}
 <script>

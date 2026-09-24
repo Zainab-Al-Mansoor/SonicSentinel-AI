@@ -118,3 +118,13 @@ def test_aggregation_keeps_short_event():
     assert idx == 2 and max(agg, key=agg.get) == "Gunshot"
     agg2, idx2 = aggregate_scores([bg, bg], 0.6)
     assert idx2 == -1 and max(agg2, key=agg2.get) == "Background Noise"
+
+
+def test_python_weight_changes_the_combined_score():
+    from src.services.decision import combine
+    py = {c: 0.0 for c in CLASSES}; py["Gunshot"] = 0.9; py["Background Noise"] = 0.1
+    gtm = {c: 0.0 for c in CLASSES}; gtm["Glass Breaking"] = 0.6; gtm["Gunshot"] = 0.4
+    assert abs(combine(py, gtm)["Gunshot"] - 0.65) < 1e-9                  # default: plain average
+    assert abs(combine(py, gtm, 0.8)["Gunshot"] - 0.8) < 1e-9
+    assert combine(py, None, 0.2)["Gunshot"] == 0.9                         # no GTM -> Python only
+    assert abs(combine(py, gtm, 7)["Gunshot"] - 0.9) < 1e-9                 # clamped to 0..1

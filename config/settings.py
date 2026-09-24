@@ -90,6 +90,7 @@ DEFAULT_RUNTIME_SETTINGS = {
     "acceptable_match_diff": 0.20,   # |Python top conf - GTM top conf| for "Acceptable Match"
     "unknown_threshold": 0.35,       # below this combined confidence -> Unknown
     "overlap_threshold": 0.25,       # >=2 non-background classes above this -> overlap
+    "python_weight": 0.5,            # share of the Python model in the combined score (GTM gets 1 - this)
     "repeat_window_seconds": 10,     # time period used for repeated-detection confirmation
     "noise_reduction": True,
     "background_noise_limit_db": -20.0,   # estimated noise floor above this -> alert

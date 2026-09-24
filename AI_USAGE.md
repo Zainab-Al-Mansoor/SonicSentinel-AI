@@ -15,7 +15,8 @@ The final sound classification is produced **only** by the team's Python model a
 | 7 | Claude (Anthropic) | Performance evidence and deployment | Benchmark script for the NFR targets; Dockerfile, Render blueprint and deployment guide | `scripts/benchmark_performance.py`, `Dockerfile`, `.dockerignore`, `render.yaml`, `documentation/DEPLOYMENT.md` | _fill in_ | _fill in: benchmark run on our PC, deployment test_ | _names_ |
 | 8 | Claude (Anthropic) | Documentation drafts | Drafts of README, project report, technical blog, demo-video script, SRS compliance checklist, submission checklist, development log | `README.md`, `documentation/*.md`, `DEVELOPMENT_LOG.md`, `screenshots/README.md` | _fill in: sections rewritten in our own words, facts checked_ | numbers checked against `reports/` | _names_ |
 | 9 | Claude (Anthropic) | GTM upload archives, availability, benchmark evidence | Teachable Machine sample-archive export (`--zip`), `/healthz` health check, auto-restart server script, tests | `gtm_model/prepare_gtm_samples.py`, `gtm_model/README.md`, `src/__init__.py`, `run_server.bat`, `tests/test_gtm_samples.py`, `tests/test_app.py`, `reports/performance.md` | _fill in_ | 58 pytest tests; archives accepted by the Teachable Machine web app; benchmark with the real model | _names_ |
-| 10 | | | | | | | |
+| 10 | Claude (Anthropic) | Standout features | "Why this prediction?" explainable-AI panel (TreeSHAP / occlusion) and Robustness Lab with live sliders and stress test | `src/services/explain.py`, `src/services/lab.py`, `src/routes/api.py`, `src/routes/main.py`, `templates/events/detail.html`, `templates/lab.html`, `templates/base.html`, `static/js/lab.js`, `static/css/app.css`, `tests/test_explain_lab.py` | _fill in_ | 66 pytest tests; checked in the browser with the real Python and GTM models | _names_ |
+| 11 | | | | | | | |
 
 ## Notes for the team
 

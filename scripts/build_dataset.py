@@ -59,7 +59,8 @@ def main():
     args = ap.parse_args()
 
     ann_path = RAW_DATASET_DIR / "annotations.csv"
-    ann = pd.read_csv(ann_path).set_index("filename").to_dict("index") if ann_path.exists() else {}
+    ann = (pd.read_csv(ann_path).drop_duplicates(subset="filename", keep="last")
+           .set_index("filename").to_dict("index")) if ann_path.exists() else {}
 
     rows, seen_hashes, rejected = [], {}, []
     counter = 0

@@ -9,10 +9,10 @@
       "dog_bark": "Animal Sound",
       "air_conditioner": "Background Noise",
       "engine_idling": "Background Noise",
-      "street_music": null,
-      "children_playing": null,
-      "drilling": null,
-      "jackhammer": null
+      "street_music": "Background Noise",
+      "children_playing": "Background Noise",
+      "drilling": "Background Noise",
+      "jackhammer": "Background Noise"
     }
   },
   "esc50": {
@@ -22,12 +22,52 @@
       "siren": "Alarm or Siren",
       "clock_alarm": "Alarm or Siren",
       "car_horn": "Vehicle Horn",
-      "dog": "Animal Sound", "rooster": "Animal Sound", "pig": "Animal Sound", "cow": "Animal Sound",
-      "frog": "Animal Sound", "cat": "Animal Sound", "hen": "Animal Sound", "sheep": "Animal Sound",
-      "crow": "Animal Sound", "chirping_birds": "Animal Sound",
-      "rain": "Background Noise", "sea_waves": "Background Noise", "wind": "Background Noise",
-      "crickets": "Background Noise", "airplane": "Background Noise", "clock_tick": "Background Noise",
-      "vacuum_cleaner": "Background Noise", "washing_machine": "Background Noise"
+      "dog": "Animal Sound",
+      "rooster": "Animal Sound",
+      "pig": "Animal Sound",
+      "cow": "Animal Sound",
+      "frog": "Animal Sound",
+      "cat": "Animal Sound",
+      "hen": "Animal Sound",
+      "sheep": "Animal Sound",
+      "crow": "Animal Sound",
+      "chirping_birds": "Animal Sound",
+      "rain": "Background Noise",
+      "sea_waves": "Background Noise",
+      "wind": "Background Noise",
+      "crickets": "Background Noise",
+      "airplane": "Background Noise",
+      "clock_tick": "Background Noise",
+      "vacuum_cleaner": "Background Noise",
+      "washing_machine": "Background Noise",
+      "breathing": "Background Noise",
+      "brushing_teeth": "Background Noise",
+      "can_opening": "Background Noise",
+      "chainsaw": "Background Noise",
+      "church_bells": "Background Noise",
+      "clapping": "Background Noise",
+      "coughing": "Background Noise",
+      "crackling_fire": "Background Noise",
+      "crying_baby": "Background Noise",
+      "door_wood_creaks": "Background Noise",
+      "door_wood_knock": "Background Noise",
+      "drinking_sipping": "Background Noise",
+      "engine": "Background Noise",
+      "fireworks": "Background Noise",
+      "footsteps": "Background Noise",
+      "hand_saw": "Background Noise",
+      "helicopter": "Background Noise",
+      "keyboard_typing": "Background Noise",
+      "laughing": "Background Noise",
+      "mouse_click": "Background Noise",
+      "pouring_water": "Background Noise",
+      "sneezing": "Background Noise",
+      "snoring": "Background Noise",
+      "thunderstorm": "Background Noise",
+      "toilet_flush": "Background Noise",
+      "train": "Background Noise",
+      "water_drops": "Background Noise",
+      "insects": "Animal Sound"
     }
   },
   "fsd50k": {
@@ -42,13 +82,17 @@
       "siren": "Alarm or Siren",
       "alarm": "Alarm or Siren",
       "vehicle_horn_and_car_horn_and_honking": "Vehicle Horn",
-      "dog": "Animal Sound", "cat": "Animal Sound", "bird": "Animal Sound", "livestock_and_farm_animals_and_working_animals": "Animal Sound"
+      "dog": "Animal Sound",
+      "cat": "Animal Sound",
+      "bird": "Animal Sound",
+      "livestock_and_farm_animals_and_working_animals": "Animal Sound"
     }
   },
   "mimii": {
     "license": "CC BY-SA 4.0 (MIMII dataset)",
-    "_comment": "Files under */abnormal/* -> Machinery Fault. Normal files are NOT used as Machinery Fault.",
+    "_comment": "abnormal -> Machinery Fault; normal -> Background Noise (normal machinery, SRS step 14).",
     "abnormal_class": "Machinery Fault",
-    "normal_class": null
-  }
+    "normal_class": "Background Noise"
+  },
+  "_comment_negatives": "Look-alike sounds (SRS step 14) are mapped to Background Noise so the models learn what is NOT an event: fireworks/thunderstorm/door knock vs Gunshot, crying baby/laughing vs Panic Scream, drilling/jackhammer/chainsaw/engine vs Machinery Fault, street music/children playing/coughing vs Aggression and Person Asking for Help."
 }

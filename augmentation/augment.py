@@ -95,6 +95,10 @@ def random_augment(y, sr, bg_pool=None):
 def main():
     ap = argparse.ArgumentParser(description="Augment TRAINING clips only")
     ap.add_argument("--per-clip", type=int, default=1, help="augmented copies per original training clip")
+    ap.add_argument("--balance-to", type=int, default=0,
+                    help="extra copies for small classes so each class has about this many TRAIN clips "
+                         "(originals + augmented). 0 = off")
+    ap.add_argument("--max-per-clip", type=int, default=10, help="upper limit of copies per clip when balancing")
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
     random.seed(args.seed); np.random.seed(args.seed)
@@ -109,11 +113,20 @@ def main():
         a, _ = librosa.load(BASE_DIR / p, sr=None, mono=True)
         bg_pool.append(a)
 
+    # copies per clip for every class (minority classes get more when --balance-to is used)
+    copies = {}
+    for cls, n in train["class_label"].value_counts().items():
+        c = args.per_clip
+        if args.balance_to and n:
+            c = max(c, min(args.max_per_clip, -(-args.balance_to // n) - 1))
+        copies[cls] = c
+        print(f"  {cls:<25} {n:>5} train clips -> {c} augmented copies each")
+
     new_rows = []
     for _, row in train.iterrows():
         src = BASE_DIR / row["path"]
         y, sr = librosa.load(src, sr=None, mono=True)
-        for k in range(args.per_clip):
+        for k in range(copies[row["class_label"]]):
             aug, ops = random_augment(y, sr, bg_pool)
             aug_id = f"{row['audio_id']}-A{k+1}"
             out = src.with_name(f"{aug_id}.wav")
@@ -127,7 +140,7 @@ def main():
         _progress(f"augmented {row['audio_id']}")
 
     full = pd.read_csv(DATASET_METADATA_CSV)
-    full = full[~full["audio_id"].isin([r["audio_id"] for r in new_rows])]
+    full = full[full["is_augmented"] == 0]   # replace every earlier augmentation run
     full = pd.concat([full, pd.DataFrame(new_rows)], ignore_index=True)
     full.to_csv(DATASET_METADATA_CSV, index=False)
     print(f"\nCreated {len(new_rows)} augmented training clips (all in the TRAIN split).")

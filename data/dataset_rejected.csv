@@ -1,16 +1,6 @@
 file,reason
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159738-8-0-18.wav,unusable: Silent or near-silent recording; Very low signal strength (-65 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159738-8-0-19.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159742-8-0-0.wav,unusable: Silent or near-silent recording; Very low signal strength (-75 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159742-8-0-1.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159742-8-0-2.wav,unusable: Silent or near-silent recording; Very low signal strength (-72 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159742-8-0-3.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159742-8-0-4.wav,unusable: Silent or near-silent recording; Very low signal strength (-65 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159745-8-1-6.wav,unusable: Silent or near-silent recording; Very low signal strength (-67 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159745-8-1-7.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159747-8-0-20.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159747-8-0-21.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159750-8-0-7.wav,unusable: Silent or near-silent recording; Very low signal strength (-66 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_159750-8-0-8.wav,unusable: Silent or near-silent recording; Very low signal strength (-67 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_43805-8-1-0.wav,unusable: Too short (0.28s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Alarm or Siren\us8k_43805-8-2-0.wav,unusable: Too short (0.26s < 0.5s)
@@ -21,7 +11,6 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_118070-
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_118496-1-0-0.wav,unusable: Too short (0.26s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_118496-1-1-0.wav,unusable: Too short (0.19s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_132073-1-2-0.wav,unusable: Too short (0.37s < 0.5s); Very low signal strength (-51 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_132073-1-6-0.wav,unusable: Too short (0.37s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_143115-1-3-0.wav,unusable: Too short (0.45s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_143115-1-4-0.wav,unusable: Too short (0.35s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_151359-1-0-0.wav,unusable: Too short (0.14s < 0.5s)
@@ -35,7 +24,6 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_156194-
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162540-1-0-0.wav,unusable: Too short (0.36s < 0.5s); Some clipping (0.58% of samples)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162540-1-1-0.wav,unusable: Too short (0.31s < 0.5s); Some clipping (0.40% of samples)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162540-1-2-0.wav,unusable: Too short (0.47s < 0.5s); Severe clipping (1.0% of samples)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162541-1-0-0.wav,unusable: Too short (0.49s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162541-1-1-0.wav,unusable: Too short (0.45s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162541-1-2-0.wav,unusable: Too short (0.44s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_162702-1-0-0.wav,unusable: Too short (0.11s < 0.5s)
@@ -49,11 +37,9 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_175842-
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_175853-1-0-0.wav,unusable: Too short (0.28s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_175856-1-0-0.wav,unusable: Too short (0.27s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_175856-1-1-0.wav,unusable: Too short (0.30s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_176634-1-0-0.wav,unusable: Too short (0.27s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_178115-1-0-0.wav,unusable: Too short (0.46s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_179858-1-0-0.wav,unusable: Too short (0.35s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_179862-1-0-0.wav,unusable: Too short (0.38s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_179866-1-0-0.wav,unusable: Too short (0.49s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_180156-1-12-0.wav,unusable: Too short (0.21s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_180156-1-2-0.wav,unusable: Too short (0.28s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_180156-1-7-0.wav,unusable: Too short (0.25s < 0.5s)
@@ -96,109 +82,49 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_94868-1
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_94868-1-1-0.wav,unusable: Too short (0.39s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Vehicle Horn\us8k_94868-1-2-0.wav,unusable: Too short (0.37s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_100032-3-0-0.wav,unusable: Too short (0.32s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_102103-3-1-0.wav,unusable: Too short (0.39s < 0.5s); Low signal strength (-39 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_103076-3-2-0.wav,unusable: Too short (0.45s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_108187-3-2-0.wav,unusable: Too short (0.50s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_113785-3-0-0.wav,unusable: Too short (0.44s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_115535-3-0-0.wav,unusable: Too short (0.49s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_116163-3-0-0.wav,unusable: Too short (0.27s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_116163-3-1-0.wav,unusable: Too short (0.41s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_11722-3-1-0.wav,unusable: Too short (0.44s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_131199-3-0-0.wav,unusable: Too short (0.29s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_142641-3-0-0.wav,unusable: Too short (0.38s < 0.5s); Severe clipping (1.2% of samples)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_144885-3-0-0.wav,unusable: Too short (0.26s < 0.5s); 1 missing-frame gap(s) detected
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_147672-3-0-0.wav,unusable: Too short (0.35s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_147672-3-1-0.wav,unusable: Too short (0.46s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_147672-3-2-0.wav,unusable: Too short (0.38s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_150341-3-0-0.wav,unusable: Too short (0.49s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_150341-3-1-0.wav,unusable: Too short (0.45s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_160092-3-0-0.wav,unusable: Too short (0.13s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_160093-3-0-0.wav,unusable: Too short (0.12s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_160094-3-0-0.wav,unusable: Too short (0.19s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_162148-3-0-0.wav,unusable: Too short (0.45s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_166268-3-0-0.wav,unusable: Too short (0.24s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_166268-3-2-0.wav,unusable: Too short (0.21s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_17810-3-0-0.wav,unusable: Too short (0.38s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_203128-3-3-0.wav,unusable: Too short (0.45s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_24965-3-3-0.wav,unusable: Too short (0.48s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_26255-3-0-0.wav,unusable: Too short (0.25s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_33849-3-0-0.wav,unusable: Too short (0.26s < 0.5s); Low signal strength (-43 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4201-3-0-0.wav,unusable: Too short (0.25s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4201-3-1-0.wav,unusable: Too short (0.28s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4201-3-2-0.wav,unusable: Too short (0.35s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_43784-3-0-0.wav,unusable: Too short (0.18s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_43786-3-1-0.wav,unusable: Too short (0.39s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_43787-3-3-0.wav,unusable: Too short (0.42s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_47926-3-1-0.wav,unusable: Too short (0.44s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4911-3-0-0.wav,unusable: Too short (0.21s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4912-3-0-0.wav,unusable: Too short (0.23s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4912-3-1-0.wav,unusable: Too short (0.34s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4912-3-2-0.wav,unusable: Too short (0.32s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4912-3-3-0.wav,unusable: Too short (0.28s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4918-3-0-0.wav,unusable: Too short (0.37s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_4918-3-3-0.wav,unusable: Too short (0.42s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_51022-3-29-0.wav,unusable: Too short (0.46s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_52171-3-2-0.wav,unusable: Too short (0.49s < 0.5s); Low signal strength (-39 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_52171-3-3-0.wav,unusable: Too short (0.40s < 0.5s); Low signal strength (-39 dBFS)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_66587-3-1-0.wav,unusable: Too short (0.35s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_66587-3-3-0.wav,unusable: Too short (0.49s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_89207-3-0-0.wav,unusable: Too short (0.36s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_9031-3-1-0.wav,unusable: Too short (0.42s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Animal Sound\us8k_9032-3-0-0.wav,unusable: Too short (0.35s < 0.5s)
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__11_.wav,exact duplicate of gun_M16_5__11_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__12_.wav,exact duplicate of gun_M16_5__12_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__10_.wav,exact duplicate of gun_M16_5__10_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__14_.wav,exact duplicate of gun_M16_5__14_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__15_.wav,exact duplicate of gun_M16_5__15_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__16_.wav,exact duplicate of gun_M16_5__16_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__17_.wav,exact duplicate of gun_M16_5__17_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__18_.wav,exact duplicate of gun_M16_5__18_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__21_.wav,exact duplicate of gun_M16_5__21_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__22_.wav,exact duplicate of gun_M16_5__22_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__24_.wav,exact duplicate of gun_M16_5__24_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__26_.wav,exact duplicate of gun_M16_5__26_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__31_.wav,exact duplicate of gun_M16_5__31_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__33_.wav,exact duplicate of gun_M16_5__33_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__34_.wav,exact duplicate of gun_M16_5__34_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__35_.wav,exact duplicate of gun_M16_5__35_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__36_.wav,exact duplicate of gun_M16_5__36_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__28_.wav,exact duplicate of gun_M16_5__28_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__29_.wav,exact duplicate of gun_M16_5__29_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__2_.wav,exact duplicate of gun_M16_5__2_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__38_.wav,exact duplicate of gun_M16_5__38_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__41_.wav,exact duplicate of gun_M16_5__41_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__43_.wav,exact duplicate of gun_M16_5__43_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__44_.wav,exact duplicate of gun_M16_5__44_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__45_.wav,exact duplicate of gun_M16_5__45_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__40_.wav,exact duplicate of gun_M16_5__40_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__47_.wav,exact duplicate of gun_M16_5__47_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__48_.wav,exact duplicate of gun_M16_5__48_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__49_.wav,exact duplicate of gun_M16_5__49_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__4_.wav,exact duplicate of gun_M16_5__4_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__51_.wav,exact duplicate of gun_M16_5__51_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__52_.wav,exact duplicate of gun_M16_5__52_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__54_.wav,exact duplicate of gun_M16_5__54_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__59_.wav,exact duplicate of gun_M16_5__59_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__60_.wav,exact duplicate of gun_M16_5__60_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__61_.wav,exact duplicate of gun_M16_5__61_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__63_.wav,exact duplicate of gun_M16_5__63_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__55_.wav,exact duplicate of gun_M16_5__55_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__5_.wav,exact duplicate of gun_M16_5__5_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__62_.wav,exact duplicate of gun_M16_5__62_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__65_.wav,exact duplicate of gun_M16_5__65_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__68_.wav,exact duplicate of gun_M16_5__68_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__69_.wav,exact duplicate of gun_M16_5__69_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__70_.wav,exact duplicate of gun_M16_5__70_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__72_.wav,exact duplicate of gun_M16_5__72_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__73_.wav,exact duplicate of gun_M16_5__73_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__74_.wav,exact duplicate of gun_M16_5__74_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__75_.wav,exact duplicate of gun_M16_5__75_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__76_.wav,exact duplicate of gun_M16_5__76_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__77_.wav,exact duplicate of gun_M16_5__77_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__78_.wav,exact duplicate of gun_M16_5__78_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__7_.wav,exact duplicate of gun_M16_5__7_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__83_.wav,exact duplicate of gun_M16_5__83_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__84_.wav,exact duplicate of gun_M16_5__84_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__88_.wav,exact duplicate of gun_M16_5__88_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__89_.wav,exact duplicate of gun_M16_5__89_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__90_.wav,exact duplicate of gun_M16_5__90_.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__91_.wav,exact duplicate of gun_M16_5__91_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__95_.wav,exact duplicate of gun_M16_5__95_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__96_.wav,exact duplicate of gun_M16_5__96_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__97_.wav,exact duplicate of gun_M16_5__97_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__99_.wav,exact duplicate of gun_M16_5__99_.wav
-C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\gun_M4_4__9_.wav,exact duplicate of gun_M16_5__9_.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_135544-6-11-0.wav,unusable: Too short (0.50s < 0.5s); Some clipping (0.19% of samples)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_159708-6-0-0.wav,unusable: Too short (0.34s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_159708-6-1-0.wav,unusable: Too short (0.29s < 0.5s); Severe clipping (5.2% of samples)
@@ -224,6 +150,85 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_76091-6-1-0.
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_76091-6-2-0.wav,unusable: Too short (0.20s < 0.5s)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_76091-6-3-0.wav,unusable: Too short (0.18s < 0.5s); Some clipping (0.80% of samples)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Gunshot\us8k_76091-6-4-0.wav,unusable: Too short (0.17s < 0.5s); Some clipping (0.40% of samples)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031546_000.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031601_001.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031619_003.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031627_004.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031639_005.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031652_006.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031659_007.wav,unusable: Silent or near-silent recording; Very low signal strength (-64 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031706_008.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031713_009.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031803_014.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031818_015.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031825_016.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031832_017.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031840_018.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031904_020.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031926_023.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031933_024.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031939_025.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031946_026.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_031953_027.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_032000_028.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S01_20260924_032006_029.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032214_000.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032218_001.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032228_002.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032235_003.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032242_004.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032255_005.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032303_006.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032311_007.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032318_008.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032329_009.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032336_010.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032343_011.wav,unusable: Silent or near-silent recording; Very low signal strength (-75 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032350_012.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032357_013.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032403_014.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032412_015.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032419_016.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032426_017.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032433_018.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032440_019.wav,unusable: Silent or near-silent recording; Very low signal strength (-75 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032447_020.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032457_021.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032504_022.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032512_023.wav,unusable: Silent or near-silent recording; Very low signal strength (-60 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032518_024.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032525_025.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032533_026.wav,unusable: Silent or near-silent recording; Very low signal strength (-74 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032542_027.wav,unusable: Silent or near-silent recording; Very low signal strength (-67 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032550_028.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S02_20260924_032556_029.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033550_000.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033559_001.wav,unusable: Silent or near-silent recording; Very low signal strength (-73 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033608_002.wav,unusable: Silent or near-silent recording; Very low signal strength (-72 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033615_003.wav,unusable: Silent or near-silent recording; Very low signal strength (-72 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033623_004.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033654_008.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033701_009.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033710_010.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033718_011.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033726_012.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033734_013.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033745_014.wav,unusable: Silent or near-silent recording; Very low signal strength (-72 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033753_015.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033808_016.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033828_019.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033841_020.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033848_021.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033856_022.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033904_023.wav,unusable: Silent or near-silent recording; Very low signal strength (-71 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033932_027.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\rec_S03_20260924_033941_029.wav,unusable: Silent or near-silent recording; Very low signal strength (-67 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_03_003.wav,exact duplicate of tts_help_03_000.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_03_013.wav,exact duplicate of tts_help_03_010.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_05_010.wav,exact duplicate of tts_help_05_004.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_05_020.wav,exact duplicate of tts_help_00_003.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_08_013.wav,exact duplicate of tts_help_08_007.wav
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Person Asking for Help\tts_help_09_019.wav,exact duplicate of tts_help_09_006.wav
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_015723_024.wav,unusable: Silent or near-silent recording; Very low signal strength (-70 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_020512_028.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_020518_029.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
@@ -234,3 +239,4 @@ C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_021959_041.wav,unusable: Silent or near-silent recording; Very low signal strength (-69 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_022124_047.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
 C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\rec_S00_20260924_022131_048.wav,unusable: Silent or near-silent recording; Very low signal strength (-68 dBFS)
+C:\Users\CZ\Desktop\SonicSentinel AI\audio_dataset\raw\Background Noise\us8k_181624-4-5-0.wav,unusable: Too short (0.44s < 0.5s)

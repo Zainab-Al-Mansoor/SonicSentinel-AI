@@ -81,7 +81,10 @@ def clip_segments(path, noise_snr=None):
 def clip_features(row, noise_snr=None, use_cache=True):
     cache_dir = FEATURE_DIR / CACHE_TAG
     cache_dir.mkdir(parents=True, exist_ok=True)
-    key = row["audio_id"] + (f"_snr{noise_snr}" if noise_snr is not None else "")
+    # The key includes the file's size and modification time: Audio IDs are re-assigned every time
+    # build_dataset.py runs, so an ID alone could return the cached features of a different clip.
+    st = (BASE_DIR / row["path"]).stat()
+    key = f"{row['audio_id']}_{st.st_size}_{int(st.st_mtime)}" + (f"_snr{noise_snr}" if noise_snr is not None else "")
     f = cache_dir / f"{key}.npz"
     if use_cache and f.exists():
         d = np.load(f)

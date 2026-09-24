@@ -1,21 +1,21 @@
 {
-  "total_original_clips": 5622,
+  "total_original_clips": 4629,
   "per_class": {
     "Machinery Fault": 138,
     "Glass Breaking": 40,
-    "Alarm or Siren": 983,
-    "Vehicle Horn": 390,
-    "Animal Sound": 950,
-    "Gunshot": 921,
-    "Panic Scream": 862,
+    "Alarm or Siren": 473,
+    "Vehicle Horn": 365,
+    "Animal Sound": 774,
+    "Gunshot": 731,
+    "Panic Scream": 400,
     "Aggression": 298,
-    "Person Asking for Help": 0,
-    "Background Noise": 1040
+    "Person Asking for Help": 221,
+    "Background Noise": 1189
   },
   "per_split": {
-    "train": 3935,
-    "test": 844,
-    "val": 843
+    "train": 3240,
+    "test": 695,
+    "val": 694
   },
   "per_class_split": {
     "Aggression": {
@@ -24,19 +24,19 @@
       "val": 45
     },
     "Alarm or Siren": {
-      "test": 148,
-      "train": 688,
-      "val": 147
+      "test": 71,
+      "train": 331,
+      "val": 71
     },
     "Animal Sound": {
-      "test": 143,
-      "train": 665,
-      "val": 142
+      "test": 116,
+      "train": 542,
+      "val": 116
     },
     "Background Noise": {
-      "test": 156,
-      "train": 728,
-      "val": 156
+      "test": 179,
+      "train": 832,
+      "val": 178
     },
     "Glass Breaking": {
       "test": 6,
@@ -44,9 +44,9 @@
       "val": 6
     },
     "Gunshot": {
-      "test": 138,
-      "train": 645,
-      "val": 138
+      "test": 110,
+      "train": 512,
+      "val": 109
     },
     "Machinery Fault": {
       "test": 20,
@@ -54,27 +54,32 @@
       "val": 21
     },
     "Panic Scream": {
-      "test": 130,
-      "train": 603,
-      "val": 129
+      "test": 60,
+      "train": 280,
+      "val": 60
+    },
+    "Person Asking for Help": {
+      "test": 33,
+      "train": 155,
+      "val": 33
     },
     "Vehicle Horn": {
-      "test": 58,
-      "train": 273,
-      "val": 59
+      "test": 55,
+      "train": 255,
+      "val": 55
     }
   },
   "duration_seconds": {
-    "total": 26154.554,
-    "mean": 4.652179651369619,
+    "total": 23665.659,
+    "mean": 5.11247764095917,
     "min": 0.5,
     "max": 360.0
   },
   "quality": {
-    "Good": 4549,
-    "Acceptable": 772,
-    "Poor": 301
+    "Good": 3195,
+    "Acceptable": 1208,
+    "Poor": 226
   },
-  "rejected": 235,
-  "imbalance_ratio": 26.0
+  "rejected": 241,
+  "imbalance_ratio": 29.725
 }

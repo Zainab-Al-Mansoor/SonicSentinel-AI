@@ -19,7 +19,6 @@ The app compares the two predictions and their confidence scores. It also checks
 
 **Deliverables:** [Project report](documentation/PROJECT_REPORT.md) · [Technical blog](documentation/TECHNICAL_BLOG.md) · Demo video: _link_ · Live app: _URL_ · [Submission checklist](documentation/SUBMISSION_CHECKLIST.md)
 
-> ⚠️ This is a competition prototype. It is **not** a certified emergency-response or law-enforcement system.
 
 ### Standout features
 

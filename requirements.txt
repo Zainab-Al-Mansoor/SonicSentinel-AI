@@ -29,3 +29,8 @@ pytest>=8.0
 # Optional helpers (dataset collection)
 # sounddevice>=0.4   # scripts/record_samples.py
 # pyttsx3>=2.90      # scripts/generate_help_phrases_tts.py
+
+# Optional – YAMNet features (feature set v2). Without them the model is trained without YAMNet
+# (python -m python_models.train_models --no-yamnet) and the web app does not need TensorFlow.
+# tensorflow>=2.15
+# (tensorflow-hub is NOT needed: YAMNet is loaded with tf.saved_model.load)

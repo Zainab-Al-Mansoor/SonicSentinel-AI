@@ -4,6 +4,15 @@ Train, tune and compare Python sound-classification models.
     python -m python_models.train_models              # all models, normal grids
     python -m python_models.train_models --fast       # small grids (quick check)
     python -m python_models.train_models --models svm,rf,xgb
+    python -m python_models.train_models --fast --no-yamnet        # feature set v2 without TensorFlow
+    python -m python_models.train_models --fast --legacy-features  # the original 299 features
+
+Feature set v2 (default): 299 original + 94 extra hand-crafted + 53 context features
+(+ 521 YAMNet AudioSet scores when TensorFlow is installed).
+Class-balanced sample weights (XGBoost), per-class calibration on the VALIDATION split and a
+feature-ablation table (reports/feature_ablation.csv) are part of every run.
+--fast skips the cross-validated grid search: every model is fitted once with its default
+parameters and compared on the validation split (much faster, same selection rule).
 
 Models compared : SVM (RBF), Random Forest, XGBoost (or sklearn Gradient
                   Boosting if xgboost is missing), MLP neural network.
@@ -33,7 +42,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import (accuracy_score, precision_recall_fscore_support, f1_score,
                              confusion_matrix, classification_report)
 from sklearn.model_selection import GridSearchCV, GroupKFold
@@ -50,6 +59,8 @@ from audio_preprocessing import load_audio, preprocess_signal, segment
 from augmentation.augment import add_noise
 from feature_extraction import extract_features, feature_names
 from feature_extraction.features import FEATURE_VERSION
+from feature_extraction.pipeline import (segment_matrix, spec_names, spec_tag, base_names, default_spec,
+                                         normalise, LEGACY_SPEC)
 from python_models.inference import aggregate_scores
 
 try:
@@ -63,7 +74,21 @@ SEG = DEFAULT_RUNTIME_SETTINGS["segment_seconds"]
 HOP = DEFAULT_RUNTIME_SETTINGS["segment_hop_seconds"]
 DENOISE = DEFAULT_RUNTIME_SETTINGS["noise_reduction"]
 MIN_CONF = DEFAULT_RUNTIME_SETTINGS["min_confidence"]
-CACHE_TAG = hashlib.md5(f"{FEATURE_VERSION}-{SEG}-{HOP}-{DENOISE}-{TARGET_SR}-{len(feature_names())}".encode()).hexdigest()[:8]
+SPEC = None            # feature set used by this run (set in main(); scripts may pass their own)
+
+
+def cache_tag(spec) -> str:
+    spec = normalise(spec)
+    if spec == LEGACY_SPEC:   # same folder as before feature set v2, so old caches are reused
+        return hashlib.md5(f"{FEATURE_VERSION}-{SEG}-{HOP}-{DENOISE}-{TARGET_SR}-{len(feature_names())}".encode()).hexdigest()[:8]
+    return hashlib.md5(f"{spec_tag(spec)}-{SEG}-{HOP}-{DENOISE}-{TARGET_SR}".encode()).hexdigest()[:8]
+
+
+def current_spec():
+    global SPEC
+    if SPEC is None:
+        SPEC = default_spec()
+    return SPEC
 
 
 # ---------------------------------------------------------------------------
@@ -78,8 +103,9 @@ def clip_segments(path, noise_snr=None):
     return [s for _, _, s in segment(clean, TARGET_SR, SEG, HOP)]
 
 
-def clip_features(row, noise_snr=None, use_cache=True):
-    cache_dir = FEATURE_DIR / CACHE_TAG
+def clip_features(row, noise_snr=None, use_cache=True, spec=None):
+    spec = normalise(spec if spec is not None else current_spec())
+    cache_dir = FEATURE_DIR / cache_tag(spec)
     cache_dir.mkdir(parents=True, exist_ok=True)
     # The key includes the file's size and modification time: Audio IDs are re-assigned every time
     # build_dataset.py runs, so an ID alone could return the cached features of a different clip.
@@ -90,7 +116,7 @@ def clip_features(row, noise_snr=None, use_cache=True):
         d = np.load(f)
         return d["X"], d["energy"]
     segs = clip_segments(BASE_DIR / row["path"], noise_snr)
-    X = np.vstack([extract_features(s) for s in segs])
+    X = segment_matrix(segs, spec)
     energy = np.array([float(np.sqrt(np.mean(s ** 2))) for s in segs])
     np.savez_compressed(f, X=X, energy=energy)
     return X, energy
@@ -124,7 +150,7 @@ def candidates(fast: bool, wanted: set):
     if "xgb" in wanted:
         if XGBClassifier is not None:
             c["xgb"] = (XGBClassifier(n_estimators=300, tree_method="hist", eval_metric="mlogloss",
-                                      n_jobs=-1, random_state=42),
+                                      colsample_bytree=0.6, n_jobs=-1, random_state=42),
                         {"clf__max_depth": [6] if fast else [4, 6], "clf__learning_rate": [0.1] if fast else [0.1, 0.05]})
         else:
             c["gboost"] = (GradientBoostingClassifier(random_state=42),
@@ -135,17 +161,103 @@ def candidates(fast: bool, wanted: set):
     return c
 
 
-def clip_level(pipe, df, label_to_idx):
+def seg_probs(pipe, X) -> np.ndarray:
+    """Segment probabilities in CLASSES order."""
+    p = pipe.predict_proba(X)
+    out = np.zeros((len(p), len(CLASSES)))
+    for j, k in enumerate(pipe.classes_):
+        out[:, int(k)] = p[:, j]
+    return out
+
+
+def aggregate(P: np.ndarray, bias=None) -> dict:
+    if bias is not None:
+        P = P * bias
+        P = P / np.clip(P.sum(axis=1, keepdims=True), 1e-12, None)
+    agg, _ = aggregate_scores([dict(zip(CLASSES, row)) for row in P], MIN_CONF)
+    return agg
+
+
+def clip_probs(pipe, df, noise_snr=None) -> list:
+    return [seg_probs(pipe, clip_features(r, noise_snr)[0]) for _, r in df.iterrows()]
+
+
+def predict_clips(probs: list, bias=None) -> tuple[np.ndarray, np.ndarray]:
+    preds, conf = [], []
+    for P in probs:
+        agg = aggregate(P, bias)
+        b = max(agg, key=agg.get)
+        preds.append(b); conf.append(agg[b])
+    return np.array(preds), np.array(conf)
+
+
+def clip_level(pipe, df, label_to_idx=None, bias=None):
     """Clip-level predictions using the same aggregation rule as the web app."""
-    y_true, y_pred, conf = [], [], []
-    for _, r in df.iterrows():
-        X, _ = clip_features(r)
-        proba = pipe.predict_proba(X)
-        seg_scores = [{CLASSES[k]: float(p[j]) for j, k in enumerate(pipe.classes_)} for p in proba]
-        agg, _ = aggregate_scores(seg_scores, MIN_CONF)
-        best = max(agg, key=agg.get)
-        y_true.append(r["class_label"]); y_pred.append(best); conf.append(agg[best])
-    return np.array(y_true), np.array(y_pred), np.array(conf)
+    pred, conf = predict_clips(clip_probs(pipe, df), bias)
+    return df["class_label"].to_numpy(), pred, conf
+
+
+def calibrate_bias(probs: list, y_true: np.ndarray) -> tuple[np.ndarray, float, float]:
+    """Per-class factors (step 6) that maximise VALIDATION macro-F1; kept only if they help clearly."""
+    def score(b):
+        return f1_score(y_true, predict_clips(probs, b)[0], labels=CLASSES, average="macro", zero_division=0)
+    bias = np.ones(len(CLASSES))
+    base = best = score(bias)
+    grid = [0.6, 0.75, 0.9, 1.0, 1.15, 1.35, 1.6, 2.0]
+    for _ in range(2):
+        for k in range(len(CLASSES)):
+            for g in grid:
+                b = bias.copy(); b[k] = g
+                sc = score(b)
+                if sc > best + 1e-4:
+                    best, bias = sc, b
+    if best - base < 0.005:
+        return np.ones(len(CLASSES)), base, base
+    return bias, base, best
+
+
+def class_weights(y: np.ndarray) -> np.ndarray:
+    """Class-balanced sample weights (step 6): rare classes count more, softened with a square root."""
+    counts = np.bincount(y, minlength=len(CLASSES)).astype(float)
+    w = np.sqrt(counts[counts > 0].mean() / np.clip(counts, 1, None))
+    return np.clip(w, 0.5, 4.0)[y]
+
+
+def ablation(Xtr, ytr, val_df, spec, max_rows=40000) -> pd.DataFrame:
+    """Quick comparison of the feature groups on the VALIDATION split (same fast model for every set)."""
+    names = spec_names(spec)
+    nb = len(base_names(spec))
+    sets = [("original 299 features", list(range(299)))]
+    if nb > 299:
+        sets.append(("+ extra hand-crafted", list(range(nb))))
+    ctx = [i for i, n in enumerate(names) if n.startswith("ctx_")]
+    if ctx:
+        sets.append(("+ context", list(range(nb)) + ctx))
+    if spec.get("yamnet"):
+        sets.append(("+ YAMNet (all features)", list(range(len(names)))))
+    rng = np.random.default_rng(0)
+    rows_idx = rng.choice(len(Xtr), size=min(max_rows, len(Xtr)), replace=False)
+    val_X = [clip_features(r)[0] for _, r in val_df.iterrows()]
+    yv = val_df["class_label"].to_numpy()
+    out = []
+    for label, cols in sets:
+        t0 = time.time()
+        clf = HistGradientBoostingClassifier(max_iter=120, learning_rate=0.1, random_state=42)
+        clf.fit(Xtr[rows_idx][:, cols], ytr[rows_idx])
+        probs = []
+        for X in val_X:
+            p = clf.predict_proba(X[:, cols]); P = np.zeros((len(p), len(CLASSES)))
+            for j, k in enumerate(clf.classes_):
+                P[:, int(k)] = p[:, j]
+            probs.append(P)
+        pred, _ = predict_clips(probs)
+        m = metrics(yv, pred)
+        out.append({"features": label, "n_features": len(cols), "val_accuracy": round(m["accuracy"], 4),
+                    "val_f1_macro": round(m["f1_macro"], 4), "val_critical_recall_min": round(m["critical_recall_min"], 4),
+                    "seconds": round(time.time() - t0, 1)})
+        print(f"  [ablation] {label:<26} {len(cols):>4} features  val macro-F1 {m['f1_macro']:.3f}  "
+              f"acc {m['accuracy']:.3f}  ({time.time() - t0:.0f}s)", flush=True)
+    return pd.DataFrame(out)
 
 
 def metrics(y_true, y_pred):
@@ -180,7 +292,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fast", action="store_true")
     ap.add_argument("--models", default="svm,rf,xgb,mlp")
+    ap.add_argument("--no-yamnet", action="store_true", help="feature set v2 without YAMNet (no TensorFlow needed)")
+    ap.add_argument("--legacy-features", action="store_true", help="the original 299 features only")
+    ap.add_argument("--no-ablation", action="store_true", help="skip the feature-group comparison table")
     args = ap.parse_args()
+
+    global SPEC
+    if args.legacy_features:
+        SPEC = dict(LEGACY_SPEC)
+    else:
+        SPEC = default_spec(False if args.no_yamnet else None)
+        if not args.no_yamnet and not SPEC["yamnet"]:
+            from feature_extraction import embeddings
+            print(f"[warn] YAMNet not available ({embeddings.unavailable_reason()[:150]}) -> training WITHOUT YAMNet. "
+                  "Install: pip install tensorflow")
+    print(f"Feature set: {SPEC} -> {len(spec_names(SPEC))} features per segment")
 
     meta = pd.read_csv(DATASET_METADATA_CSV).fillna({"parent_audio_id": ""})
     train_df = meta[meta["split"] == "train"]
@@ -194,6 +320,11 @@ def main():
     ytr = np.array([label_to_idx[c] for c in ytr_s])
     print(f"Training segments: {Xtr.shape}")
 
+    if not args.no_ablation and SPEC != LEGACY_SPEC:
+        print("Feature-group comparison on the validation split ...")
+        abl = ablation(Xtr, ytr, val_df, SPEC)
+        abl.to_csv(REPORTS / "feature_ablation.csv", index=False)
+
     wanted = set(args.models.split(","))
     missing = [c for c in CLASSES if c not in set(ytr_s)]
     if missing:
@@ -205,21 +336,30 @@ def main():
     n_groups = len(set(groups))
     cv = GroupKFold(n_splits=min(3, n_groups))
     results, fitted = [], {}
+    sw = class_weights(ytr)
     for name, (clf, grid) in candidates(args.fast, wanted).items():
         t0 = time.time()
         pipe = Pipeline([("scaler", StandardScaler()), ("clf", clf)])
-        gs = GridSearchCV(pipe, grid, scoring="f1_macro", cv=cv, n_jobs=1, refit=True)
-        gs.fit(Xtr, ytr, groups=groups)
-        best = gs.best_estimator_
-        yv, pv, _ = clip_level(best, val_df, label_to_idx)
+        fit_kw = {"clf__sample_weight": sw} if name in ("xgb", "gboost") else {}
+        if args.fast:
+            params = {k: v[0] for k, v in grid.items()}
+            pipe.set_params(**params)
+            pipe.fit(Xtr, ytr, **fit_kw)
+            best, cv_score = pipe, float("nan")
+        else:
+            gs = GridSearchCV(pipe, grid, scoring="f1_macro", cv=cv, n_jobs=1, refit=True)
+            gs.fit(Xtr, ytr, groups=groups, **fit_kw)
+            best, params, cv_score = gs.best_estimator_, gs.best_params_, gs.best_score_
+        yv, pv, _ = clip_level(best, val_df)
         m = metrics(yv, pv)
-        results.append({"model": name, "best_params": json.dumps(gs.best_params_), "cv_f1_macro": gs.best_score_,
+        results.append({"model": name, "best_params": json.dumps(params), "cv_f1_macro": cv_score,
                         "val_accuracy": m["accuracy"], "val_f1_macro": m["f1_macro"],
                         "val_precision_macro": m["precision_macro"], "val_recall_macro": m["recall_macro"],
                         "val_critical_recall_min": m["critical_recall_min"], "train_seconds": round(time.time() - t0, 1)})
         fitted[name] = best
-        print(f"[{name}] cv_f1={gs.best_score_:.3f} val_acc={m['accuracy']:.3f} val_macroF1={m['f1_macro']:.3f} "
-              f"crit_recall_min={m['critical_recall_min']:.3f}  ({time.time()-t0:.0f}s) params={gs.best_params_}")
+        cv_txt = "cv_f1=n/a" if np.isnan(cv_score) else f"cv_f1={cv_score:.3f}"
+        print(f"[{name}] {cv_txt} val_acc={m['accuracy']:.3f} val_macroF1={m['f1_macro']:.3f} "
+              f"crit_recall_min={m['critical_recall_min']:.3f}  ({time.time()-t0:.0f}s) params={params}", flush=True)
 
     comp = pd.DataFrame(results).sort_values(["val_f1_macro", "val_critical_recall_min"], ascending=False)
     comp.to_csv(REPORTS / "python_model_comparison.csv", index=False)
@@ -227,8 +367,17 @@ def main():
     best = fitted[best_name]
     print(f"\nSelected model: {best_name}")
 
+    # ---- per-class calibration on the VALIDATION split (step 6) ------------
+    val_probs = clip_probs(best, val_df)
+    bias, f1_before, f1_after = calibrate_bias(val_probs, val_df["class_label"].to_numpy())
+    if f1_after > f1_before:
+        print(f"Calibration: validation macro-F1 {f1_before:.3f} -> {f1_after:.3f}  factors "
+              + ", ".join(f"{c}={b:.2f}" for c, b in zip(CLASSES, bias) if abs(b - 1) > 1e-9))
+    else:
+        print(f"Calibration: no clear gain on validation (macro-F1 {f1_before:.3f}) -> not used")
+
     # ---- final, one-time test evaluation ---------------------------------
-    yt, pt, ct = clip_level(best, test_df, label_to_idx)
+    yt, pt, ct = clip_level(best, test_df, bias=bias)
     test_m = metrics(yt, pt)
     plot_cm(yt, pt, REPORTS / "confusion_matrix_python.png", f"Python model ({best_name}) – test set")
     pd.DataFrame(test_m["per_class"]).T.to_csv(REPORTS / "python_classwise_test.csv")
@@ -240,9 +389,7 @@ def main():
         yy, pp = [], []
         for _, r in test_df.iterrows():
             X, _ = clip_features(r, noise_snr=snr)
-            proba = best.predict_proba(X)
-            seg_scores = [{CLASSES[k]: float(p[j]) for j, k in enumerate(best.classes_)} for p in proba]
-            agg, _ = aggregate_scores(seg_scores, MIN_CONF)
+            agg = aggregate(seg_probs(best, X), bias)
             yy.append(r["class_label"]); pp.append(max(agg, key=agg.get))
         mm = metrics(np.array(yy), np.array(pp))
         rob.append({"condition": f"white noise SNR {snr} dB", "accuracy": mm["accuracy"], "f1_macro": mm["f1_macro"]})
@@ -252,11 +399,14 @@ def main():
     version = f"py-{best_name}-{datetime.now():%Y%m%d-%H%M}"
     bundle = {
         "pipeline": best, "classes": CLASSES, "algorithm": best_name, "version": version,
-        "feature_names": feature_names(), "trained_at": datetime.now().isoformat(),
+        "feature_names": spec_names(SPEC), "feature_spec": SPEC,
+        "class_bias": {c: float(b) for c, b in zip(CLASSES, bias)},
+        "trained_at": datetime.now().isoformat(),
         "settings": {"segment_seconds": SEG, "segment_hop_seconds": HOP, "noise_reduction": DENOISE,
                      "sample_rate": TARGET_SR},
         "metrics": {"validation": comp.iloc[0].to_dict(), "test": {k: v for k, v in test_m.items() if k != "per_class"},
-                    "noise_robustness": rob},
+                    "noise_robustness": rob,
+                    "calibration": {"val_f1_before": f1_before, "val_f1_after": f1_after}},
     }
     joblib.dump(bundle, PYTHON_MODEL_PATH)
     (REPORTS / "python_test_metrics.json").write_text(json.dumps({"version": version, **test_m, "noise_robustness": rob}, indent=2))

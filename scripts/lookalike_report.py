@@ -51,7 +51,7 @@ def classify(path, model):
     a = load_audio(ROOT / path)
     clean, _ = preprocess_signal(a.samples, a.sample_rate, trim=True, denoise=S["noise_reduction"])
     segs = segment(clean, TARGET_SR, S["segment_seconds"], S["segment_hop_seconds"])
-    sc, _ = aggregate_scores(model.predict_proba(extract_batch([s for _, _, s in segs])), S["min_confidence"])
+    sc, _ = aggregate_scores(model.segment_scores([s for _, _, s in segs]), S["min_confidence"])
     return sc
 
 

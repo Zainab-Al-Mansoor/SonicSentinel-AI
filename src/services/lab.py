@@ -182,8 +182,7 @@ def python_analyse(y: np.ndarray, sr: int, model) -> dict:
     if not segs:
         return {"prediction": None, "confidence": 0.0, "scores": {c: 0.0 for c in CLASSES}, "quality": q.get("label"),
                 "quality_issues": q.get("issues", []), "snr_db": q.get("snr_db"), "segments": 0}
-    X = np.vstack([extract_features(seg) for _, _, seg in segs])
-    seg_scores = model.predict_proba(X)
+    seg_scores = model.segment_scores([seg for _, _, seg in segs])
     clip, idx = aggregate_scores(seg_scores, s["min_confidence"])
     pred, conf = top_k(clip, 1)[0]
     return {"prediction": pred, "confidence": round(conf, 4), "scores": {k: round(v, 4) for k, v in clip.items()},

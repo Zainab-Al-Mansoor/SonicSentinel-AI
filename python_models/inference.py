@@ -30,6 +30,27 @@ class PythonSoundModel:
         self.metrics = bundle.get("metrics", {})
         self.feature_names = bundle.get("feature_names")
         self.settings = bundle.get("settings", {})
+        # feature set the model was trained with (older bundles: the original 299 features)
+        from feature_extraction.pipeline import normalise
+        self.spec = normalise(bundle.get("feature_spec"))
+        # per-class calibration factors found on the VALIDATION split (1.0 = unchanged)
+        bias = bundle.get("class_bias") or {}
+        self.class_bias = {c: float(bias.get(c, 1.0)) for c in CLASSES}
+        if self.spec.get("yamnet"):
+            from feature_extraction import embeddings
+            if not embeddings.available():
+                raise ModelNotAvailable(
+                    "This model uses YAMNet features, but TensorFlow could not load YAMNet "
+                    f"({embeddings.unavailable_reason()}). Install it with: pip install tensorflow")
+
+    def featurize(self, segments: list) -> np.ndarray:
+        """Model input matrix for the segments of ONE recording (same features as in training)."""
+        from feature_extraction.pipeline import segment_matrix
+        return segment_matrix(segments, self.spec)
+
+    def segment_scores(self, segments: list) -> list[dict]:
+        """Scores for every segment of one recording (features + prediction in one call)."""
+        return self.predict_proba(self.featurize(segments))
 
     def predict_proba(self, X: np.ndarray) -> list[dict]:
         """Returns one {class: probability} dict per row, covering every class in CLASSES."""
@@ -40,8 +61,9 @@ class PythonSoundModel:
         for row in proba:
             d = {c: 0.0 for c in CLASSES}
             for c, p in zip(model_classes, row):
-                d[c] = float(p)
-            out.append(d)
+                d[c] = float(p) * self.class_bias.get(c, 1.0)
+            tot = sum(d.values()) or 1.0
+            out.append({c: v / tot for c, v in d.items()})
         return out
 
 

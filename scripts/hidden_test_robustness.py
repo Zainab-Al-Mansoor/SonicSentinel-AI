@@ -54,7 +54,7 @@ def classify(y: np.ndarray, sr: int, model: PythonSoundModel) -> tuple[str, dict
     q = analyze_quality(y, sr)
     clean, _ = preprocess_signal(y, sr, trim=True, denoise=S["noise_reduction"])
     segs = segment(clean, TARGET_SR, S["segment_seconds"], S["segment_hop_seconds"])
-    scores = model.predict_proba(extract_batch([s for _, _, s in segs]))
+    scores = model.segment_scores([s for _, _, s in segs])
     clip, _ = aggregate_scores(scores, S["min_confidence"])
     pred = max(clip, key=clip.get)
     strong = [c for c, v in clip.items() if c != BACKGROUND_CLASS and v >= S["overlap_threshold"]]

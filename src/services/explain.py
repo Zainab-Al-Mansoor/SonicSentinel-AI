@@ -44,15 +44,45 @@ GROUPS = [
     ("chroma", "Pitch / tonal content", "clear pitched / tonal content", "little pitched content"),
     ("contrast", "Harmonic peaks", "clear harmonic peaks", "flat, peak-less spectrum"),
     ("tempo", "Rhythm / repetition", "a fast repeating rhythm", "a slow or no rhythm"),
+    # feature set v2 (only present when the model was trained with it)
+    ("impulse", "Impulsiveness (crest, attack, flux)", "a very short, explosive burst", "a steady, drawn-out sound"),
+    ("voice", "Voice / pitch (F0, harmonicity)", "a clear voiced, harmonic sound", "little voiced or harmonic content"),
+    ("bands", "Frequency-band balance", "energy concentrated in its typical frequency bands", "an untypical frequency balance"),
+    ("pcen", "Noise-robust spectrum (PCEN)", "a spectrum that stands out from the background", "a spectrum close to the background"),
+    ("context", "Neighbouring segments", "similar sound in the neighbouring seconds", "different sound in the neighbouring seconds"),
+    ("yamnet", "YAMNet (AudioSet knowledge)", "patterns YAMNet knows from millions of AudioSet clips", "patterns YAMNet does not associate with it"),
 ]
 
 
-def _group_indices() -> dict[str, list[int]]:
-    names = feature_names()
+def _names(model=None) -> list[str]:
+    if model is not None and getattr(model, "spec", None) is not None:
+        from feature_extraction.pipeline import spec_names
+        return spec_names(model.spec)
+    return feature_names()
+
+
+def _group_indices(names=None) -> dict[str, list[int]]:
+    names = names or feature_names()
     mel_f = librosa.mel_frequencies(n_mels=N_MELS + 2, fmax=TARGET_SR / 2)[1:-1]
     idx = {g[0]: [] for g in GROUPS}
     for i, n in enumerate(names):
-        if n.startswith("onset"):
+        if n.startswith("ctx_"):
+            idx["context"].append(i)
+        elif n.startswith("yamnet"):
+            idx["yamnet"].append(i)
+        elif n.startswith("pcen"):
+            idx["pcen"].append(i)
+        elif n.startswith(("crest", "attack", "decay", "flux", "onset_rate")):
+            idx["impulse"].append(i)
+        elif n.startswith(("f0_", "harmonic", "percussive")):
+            idx["voice"].append(i)
+        elif n.startswith("band") and (n[4:5].isdigit() or n.startswith("band_high")):
+            idx["bands"].append(i)
+        elif n.startswith(("rmsdb", "env_")):
+            idx["rms"].append(i)
+        elif n.startswith(("centroid_p", "spec_")):
+            idx["bright"].append(i)
+        elif n.startswith("onset"):
             idx["onset"].append(i)
         elif n.startswith("rms"):
             idx["rms"].append(i)
@@ -79,9 +109,9 @@ def _group_indices() -> dict[str, list[int]]:
     return idx
 
 
-def _level_indices(idx: dict[str, list[int]]) -> dict[str, list[int]]:
+def _level_indices(idx: dict[str, list[int]], names=None) -> dict[str, list[int]]:
     """Features that say whether a property is HIGH or LOW (means / maxima, not std)."""
-    names = feature_names()
+    names = names or feature_names()
     out = {}
     for k, ids in idx.items():
         sel = [i for i in ids if names[i].endswith(("_mean", "_max")) or names[i] == "tempo"]
@@ -99,6 +129,10 @@ def _proba(model, Z: np.ndarray) -> np.ndarray:
     for j, name in enumerate(names):
         if name in CLASSES:
             out[:, CLASSES.index(name)] = p[:, j]
+    bias = getattr(model, "class_bias", None)
+    if bias:
+        out = out * np.array([bias.get(c, 1.0) for c in CLASSES])
+        out = out / np.clip(out.sum(axis=1, keepdims=True), 1e-12, None)
     return out
 
 
@@ -125,6 +159,8 @@ def _contributions(model, Z: np.ndarray, t: int, idx: dict[str, list[int]]) -> t
     batch = []
     for key, *_ in GROUPS:
         z = Z.copy()
+        if not idx[key]:
+            batch.append(z[0]); continue
         z[0, idx[key]] = 0.0                         # training average
         batch.append(z[0])
     occl = _logit(_proba(model, np.vstack(batch))[:, t])
@@ -137,12 +173,17 @@ def explain_vector(model, x: np.ndarray, target: str | None = None) -> dict:
     Z = model.pipeline[:-1].transform(x.reshape(1, -1))
     base = _proba(model, Z)[0]
     t = CLASSES.index(target) if target in CLASSES else int(np.argmax(base))
-    idx = _group_indices()
-    lvl = _level_indices(idx)
+    names = _names(model)
+    if len(names) != Z.shape[1]:
+        names = feature_names() if Z.shape[1] == len(feature_names()) else [f"f{i}" for i in range(Z.shape[1])]
+    idx = _group_indices(names)
+    lvl = _level_indices(idx, names)
     contrib, method = _contributions(model, Z, t, idx)
     total = sum(abs(v) for v in contrib.values()) or 1.0
     rows = []
     for key, label, hi, lo in GROUPS:
+        if not idx[key]:
+            continue
         zscore = float(np.mean(Z[0, lvl[key]])) if lvl[key] else 0.0
         v = contrib[key]
         rows.append({"key": key, "label": label, "impact": round(v, 4), "share": round(v / total, 4),
@@ -253,7 +294,11 @@ def explain_event(ev, model) -> dict:
         vals = [(sg.python_scores or {}).get(tgt, 0.0) for sg in stored] or [0.0]
         pos = int(np.argmax(vals)) if len(vals) == len(segs_audio) else 0
     st, en, seg = segs_audio[pos]
-    res = explain_vector(model, extract_features(seg), target)
+    if hasattr(model, "featurize"):
+        x = model.featurize([sg for _, _, sg in segs_audio])[pos]
+    else:
+        x = extract_features(seg)
+    res = explain_vector(model, x, target)
     target = res["target"]
 
     a0, b0 = st + offset, en + offset

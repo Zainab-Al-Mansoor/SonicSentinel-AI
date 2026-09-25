@@ -24,7 +24,7 @@ def test_explain_vector_contributions(app):
     with app.app_context():
         r = explain_vector(python_model(), x)
     assert r["target"] in CLASSES and 0 <= r["confidence"] <= 1
-    assert len(r["groups"]) == len(GROUPS)
+    assert len(r["groups"]) == 13                                       # v1 model: the 13 original groups
     assert sum(g["n_features"] for g in r["groups"]) == 299          # every feature belongs to exactly one group
     assert all(g["level"] in ("high", "low") for g in r["groups"])
 
@@ -108,3 +108,12 @@ def test_degrade_is_deterministic_and_bounded():
     assert p["gain_db"] == 12.0                                        # clamped to the allowed range
     a, b = degrade(y, p, seed=7), degrade(y, p, seed=7)
     assert np.array_equal(a, b) and np.abs(a).max() <= 1.0
+
+
+def test_feature_set_v2_groups_cover_every_feature():
+    from src.services.explain import _group_indices
+    from feature_extraction.pipeline import spec_names
+    names = spec_names({"version": "v2", "context": True, "yamnet": True})
+    idx = _group_indices(names)
+    assigned = sorted(i for ids in idx.values() for i in ids)
+    assert assigned == list(range(len(names)))                          # every feature in exactly one group

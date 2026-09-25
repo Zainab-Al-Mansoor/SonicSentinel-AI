@@ -82,7 +82,10 @@ def warm_up():
     """Run the pipeline once on synthetic audio so the first real request is fast (numba JIT)."""
     y = (0.1 * np.sin(2 * np.pi * 440 * np.arange(TARGET_SR) / TARGET_SR)).astype(np.float32)
     clean, _ = preprocess_signal(y, TARGET_SR)
-    extract_features(clean)
+    try:
+        python_model().segment_scores([clean])     # also loads YAMNet when the model uses it
+    except Exception:
+        extract_features(clean)
     resample(y, TARGET_SR, GTM_SR)
 
 
@@ -100,9 +103,7 @@ def sha256_file(path) -> str:
 
 
 def _python_scores(segments: list[np.ndarray]) -> list[dict]:
-    model = python_model()
-    X = np.vstack([extract_features(s) for s in segments])
-    return model.predict_proba(X)
+    return python_model().segment_scores(list(segments))
 
 
 def _rms_db(x):

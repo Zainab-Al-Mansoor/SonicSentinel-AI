@@ -39,6 +39,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import StratifiedKFold
 
 from config.settings import CLASSES, DATASET_METADATA_CSV
+from feature_extraction.pipeline import LEGACY_SPEC
 from python_models.train_models import clip_features
 
 KEYWORDS = {
@@ -55,7 +56,7 @@ KEYWORDS = {
 
 
 def clip_vector(row):
-    X, _ = clip_features(row)
+    X, _ = clip_features(row, spec=LEGACY_SPEC)   # fast 299 features, cache shared with older runs
     return np.concatenate([X.mean(axis=0), X.max(axis=0)])
 
 

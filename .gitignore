@@ -35,3 +35,7 @@ _training_pack/
 *.swp
 *.swo
 *~
+
+# YAMNet SavedModel (downloaded automatically, ~15 MB)
+python_models/yamnet/
+python_models/yamnet_tmp/

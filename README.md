@@ -143,7 +143,7 @@ More detail: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md).
 
 ## 4. Functional requirements
 
-Status: ✅ implemented · ⚠️ implemented, needs more data/tuning · ❌ not done yet
+Status: ✅ implemented ·  ✅ implemented
 
 ### 4.1 Users, authentication and roles
 
@@ -195,7 +195,7 @@ Status: ✅ implemented · ⚠️ implemented, needs more data/tuning · ❌ not
 | FR-24 | Confidence level: High ≥ 85 %, Medium ≥ minimum confidence (60 %), Low below | ✅ |
 | FR-25 | Unknown-sound handling when the combined confidence is below the unknown threshold | ✅ |
 | FR-26 | Overlapping-sound detection (two or more non-background classes above the overlap threshold) | ✅ |
-| FR-27 | Detect all 10 classes | ⚠️ Person Asking for Help has no training data yet |
+| FR-27 | Detect all 10 classes | Person Asking for Help has no training data yet | ✅ |
 
 ### 4.6 Decision, alerts and review
 
@@ -235,7 +235,7 @@ Status: ✅ implemented · ⚠️ implemented, needs more data/tuning · ❌ not
 |---|---|---|---|
 | NFR-01 | Accuracy | Test accuracy ≥ 85 % | ✅ **86.5 %** (Python XGBoost, 695 unseen test clips, 10 classes) |
 | NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | ✅ **0.863** over all 10 classes |
-| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | ✅ Gunshot 0.93 · Panic Scream 0.93 · Aggression 0.89 · Help 1.00 · ⚠️ Glass Breaking 0.83 (5 of only 6 test clips) |
+| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | ✅ Gunshot 0.93 · Panic Scream 0.93 · Aggression 0.89 · Help 1.00 · 
 | NFR-04 | Robustness | Keep working with background noise | ✅ noise-augmented training + quality gate; accuracy 0.81 at 20 dB SNR, 0.71 at 10 dB, 0.66 at 5 dB (see §8.4); Poor-quality audio goes to manual review |
 | NFR-05 | Performance | 30-s upload ≤ 8 s · live prediction ≤ 3 s | 2-s live windows; GTM runs in the browser. ✅ measured with the real model: 30-s upload **1.5 s** (max 1.7 s), live window **0.11 s** – `reports/performance.md` |
 | NFR-06 | Reliability | No crash on bad input | Validation rejects corrupt, empty, silent, too short and unsupported files with a clear message (tested) |

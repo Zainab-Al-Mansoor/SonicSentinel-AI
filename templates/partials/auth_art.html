@@ -1,8 +1,8 @@
 {% from "partials/icons.html" import icon %}
 <aside class="auth-art">
-  <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2.5 no-underline">
-    <img src="{{ url_for('static', filename='img/logo.svg') }}" class="w-9 h-9" alt="">
-    <span class="brand-word text-lg" style="color:#FFF2DF">SonicSentinel <span class="accent">AI</span></span>
+  <a href="{{ url_for('auth.login') }}" class="brand-link no-underline" aria-label="Sonic Sentinel AI">
+    <img src="{{ url_for('static', filename='img/sonic-logo-light.svg') }}" class="brand-logo brand-logo-lg" width="224" height="70" alt="Sonic Sentinel">
+    <span class="ai-chip">AI</span>
   </a>
   <div class="mt-8">
     <div class="eyebrow" style="color:#D3A376"><span class="eq" style="color:#D3A376"><span></span><span></span><span></span><span></span></span> AcousticX Intelligence</div>

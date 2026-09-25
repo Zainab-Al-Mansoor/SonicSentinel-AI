@@ -428,3 +428,14 @@ body.app-body::after {
 .table tbody tr { transition: background .12s; }
 .table td { vertical-align: middle; }
 @media (max-width: 860px) { .auth-art img.art, .auth-feats { display: none; } .auth-art { padding-bottom: 1.4rem; } .auth-art h1 { font-size: 1.5rem; } }
+
+/* ---------- brand logo (vector wordmark, crisp at any size) ---------- */
+.brand-link { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; line-height: 0; }
+.brand-logo { height: 43px; width: auto; display: block; image-rendering: auto;
+  filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.35)); transition: filter .2s ease, transform .2s ease; }
+.brand-link:hover .brand-logo { filter: drop-shadow(0 0 6px rgba(233,180,76,.45)); }
+.brand-logo-lg { height: 70px; }
+.ai-chip { font: 800 .62rem/1 "Plus Jakarta Sans", Inter, sans-serif; letter-spacing: .12em; color: #3B2016;
+  background: linear-gradient(135deg, #F6D27A, #D29A14); padding: .3rem .42rem .28rem .5rem; border-radius: .38rem;
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 1px 3px rgba(0,0,0,.25); align-self: center; }
+@media (max-width: 640px) { .brand-logo { height: 36px; } .brand-logo-lg { height: 56px; } }

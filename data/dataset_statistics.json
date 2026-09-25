@@ -1,8 +1,8 @@
 {
-  "total_original_clips": 7061,
+  "total_original_clips": 7073,
   "per_class": {
     "Machinery Fault": 538,
-    "Glass Breaking": 116,
+    "Glass Breaking": 81,
     "Alarm or Siren": 867,
     "Vehicle Horn": 390,
     "Animal Sound": 1157,
@@ -10,18 +10,18 @@
     "Panic Scream": 800,
     "Aggression": 298,
     "Person Asking for Help": 221,
-    "Background Noise": 1609
+    "Background Noise": 1656
   },
   "per_split": {
-    "train": 4942,
-    "test": 1060,
-    "val": 1059
+    "train": 4951,
+    "test": 1061,
+    "val": 1061
   },
   "per_class_split": {
     "Aggression": {
-      "test": 44,
+      "test": 45,
       "train": 209,
-      "val": 45
+      "val": 44
     },
     "Alarm or Siren": {
       "test": 130,
@@ -29,19 +29,19 @@
       "val": 130
     },
     "Animal Sound": {
-      "test": 174,
+      "test": 173,
       "train": 810,
-      "val": 173
+      "val": 174
     },
     "Background Noise": {
-      "test": 242,
-      "train": 1126,
-      "val": 241
+      "test": 249,
+      "train": 1159,
+      "val": 248
     },
     "Glass Breaking": {
-      "test": 17,
-      "train": 81,
-      "val": 18
+      "test": 12,
+      "train": 57,
+      "val": 12
     },
     "Gunshot": {
       "test": 160,
@@ -64,22 +64,22 @@
       "val": 33
     },
     "Vehicle Horn": {
-      "test": 59,
+      "test": 58,
       "train": 273,
-      "val": 58
+      "val": 59
     }
   },
   "duration_seconds": {
-    "total": 38656.708,
-    "mean": 5.474678940659963,
+    "total": 38687.372,
+    "mean": 5.4697260002827655,
     "min": 0.5,
     "max": 360.0
   },
   "quality": {
-    "Good": 4824,
-    "Acceptable": 1880,
+    "Good": 4835,
+    "Acceptable": 1881,
     "Poor": 357
   },
-  "rejected": 345,
-  "imbalance_ratio": 13.870689655172415
+  "rejected": 336,
+  "imbalance_ratio": 20.444444444444443
 }

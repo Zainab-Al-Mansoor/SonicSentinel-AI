@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}SonicSentinel AI{% endblock %} · SonicSentinel AI</title>
-  <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/sonic-mark.svg') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/sonic-mark-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/sonic-mark-180.png') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     /* "Mocha" theme – the templates were written with Tailwind's slate/cyan names for a dark UI.
@@ -43,9 +45,9 @@
 <nav class="topnav sticky top-0 z-40">
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex flex-wrap items-center justify-between min-h-[3.75rem] py-2">
-      <a href="{{ url_for('main.dashboard') }}" class="flex items-center gap-2.5">
-        <img src="{{ url_for('static', filename='img/logo.svg') }}" class="w-8 h-8 drop-shadow" alt="">
-        <span class="brand-word text-lg">SonicSentinel <span class="accent">AI</span></span>
+      <a href="{{ url_for('main.dashboard') }}" class="brand-link" aria-label="Sonic Sentinel AI – dashboard">
+        <img src="{{ url_for('static', filename='img/sonic-logo-light.svg') }}" class="brand-logo" width="138" height="43" alt="Sonic Sentinel">
+        <span class="ai-chip">AI</span>
       </a>
       <button id="nav-toggle" class="md:hidden p-2 nav-toggle text-xl leading-none" aria-label="Menu">☰</button>
       <div id="nav-links" class="hidden md:flex items-center gap-1 text-sm w-full md:w-auto">

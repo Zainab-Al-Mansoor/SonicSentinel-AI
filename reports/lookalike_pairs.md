@@ -1,6 +1,6 @@
 # Similar-event evaluation (SRS Step 14)
 
-Python model `py-xgb-20260924-1707` · validation + test clips only (never used for training) · look-alike gap threshold 0.20
+Python model `py-xgb-20260925-0316` · validation + test clips only (never used for training) · look-alike gap threshold 0.20
 
 | Pair | Event clips | Event recognised | Look-alike clips (train) | Look-alike mistaken for the event | Look-alike recognised as itself |
 |---|---|---|---|---|---|

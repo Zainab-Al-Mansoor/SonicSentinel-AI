@@ -1,5 +1,5 @@
 {
-  "version": "py-xgb-20260924-1707",
+  "version": "py-xgb-20260925-0316",
   "accuracy": 0.8726415094339622,
   "precision_macro": 0.8671045136881442,
   "recall_macro": 0.8712135347791291,

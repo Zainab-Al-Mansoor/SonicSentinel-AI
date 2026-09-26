@@ -39,16 +39,16 @@
 
 {% if current_user.is_authenticated %}
 <nav class="topnav sticky top-0 z-40">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="flex flex-wrap items-center justify-between min-h-[3.75rem] py-2">
+  <div class="nav-wrap mx-auto px-4">
+    <div class="nav-row flex flex-wrap xl:flex-nowrap items-center justify-between gap-x-4 min-h-[3.75rem] py-2">
       <a href="{{ url_for('main.dashboard') }}" class="brand-link" aria-label="Sonic Sentinel AI – dashboard">
         <img src="{{ url_for('static', filename='img/sonic-logo-silver.svg') }}" class="brand-logo" width="138" height="43" alt="Sonic Sentinel">
         <span class="ai-chip">AI</span>
       </a>
-      <button id="nav-toggle" class="md:hidden p-2 nav-toggle text-xl leading-none" aria-label="Menu">☰</button>
-      <div id="nav-links" class="hidden md:flex items-center gap-1 text-sm w-full md:w-auto">
+      <button id="nav-toggle" class="xl:hidden p-2 nav-toggle text-xl leading-none" aria-label="Menu">☰</button>
+      <div id="nav-links" class="hidden xl:flex items-center gap-0.5 text-sm w-full xl:w-auto">
         {% macro nav(endpoint, label, badge=0, badge_color='bg-red-500', ic='spark') -%}
-          <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'nav-active' if request.endpoint == endpoint }}">{{ icon(ic, 'w-4 h-4 hidden 2xl:inline') }}{{ label }}
+          <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'nav-active' if request.endpoint == endpoint }}">{{ icon(ic, 'nav-ic w-4 h-4') }}{{ label }}
             {% if badge %}<span class="ml-1 {{ badge_color }} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ badge }}</span>{% endif %}
           </a>
         {%- endmacro %}
@@ -62,11 +62,11 @@
         {% if current_user.role in ['admin','security','maintenance'] %}<span id="nav-alerts-wrap">{{ nav('alerts.index', 'Alerts', nav_active_alerts, ic='bell') }}</span>{% endif %}
         {% if current_user.role in ['admin','reviewer'] %}{{ nav('review.queue', 'Review', nav_reviews, 'bg-amber-500', ic='review') }}{% endif %}
         {% if current_user.role == 'admin' %}{{ nav('admin.dashboard', 'Admin', nav_notifications, 'bg-fuchsia-500', ic='admin') }}{% endif %}
-        <div class="relative ml-2 group">
+        <div class="user-menu relative ml-1 group">
           <button class="user-chip flex items-center gap-2 px-2.5 py-1.5 rounded-xl">
             <span class="avatar w-8 h-8 rounded-full grid place-items-center text-xs font-bold">{{ current_user.username[:2]|upper }}</span>
-            <span class="hidden lg:inline font-medium">{{ current_user.username }}</span>
-            <span class="hidden lg:inline text-xs opacity-70">▾</span>
+            <span class="user-name font-medium">{{ current_user.username }}</span>
+            <span class="text-xs opacity-70">▾</span>
           </button>
           <div class="menu-panel absolute right-0 mt-1 w-56 hidden group-hover:block group-focus-within:block">
             <div class="menu-head">{{ current_user.user_code }} · {{ ROLES[current_user.role] }}</div>

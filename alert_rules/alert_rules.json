@@ -14,93 +14,189 @@
   },
   "rules": {
     "Machinery Fault": {
-      "severity": "High", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 2, "strong_confidence": 0.85, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 5, "escalate_to": "Critical",
+      "severity": "High",
+      "generate_alert": true,
+      "min_confidence": 1.0,
+      "top2_margin": 0.15,
+      "required_consecutive": 2,
+      "strong_confidence": 0.85,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 5,
+      "escalate_to": "Critical",
       "recommended_action": "Maintenance alert: stop or isolate the machine if safe and schedule an inspection.",
-      "audience": ["maintenance"]
+      "audience": [
+        "maintenance"
+      ]
     },
     "Glass Breaking": {
-      "severity": "High", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 2, "strong_confidence": 0.80, "require_model_agreement": false,
-      "min_quality": "Acceptable", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 3, "escalate_to": "Critical",
+      "severity": "High",
+      "generate_alert": true,
+      "min_confidence": 0.65,
+      "top2_margin": 0.15,
+      "required_consecutive": 2,
+      "strong_confidence": 0.8,
+      "require_model_agreement": false,
+      "min_quality": "Acceptable",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 3,
+      "escalate_to": "Critical",
       "recommended_action": "Security alert: check the location / CCTV for break-in or vandalism.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Alarm or Siren": {
-      "severity": "High", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 2, "strong_confidence": 0.85, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": false,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "High",
+      "generate_alert": true,
+      "min_confidence": 0.65,
+      "top2_margin": 0.15,
+      "required_consecutive": 2,
+      "strong_confidence": 0.85,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": false,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "Attention: verify the alarm source and follow the site emergency procedure.",
-      "audience": ["security", "maintenance"]
+      "audience": [
+        "security",
+        "maintenance"
+      ]
     },
     "Vehicle Horn": {
-      "severity": "Low", "generate_alert": false, "min_confidence": 0.60, "top2_margin": 0.10,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": false,
-      "escalate_after_repeats": 6, "escalate_to": "Medium",
+      "severity": "Low",
+      "generate_alert": false,
+      "min_confidence": 0.6,
+      "top2_margin": 0.1,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": false,
+      "escalate_after_repeats": 6,
+      "escalate_to": "Medium",
       "recommended_action": "Traffic / environmental sound logged. No action unless it persists.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Animal Sound": {
-      "severity": "Low", "generate_alert": false, "min_confidence": 0.60, "top2_margin": 0.10,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": false,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "Low",
+      "generate_alert": false,
+      "min_confidence": 0.6,
+      "top2_margin": 0.1,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": false,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "Non-critical event logged. Check context if animals are not expected here.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Gunshot": {
-      "severity": "Critical", "generate_alert": true, "min_confidence": 0.70, "top2_margin": 0.20,
-      "required_consecutive": 2, "strong_confidence": 0.85, "require_model_agreement": true,
-      "min_quality": "Acceptable", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "Critical",
+      "generate_alert": true,
+      "min_confidence": 0.7,
+      "top2_margin": 0.2,
+      "required_consecutive": 2,
+      "strong_confidence": 0.85,
+      "require_model_agreement": true,
+      "min_quality": "Acceptable",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "CRITICAL: possible gunshot. Alert security immediately, keep people away, contact emergency services per site policy.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Panic Scream": {
-      "severity": "Critical", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Acceptable", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "Critical",
+      "generate_alert": true,
+      "min_confidence": 0.65,
+      "top2_margin": 0.15,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Acceptable",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "CRITICAL safety alert: send staff to the location and check for injury or danger.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Aggression": {
-      "severity": "High", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Acceptable", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 2, "escalate_to": "Critical",
+      "severity": "High",
+      "generate_alert": true,
+      "min_confidence": 0.65,
+      "top2_margin": 0.15,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Acceptable",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 2,
+      "escalate_to": "Critical",
       "recommended_action": "Security alert: possible aggression / violent conflict. Dispatch a security officer.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Person Asking for Help": {
-      "severity": "Critical", "generate_alert": true, "min_confidence": 0.65, "top2_margin": 0.15,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Acceptable", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "Critical",
+      "generate_alert": true,
+      "min_confidence": 0.65,
+      "top2_margin": 0.15,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Acceptable",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "CRITICAL: a person is calling for help. Respond to the location immediately.",
-      "audience": ["security"]
+      "audience": [
+        "security"
+      ]
     },
     "Background Noise": {
-      "severity": "Informational", "generate_alert": false, "min_confidence": 0.50, "top2_margin": 0.0,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": false,
-      "escalate_after_repeats": 0, "escalate_to": "",
+      "severity": "Informational",
+      "generate_alert": false,
+      "min_confidence": 0.5,
+      "top2_margin": 0.0,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": false,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
       "recommended_action": "No action. Background noise only.",
       "audience": [],
       "noise_alert_severity": "Medium",
-      "noise_alert_action": "Background noise is above the configured limit – check the environment / microphone placement."
+      "noise_alert_action": "Background noise is above the configured limit \u2013 check the environment / microphone placement."
     },
     "Unknown": {
-      "severity": "Low", "generate_alert": false, "min_confidence": 0.0, "top2_margin": 0.0,
-      "required_consecutive": 1, "strong_confidence": 0, "require_model_agreement": false,
-      "min_quality": "Poor", "manual_review_if_unconfirmed": true,
-      "escalate_after_repeats": 0, "escalate_to": "",
-      "recommended_action": "Sound could not be classified reliably – manual review required.",
+      "severity": "Low",
+      "generate_alert": false,
+      "min_confidence": 0.0,
+      "top2_margin": 0.0,
+      "required_consecutive": 1,
+      "strong_confidence": 0,
+      "require_model_agreement": false,
+      "min_quality": "Poor",
+      "manual_review_if_unconfirmed": true,
+      "escalate_after_repeats": 0,
+      "escalate_to": "",
+      "recommended_action": "Sound could not be classified reliably \u2013 manual review required.",
       "audience": []
     }
   }

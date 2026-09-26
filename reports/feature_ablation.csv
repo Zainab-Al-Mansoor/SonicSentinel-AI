@@ -1,0 +1,5 @@
+features,n_features,val_accuracy,val_f1_macro,val_critical_recall_min,seconds
+original 299 features,299,0.853,0.8323,0.3333,176.2
++ extra hand-crafted,393,0.8175,0.78,0.3333,62.6
++ context,446,0.8876,0.8732,0.5,241.7
++ YAMNet (all features),967,0.8646,0.8187,0.5,108.7

@@ -1,54 +1,55 @@
 {
-  "model_warm_up_s": 1.23,
+  "model_warm_up_s": 57.86,
+  "python_model": "py-xgb-20260926-0308",
   "upload_30s": {
     "n": 5,
-    "mean_s": 1.472,
-    "median_s": 1.487,
-    "max_s": 1.74,
-    "min_s": 1.243,
+    "mean_s": 7.753,
+    "median_s": 7.746,
+    "max_s": 9.247,
+    "min_s": 6.409,
     "target_s": 8.0,
-    "pass": true
+    "pass": false
   },
   "live_window_2s": {
     "n": 15,
-    "mean_s": 0.109,
-    "median_s": 0.109,
-    "max_s": 0.122,
-    "min_s": 0.097,
+    "mean_s": 0.26,
+    "median_s": 0.252,
+    "max_s": 0.328,
+    "min_s": 0.227,
     "target_s": 3.0,
     "pass": true
   },
   "scalability": {
     "records": 20020,
-    "insert_seconds": 0.6,
+    "insert_seconds": 2.4,
     "pages": {
       "dashboard": {
         "status": 200,
-        "seconds": 0.066
+        "seconds": 0.295
       },
       "history (unfiltered)": {
         "status": 200,
-        "seconds": 0.182
+        "seconds": 0.088
       },
       "history (filtered)": {
         "status": 200,
-        "seconds": 0.018
+        "seconds": 0.061
       },
       "timeline": {
         "status": 200,
-        "seconds": 0.041
+        "seconds": 0.12
       },
       "admin dashboard": {
         "status": 200,
-        "seconds": 0.481
+        "seconds": 0.89
       },
       "stats API (30 days)": {
         "status": 200,
-        "seconds": 0.284
+        "seconds": 1.179
       },
       "events.csv export": {
         "status": 200,
-        "seconds": 1.344
+        "seconds": 2.867
       }
     },
     "pass": true
@@ -57,13 +58,13 @@
     "users": 5,
     "requests": 20,
     "errors": [],
-    "max_request_s": 0.8,
-    "wall_s": 2.0,
+    "max_request_s": 2.52,
+    "wall_s": 4.75,
     "pass": true
   },
   "machine": {
-    "os": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
-    "python": "3.11.15",
-    "cpu_count": 2
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.14.6",
+    "cpu_count": 4
   }
 }

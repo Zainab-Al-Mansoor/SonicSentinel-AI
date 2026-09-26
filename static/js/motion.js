@@ -19,11 +19,13 @@
       // drop the helper class after the transition so hover transforms work normally
       setTimeout(function () { e.target.classList.remove('reveal', 'in'); e.target.style.removeProperty('--rd'); }, 1400);
     });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  }, { threshold: 0, rootMargin: '0px 0px -20px 0px' });
 
   var groups = new Map();
   items.forEach(function (el) {
     if (el.closest('.hero')) return;
+    // very tall blocks (e.g. the review queue table) are never animated: they must always stay visible
+    if (el.offsetHeight > window.innerHeight * 0.9) return;
     var parent = el.parentElement, i = groups.get(parent) || 0;
     groups.set(parent, i + 1);
     el.style.setProperty('--rd', Math.min(i, 8) * 0.06 + 's');

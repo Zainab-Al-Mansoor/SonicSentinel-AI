@@ -489,3 +489,23 @@ input[type="file"]::file-selector-button {
   background: var(--plum); color: #fff; font-weight: 600; transition: background .2s;
 }
 input[type="file"]::file-selector-button:hover { background: var(--plum-2); }
+
+/* ---------- navbar layout: one clean row on desktop, hamburger below 1280 px ---------- */
+.nav-wrap { max-width: 1440px; }
+.nav-link { white-space: nowrap; padding: .42rem .7rem; font-size: .86rem; }
+.nav-link .nav-ic { display: none; }
+.user-chip { white-space: nowrap; }
+@media (min-width: 1280px) {
+  .nav-row { flex-wrap: nowrap; }
+  #nav-links { flex-wrap: nowrap; min-width: 0; }
+  .user-name { display: none; }
+}
+@media (min-width: 1440px) { .user-name { display: inline; } }
+@media (min-width: 1600px) { .nav-link .nav-ic { display: inline-block; } .nav-link { padding: .45rem .8rem; } }
+@media (max-width: 1279px) {
+  #nav-links:not(.hidden) { display: flex; flex-direction: column; align-items: stretch; padding: .5rem 0 1rem; gap: .25rem; animation: pop-in .25s var(--ease) both; }
+  #nav-links .nav-link { padding: .6rem .9rem; font-size: .92rem; }
+  #nav-links .nav-link .nav-ic { display: inline-block; }
+  #nav-links .user-menu { margin: .4rem 0 0; }
+  .user-name { display: inline; }
+}

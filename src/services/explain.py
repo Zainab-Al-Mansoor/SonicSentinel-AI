@@ -237,19 +237,19 @@ def _draw(y, sr, segs, target, span, png):
     librosa.display.specshow(S, sr=sr, hop_length=512, x_axis="time", y_axis="mel", ax=ax1, cmap="magma")
     for s in segs:
         if s["python"] is not None and s["python"] >= s["threshold"]:
-            ax1.axvspan(s["start"], s["end"], color="#FFE0B2", alpha=0.12)
+            ax1.axvspan(s["start"], s["end"], color="#D4C4E8", alpha=0.12)
     if span:
-        ax1.axvspan(span[0], span[1], facecolor="none", edgecolor="#FFE0B2", linewidth=2.2)
-        ax1.text(span[0], ax1.get_ylim()[1] * 0.92, f"  {target}", color="#FFF2DF", fontsize=9, fontweight="bold", va="top")
+        ax1.axvspan(span[0], span[1], facecolor="none", edgecolor="#D4C4E8", linewidth=2.2)
+        ax1.text(span[0], ax1.get_ylim()[1] * 0.92, f"  {target}", color="#EAE6F2", fontsize=9, fontweight="bold", va="top")
     ax1.set_xlabel("")
     ax1.set_ylabel("Hz (Mel)", color=FG, fontsize=8)
     _style(ax1, f"Where the model heard “{target}”")
     xs = [(s["start"] + s["end"]) / 2 for s in segs]
-    ax2.plot(xs, [s["python"] or 0 for s in segs], marker="o", ms=3, color="#5B3A31", label="Python")
+    ax2.plot(xs, [s["python"] or 0 for s in segs], marker="o", ms=3, color="#D4C4E8", label="Python")
     if any(s["gtm"] is not None for s in segs):
-        ax2.plot(xs, [s["gtm"] or 0 for s in segs], marker="s", ms=3, color="#C0843F", label="GTM")
+        ax2.plot(xs, [s["gtm"] or 0 for s in segs], marker="s", ms=3, color="#E8A6D0", label="GTM")
     if segs:
-        ax2.axhline(segs[0]["threshold"], color="#B7A08A", linestyle=":", linewidth=1)
+        ax2.axhline(segs[0]["threshold"], color="#8E80A5", linestyle=":", linewidth=1)
     ax2.set_ylim(0, 1.02)
     ax2.set_xlim(0, max(len(y) / sr, 1e-3))
     ax2.set_ylabel("Confidence", color=FG, fontsize=8)

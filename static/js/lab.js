@@ -44,14 +44,14 @@
   function showPython(r) {
     $('py-pred').textContent = r.prediction || '—';
     $('py-conf').innerHTML = `${SS.pct(r.confidence)} ${r.uncertain ? '<span class="badge q-Poor">uncertain</span>' : ''} · ${delta(r.scores, S.clean && S.clean.py.scores, refClass())}`;
-    bars($('py-bars'), r.scores, r.prediction, 'linear-gradient(90deg,#8C6E63,#3E2522)');
+    bars($('py-bars'), r.scores, r.prediction, 'linear-gradient(90deg,#8E76B8,#D4C4E8)');
   }
   function showGtm(g) {
     if (!g) { $('gtm-pred').textContent = LAB.gtm ? '…' : 'not installed'; $('gtm-conf').textContent = ''; $('gtm-bars').innerHTML = ''; return; }
     const [c, v] = top(g)[0] || ['—', 0];
     $('gtm-pred').textContent = c;
     $('gtm-conf').innerHTML = `${SS.pct(v)} · ${delta(g, S.clean && S.clean.gtm, refClass())}`;
-    bars($('gtm-bars'), g, c, 'linear-gradient(90deg,#D3A376,#9A6532)');
+    bars($('gtm-bars'), g, c, 'linear-gradient(90deg,#B06FA0,#E8A6D0)');
   }
   function verdict(r, g) {
     const ref = refClass(), gp = g ? top(g)[0][0] : null;
@@ -155,12 +155,12 @@
       }
       const labelsX = sw.points.map(p => p.label);
       if (S.chart) S.chart.destroy();
-      Chart.defaults.color = '#6B4F45'; Chart.defaults.borderColor = '#EFE2D2';
+      Chart.defaults.color = '#B3A6C9'; Chart.defaults.borderColor = 'rgba(212,196,232,.1)';
       S.chart = new Chart($('sweep-chart'), {
         type: 'line',
         data: { labels: labelsX, datasets: [
-          { label: `Python – ${ref}`, data: sw.points.map(p => +(p.ref_confidence * 100).toFixed(1)), borderColor: '#3E2522', backgroundColor: '#3E2522', tension: .3 },
-          ...(LAB.gtm ? [{ label: `GTM – ${ref}`, data: gtmRef.map(v => v == null ? null : +(v * 100).toFixed(1)), borderColor: '#C0843F', backgroundColor: '#C0843F', tension: .3 }] : []),
+          { label: `Python – ${ref}`, data: sw.points.map(p => +(p.ref_confidence * 100).toFixed(1)), borderColor: '#D4C4E8', backgroundColor: '#D4C4E8', tension: .3 },
+          ...(LAB.gtm ? [{ label: `GTM – ${ref}`, data: gtmRef.map(v => v == null ? null : +(v * 100).toFixed(1)), borderColor: '#E8A6D0', backgroundColor: '#E8A6D0', tension: .3 }] : []),
         ] },
         options: { scales: { y: { min: 0, max: 100, title: { display: true, text: `Confidence for ${ref} (%)` } },
                              x: { title: { display: true, text: kind === 'bg_snr' ? 'Real background noise (SNR)' : 'White noise (SNR)' } } },

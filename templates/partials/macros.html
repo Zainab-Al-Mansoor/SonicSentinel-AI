@@ -4,13 +4,13 @@
 {% macro cs(c) -%}{% if c %}<span class="badge cs-{{ c|replace(' ', '-') }}">{{ c }}</span>{% endif %}{%- endmacro %}
 {% macro status(s) -%}{% if s %}<span class="badge st st-{{ s|replace(' ', '-') }}">{{ s }}</span>{% endif %}{%- endmacro %}
 
-{% macro score_bars(scores, highlight=None, color='#5B3A31', n=10) -%}
+{% macro score_bars(scores, highlight=None, color='#D4C4E8', n=10) -%}
   {% if scores %}
   <div class="space-y-1.5">
     {% for c, v in (scores.items()|sort(attribute='1', reverse=true))[:n] %}
       <div class="grid grid-cols-12 gap-2 items-center text-xs">
         <div class="col-span-5 truncate {{ 'text-white font-semibold' if c == highlight else 'text-slate-400' }}">{{ c }}</div>
-        <div class="col-span-5 bar"><span style="width: {{ (v*100)|round(1) }}%; background: {{ color if c == highlight else '#E3CFB6' }}"></span></div>
+        <div class="col-span-5 bar"><span style="width: {{ (v*100)|round(1) }}%; background: {{ color if c == highlight else 'rgba(212,196,232,.18)' }}"></span></div>
         <div class="col-span-2 text-right tabular-nums {{ 'text-white' if c == highlight else 'text-slate-400' }}">{{ (v*100)|round(1) }}%</div>
       </div>
     {% endfor %}

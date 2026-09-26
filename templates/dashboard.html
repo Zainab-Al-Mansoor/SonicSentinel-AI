@@ -19,7 +19,7 @@
       <a href="{{ url_for('main.live') }}" class="btn btn-outline-cream">{{ icon('live') }} Start live monitor</a>
     </div>
   </div>
-  <img class="hero-art" src="{{ url_for('static', filename='img/hero-sound.svg') }}" alt="">
+  {% include "partials/hero_radar.html" %}
 </section>
 {% include "partials/gtm_status.html" %}
 

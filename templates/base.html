@@ -10,32 +10,28 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/sonic-mark-180.png') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    /* "Mocha" theme – the templates were written with Tailwind's slate/cyan names for a dark UI.
-       The scales are remapped here so every page follows the new palette without editing each class:
-       slate 50-600 = text inks (dark → light), slate 700-950 = light surfaces and borders. */
+    /* "Aura" theme – dark purple glass. The templates use Tailwind's slate / brand / red … names;
+       the scales are remapped here so every page follows the palette without editing each class:
+       slate 50-500 = text (light → muted), slate 600-950 = borders and dark surfaces. */
     tailwind.config = { theme: { extend: {
       fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'], display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'] },
       colors: {
-        espresso: '#3E2522', mocha: '#8C6E63', caramel: '#D3A376', sand: '#FFE0B2', cream: '#FFF2DF',
-        brand:   { 300: '#E6C49E', 400: '#9A6532', 500: '#B8844F', 600: '#8A5A2B', 700: '#6E4520' },
-        slate:   { 50: '#2A1816', 100: '#342019', 200: '#3E2522', 300: '#4E3530', 400: '#6B4F45', 500: '#7E6257',
-                   600: '#A08678', 700: '#DCC6AE', 800: '#EFE2D2', 900: '#FFFBF5', 950: '#FFF7EC' },
-        red:     { 200: '#7F1D1D', 300: '#8F2A20', 400: '#B42318', 500: '#C8372D', 600: '#B42318', 700: '#E4A39B',
-                   800: '#9B2C22', 900: '#F1C4BE', 950: '#FDECEA' },
-        amber:   { 200: '#6E4A0A', 300: '#7A520C', 400: '#A8660F', 500: '#B7791F', 600: '#C9892B', 800: '#EBCB8F', 950: '#FFF3DC' },
-        orange:  { 300: '#9A4A16', 400: '#B4531B', 500: '#C8652A', 950: '#FCEBDD' },
-        emerald: { 400: '#2F7D46', 500: '#3F8F57', 600: '#3F8F57', 950: '#EEF7EF' },
-        sky:     { 600: '#8C6E63' },
-        fuchsia: { 500: '#8A5A2B' },
+        night: '#1D1526', glass: '#281D35', lilac: '#D4C4E8', silver: '#EAE6F2', plum: '#5C4B73',
+        brand:   { 300: '#E4D8F2', 400: '#CDB8EC', 500: '#B9A3D9', 600: '#8E76B8', 700: '#5C4B73' },
+        slate:   { 50: '#F6F3FA', 100: '#EAE6F2', 200: '#DCD5E8', 300: '#CBC0DC', 400: '#B3A6C9', 500: '#9C8FB4',
+                   600: '#6E6187', 700: '#4A3D5E', 800: '#34284A', 900: '#281D35', 950: '#1D1526' },
+        sky:     { 600: '#8E76B8' },
+        fuchsia: { 500: '#9D6FD0' },
       } } } };
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <meta name="theme-color" content="#3E2522">
+  <meta name="theme-color" content="#1D1526">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 </head>
 <body class="h-full app-body antialiased">
+<div class="aura-bg" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="grid-lines"></span></div>
 <div id="mic-banner" class="hidden fixed top-0 inset-x-0 z-50 bg-red-600 text-white text-center text-sm py-1.5 font-semibold tracking-wide shadow-lg">
   <span class="inline-block w-2 h-2 rounded-full bg-white animate-pulse mr-2"></span>
   Microphone is ACTIVE – live audio is being analysed. <a href="{{ url_for('main.live') }}" class="underline ml-2">Open live monitor</a>
@@ -46,7 +42,7 @@
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex flex-wrap items-center justify-between min-h-[3.75rem] py-2">
       <a href="{{ url_for('main.dashboard') }}" class="brand-link" aria-label="Sonic Sentinel AI – dashboard">
-        <img src="{{ url_for('static', filename='img/sonic-logo-light.svg') }}" class="brand-logo" width="138" height="43" alt="Sonic Sentinel">
+        <img src="{{ url_for('static', filename='img/sonic-logo-silver.svg') }}" class="brand-logo" width="138" height="43" alt="Sonic Sentinel">
         <span class="ai-chip">AI</span>
       </a>
       <button id="nav-toggle" class="md:hidden p-2 nav-toggle text-xl leading-none" aria-label="Menu">☰</button>
@@ -104,6 +100,7 @@
 <footer class="site-footer text-center text-xs pb-8 pt-2">SonicSentinel AI · competition prototype – not a certified emergency-response or law-enforcement system</footer>
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/motion.js') }}" defer></script>
 {% if current_user.is_authenticated and current_user.role in ['admin','security','maintenance'] %}
 <script>SS.startAlertPolling("{{ url_for('alerts.poll') }}");</script>
 {% endif %}

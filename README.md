@@ -142,89 +142,89 @@ More detail: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md).
 
 ## 4. Functional requirements
 
-Status: ✅ implemented ·  ✅ implemented
+Status: Done
 
 ### 4.1 Users, authentication and roles
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-01 | Users can register, log in, log out and edit their profile | ✅ |
-| FR-02 | Each user gets a unique User ID (`USR-00001`, …) | ✅ |
-| FR-03 | Five roles: Normal User, Audio Reviewer, Security Operator, Maintenance Operator, Administrator | ✅ |
-| FR-04 | Account is locked temporarily after 5 failed logins | ✅ |
-| FR-05 | Pages and API endpoints are restricted by role (403 page otherwise) | ✅ |
-| FR-06 | Administrator can create users, change roles and deactivate accounts | ✅ |
+| FR-01 | Users can register, log in, log out and edit their profile | Done |
+| FR-02 | Each user gets a unique User ID (`USR-00001`, …) | Done |
+| FR-03 | Five roles: Normal User, Audio Reviewer, Security Operator, Maintenance Operator, Administrator | Done |
+| FR-04 | Account is locked temporarily after 5 failed logins | Done |
+| FR-05 | Pages and API endpoints are restricted by role (403 page otherwise) | Done |
+| FR-06 | Administrator can create users, change roles and deactivate accounts | Done |
 
 ### 4.2 Audio input
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-07 | Single file upload with drag-and-drop and preview (play / pause / seek / volume) | ✅ |
-| FR-08 | Batch upload of several files | ✅ |
-| FR-09 | Live microphone monitoring with Start / Pause / Stop | ✅ |
-| FR-10 | Microphone status shown: Available · Active · Paused · Disconnected · Permission denied | ✅ |
-| FR-11 | Privacy banner visible while the microphone is on | ✅ |
+| FR-07 | Single file upload with drag-and-drop and preview (play / pause / seek / volume) | Done |
+| FR-08 | Batch upload of several files | Done |
+| FR-09 | Live microphone monitoring with Start / Pause / Stop | Done |
+| FR-10 | Microphone status shown: Available · Active · Paused · Disconnected · Permission denied | Done |
+| FR-11 | Privacy banner visible while the microphone is on | Done |
 
 ### 4.3 Validation and pre-processing
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-12 | Validate format (WAV, MP3, FLAC, OGG, M4A), size (≤ 25 MB), duration (0.5 s – 300 s), sample rate, channels, file integrity and silence | ✅ |
-| FR-13 | Clear, user-friendly error messages for rejected files | ✅ |
-| FR-14 | Pre-processing: resampling (22.05 kHz), mono conversion, peak normalisation, silence trimming, noise reduction | ✅ |
-| FR-15 | Fixed-duration segmentation (2 s, 1 s hop) with timestamps; padding/truncation of the last segment | ✅ |
+| FR-12 | Validate format (WAV, MP3, FLAC, OGG, M4A), size (≤ 25 MB), duration (0.5 s – 300 s), sample rate, channels, file integrity and silence | Done |
+| FR-13 | Clear, user-friendly error messages for rejected files | Done |
+| FR-14 | Pre-processing: resampling (22.05 kHz), mono conversion, peak normalisation, silence trimming, noise reduction | Done |
+| FR-15 | Fixed-duration segmentation (2 s, 1 s hop) with timestamps; padding/truncation of the last segment | Done |
 
 ### 4.4 Audio quality and visualisation
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-16 | Detect silence, clipping, noise/low SNR, low level, too-short duration, encoding problems, missing frames | ✅ |
-| FR-17 | Quality label per file: Good / Acceptable / Poor / Unusable, with the list of issues | ✅ |
-| FR-18 | Waveform image with segments and the deciding segment highlighted | ✅ |
-| FR-19 | Mel spectrogram image | ✅ |
+| FR-16 | Detect silence, clipping, noise/low SNR, low level, too-short duration, encoding problems, missing frames | Done |
+| FR-17 | Quality label per file: Good / Acceptable / Poor / Unusable, with the list of issues | Done |
+| FR-18 | Waveform image with segments and the deciding segment highlighted | Done |
+| FR-19 | Mel spectrogram image | Done |
 
 ### 4.5 Classification and model comparison
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-20 | Python model returns a confidence score for **every** class per segment | ✅ |
-| FR-21 | GTM model runs in the browser on the **same** segments, without seeing the Python result | ✅ |
-| FR-22 | Show top-3 classes of each model, all scores, \|Python top − GTM top\| difference and top-2 margins | ✅ |
-| FR-23 | Comparison status: Acceptable Match / Weak Match / Model Disagreement / Uncertain Result | ✅ |
-| FR-24 | Confidence level: High ≥ 85 %, Medium ≥ minimum confidence (60 %), Low below | ✅ |
-| FR-25 | Unknown-sound handling when the combined confidence is below the unknown threshold | ✅ |
-| FR-26 | Overlapping-sound detection (two or more non-background classes above the overlap threshold) | ✅ |
-| FR-27 | Detect all 10 classes | Person Asking for Help has no training data yet | ✅ |
+| FR-20 | Python model returns a confidence score for **every** class per segment | Done |
+| FR-21 | GTM model runs in the browser on the **same** segments, without seeing the Python result | Done |
+| FR-22 | Show top-3 classes of each model, all scores, \|Python top − GTM top\| difference and top-2 margins | Done |
+| FR-23 | Comparison status: Acceptable Match / Weak Match / Model Disagreement / Uncertain Result | Done |
+| FR-24 | Confidence level: High ≥ 85 %, Medium ≥ minimum confidence (60 %), Low below | Done |
+| FR-25 | Unknown-sound handling when the combined confidence is below the unknown threshold | Done |
+| FR-26 | Overlapping-sound detection (two or more non-background classes above the overlap threshold) | Done |
+| FR-27 | Detect all 10 classes | Person Asking for Help has no training data yet | Done |
 
 ### 4.6 Decision, alerts and review
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-28 | Configurable alert-rule engine per class (confidence, margin, repeats, model agreement, minimum quality, escalation, audience) | ✅ |
-| FR-29 | Repeated-detection confirmation within a time window for live monitoring | ✅ |
-| FR-30 | Severity assignment and escalation (Informational → Critical) and recommended action | ✅ |
-| FR-31 | Real-time alerts with toast notifications on every page | ✅ |
-| FR-32 | Alerts can be acknowledged, escalated or dismissed; alerts are routed to the correct role | ✅ |
-| FR-33 | Alert history | ✅ |
-| FR-34 | Manual review queue with segment playback, confirm/correct label, comments and override (original model outputs are kept) | ✅ |
-| FR-35 | Every step of the decision is stored as a trace | ✅ |
+| FR-28 | Configurable alert-rule engine per class (confidence, margin, repeats, model agreement, minimum quality, escalation, audience) | Done |
+| FR-29 | Repeated-detection confirmation within a time window for live monitoring | Done |
+| FR-30 | Severity assignment and escalation (Informational → Critical) and recommended action | Done |
+| FR-31 | Real-time alerts with toast notifications on every page | Done |
+| FR-32 | Alerts can be acknowledged, escalated or dismissed; alerts are routed to the correct role | Done |
+| FR-33 | Alert history | Done |
+| FR-34 | Manual review queue with segment playback, confirm/correct label, comments and override (original model outputs are kept) | Done |
+| FR-35 | Every step of the decision is stored as a trace | Done |
 
 ### 4.7 History, dashboards, reports and administration
 
 | ID | Requirement | Status |
 |---|---|---|
-| FR-36 | Search and filter history (ID, file name, class, dates, confidence, severity, quality, review status, user) | ✅ |
-| FR-37 | Event timeline | ✅ |
-| FR-38 | Dashboards: user, live, admin (trends, categories, confidence, quality, FP/FN, disagreements, alert response) | ✅ |
-| FR-39 | Downloadable per-event report (HTML → print to PDF) | ✅ |
-| FR-40 | CSV / Excel exports; model-comparison report on the test split (≥ 10 unseen clips per class) | ✅ |
-| FR-41 | Admin can change thresholds and settings at runtime | ✅ |
-| FR-42 | Admin alert-rule editor (JSON) with validation | ✅ |
-| FR-43 | Audit trail of logins, uploads, reviews, alert actions and setting changes | ✅ |
-| FR-44 | Anomaly notifications for administrators | ✅ |
-| FR-45 | Model versions shown and stored with every prediction | ✅ |
-| FR-46 | Data retention (audio 90 days, records 365 days by default) | ✅ |
-| FR-47 | Exact-duplicate (SHA-256) and near-duplicate (re-encoded / trimmed / volume-changed) detection | ✅ |
+| FR-36 | Search and filter history (ID, file name, class, dates, confidence, severity, quality, review status, user) | Done |
+| FR-37 | Event timeline | Done |
+| FR-38 | Dashboards: user, live, admin (trends, categories, confidence, quality, FP/FN, disagreements, alert response) | Done |
+| FR-39 | Downloadable per-event report (HTML → print to PDF) | Done |
+| FR-40 | CSV / Excel exports; model-comparison report on the test split (≥ 10 unseen clips per class) | Done |
+| FR-41 | Admin can change thresholds and settings at runtime | Done |
+| FR-42 | Admin alert-rule editor (JSON) with validation | Done |
+| FR-43 | Audit trail of logins, uploads, reviews, alert actions and setting changes | Done |
+| FR-44 | Anomaly notifications for administrators | Done |
+| FR-45 | Model versions shown and stored with every prediction | Done |
+| FR-46 | Data retention (audio 90 days, records 365 days by default) | Done |
+| FR-47 | Exact-duplicate (SHA-256) and near-duplicate (re-encoded / trimmed / volume-changed) detection | Done |
 
 ---
 
@@ -232,11 +232,11 @@ Status: ✅ implemented ·  ✅ implemented
 
 | ID | Category | Requirement | How it is met / current status |
 |---|---|---|---|
-| NFR-01 | Accuracy | Test accuracy ≥ 85 % | ✅ **86.5 %** (Python XGBoost, 695 unseen test clips, 10 classes) |
-| NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | ✅ **0.863** over all 10 classes |
-| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | ✅ Gunshot 0.93 · Panic Scream 0.93 · Aggression 0.89 · Help 1.00 · 
-| NFR-04 | Robustness | Keep working with background noise | ✅ noise-augmented training + quality gate; accuracy 0.81 at 20 dB SNR, 0.71 at 10 dB, 0.66 at 5 dB (see §8.4); Poor-quality audio goes to manual review |
-| NFR-05 | Performance | 30-s upload ≤ 8 s · live prediction ≤ 3 s | 2-s live windows; GTM runs in the browser. ✅ measured with the real model: 30-s upload **1.5 s** (max 1.7 s), live window **0.11 s** – `reports/performance.md` |
+| NFR-01 | Accuracy | Test accuracy ≥ 85 % | Done **86.5 %** (Python XGBoost, 695 unseen test clips, 10 classes) |
+| NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | Done **0.863** over all 10 classes |
+| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | Done Gunshot 0.93 · Panic Scream 0.93 · Aggression 0.89 · Help 1.00 · 
+| NFR-04 | Robustness | Keep working with background noise | Done noise-augmented training + quality gate; accuracy 0.81 at 20 dB SNR, 0.71 at 10 dB, 0.66 at 5 dB (see §8.4); Poor-quality audio goes to manual review |
+| NFR-05 | Performance | 30-s upload ≤ 8 s · live prediction ≤ 3 s | 2-s live windows; GTM runs in the browser. Done measured with the real model: 30-s upload **1.5 s** (max 1.7 s), live window **0.11 s** – `reports/performance.md` |
 | NFR-06 | Reliability | No crash on bad input | Validation rejects corrupt, empty, silent, too short and unsupported files with a clear message (tested) |
 | NFR-07 | Reliability | Works when one model is missing | Without GTM the result uses the Python model only and is marked *Uncertain Result* |
 | NFR-08 | Security | Protect accounts and data | Werkzeug password hashing, password policy (≥ 8 chars, letters + numbers), CSRF tokens on every POST, HttpOnly + SameSite session cookies, role checks, login lock-out, protected media routes |
@@ -245,9 +245,9 @@ Status: ✅ implemented ·  ✅ implemented
 | NFR-11 | Maintainability | Easy to change classes, thresholds, rules | All settings in `config/settings.py`, runtime settings in Admin, rules in `alert_rules/alert_rules.json`; modular packages; documentation folder |
 | NFR-12 | Traceability | Reproduce any decision | Model version, both models' scores, quality, rule trace and reviewer changes stored per event; audit log |
 | NFR-13 | Portability | Run on common machines | Windows 10/11, Linux, macOS; Python 3.10–3.12; Chrome or Edge |
-| NFR-14 | Scalability | ≥ 20,000 events, concurrent users | ✅ 20,020 events: every page < 0.5 s, CSV export 1.3 s; 5 concurrent users, 0 errors. Benchmark inserts 20,000 events and times dashboard / history / filters / exports, plus 5 concurrent users; indexed columns; for larger installs point `SQLALCHEMY_DATABASE_URI` (`src/__init__.py`) to PostgreSQL; gunicorn/waitress |
+| NFR-14 | Scalability | ≥ 20,000 events, concurrent users | Done 20,020 events: every page < 0.5 s, CSV export 1.3 s; 5 concurrent users, 0 errors. Benchmark inserts 20,000 events and times dashboard / history / filters / exports, plus 5 concurrent users; indexed columns; for larger installs point `SQLALCHEMY_DATABASE_URI` (`src/__init__.py`) to PostgreSQL; gunicorn/waitress |
 | NFR-15 | Testability | Automated tests | 66 pytest tests on a temporary database and a tiny test-only model |
-| NFR-18 | Availability | ≥ 99 % during evaluation hours | ✅ `run_server.bat` (waitress, 8 threads, automatic restart), `/healthz` health check (database + both models), Docker `HEALTHCHECK`, Render health check |
+| NFR-18 | Availability | ≥ 99 % during evaluation hours | Done `run_server.bat` (waitress, 8 threads, automatic restart), `/healthz` health check (database + both models), Docker `HEALTHCHECK`, Render health check |
 | NFR-16 | Data integrity | No train/test leakage | Split by original clip; augmented copies and segments stay in their parent's split; CV grouped by Audio ID |
 | NFR-17 | Ethics | Responsible data use | Licensed datasets only, licence recorded per clip, consent for recordings, no real emergencies recorded |
 
@@ -348,7 +348,7 @@ Run used for the installed model: `python -m python_models.train_models --fast -
 
 | Model | Best parameters | CV macro-F1 | Val accuracy | Val macro-F1 | Val macro precision | Val macro recall | Training time |
 |---|---|---|---|---|---|---|---|
-| **XGBoost** ✅ selected | max_depth 6, learning_rate 0.1 | 0.790 | **0.844** | **0.847** | 0.858 | 0.850 | 1,462 s |
+| **XGBoost** Done selected | max_depth 6, learning_rate 0.1 | 0.790 | **0.844** | **0.847** | 0.858 | 0.850 | 1,462 s |
 | MLP (256-128) | alpha 0.001 | 0.779 | 0.805 | 0.818 | 0.805 | 0.848 | 292 s |
 | Random Forest (300 trees) | max_depth None, min_samples_leaf 1 | 0.742 | 0.769 | 0.802 | 0.880 | 0.771 | 953 s |
 
@@ -356,8 +356,8 @@ Run used for the installed model: `python -m python_models.train_models --fast -
 
 | Metric | Value | SRS target |
 |---|---|---|
-| Accuracy | **0.865** | ≥ 0.85 ✅ |
-| Macro precision / recall / F1 | 0.847 / 0.895 / **0.863** | F1 ≥ 0.80 ✅ |
+| Accuracy | **0.865** | ≥ 0.85 Done |
+| Macro precision / recall / F1 | 0.847 / 0.895 / **0.863** | F1 ≥ 0.80 Done |
 
 | Class | Precision | Recall | F1 | Test clips | False positives | False negatives |
 |---|---|---|---|---|---|---|

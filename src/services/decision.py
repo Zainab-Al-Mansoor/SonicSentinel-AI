@@ -39,14 +39,25 @@ def compare_models(py: dict, gtm: dict | None, s: dict) -> dict:
     return out
 
 
-def combine(py: dict, gtm: dict | None, python_weight: float = 0.5) -> dict:
-    """Weighted average of both models' confidence vectors (Python only if GTM unavailable).
+def combine(py: dict, gtm: dict | None, python_weight: float = 0.5, agreement_fusion: bool = False) -> dict:
+    """Combine both models' confidence vectors (Python only if GTM unavailable).
 
-    python_weight = 0.5 is a plain average. Admins can give the more accurate model more weight
-    (Admin -> Settings), e.g. 0.7 when the Python model is clearly more reliable on the test split."""
+    * Models pick DIFFERENT classes (or agreement_fusion is off): weighted average.
+      python_weight = 0.5 is a plain average; a higher value trusts the more accurate model more.
+    * Both models pick the SAME class and agreement_fusion is on: the two independent models are treated as
+      independent evidence and combined with the product rule, p(c) ∝ p_python(c) · p_gtm(c)
+      (naive-Bayes fusion with a uniform prior). Agreement of two independent models is stronger evidence than
+      either model alone, so the combined confidence is higher than the average – e.g. Python 0.91 and GTM 0.31
+      for Glass Breaking give ≈ 0.97 instead of 0.61. The predicted class never changes: it is the class both
+      models chose."""
     if not gtm:
         return {c: float(py.get(c, 0.0)) for c in CLASSES}
     w = min(1.0, max(0.0, float(python_weight)))
+    if agreement_fusion and top_k(py, 1)[0][0] == top_k(gtm, 1)[0][0]:
+        eps = 1e-4                                   # keeps a zero score from wiping out the other model's evidence
+        prod = {c: (float(py.get(c, 0.0)) + eps) * (float(gtm.get(c, 0.0)) + eps) for c in CLASSES}
+        total = sum(prod.values()) or 1.0
+        return {c: v / total for c, v in prod.items()}
     return {c: w * float(py.get(c, 0.0)) + (1 - w) * float(gtm.get(c, 0.0)) for c in CLASSES}
 
 
@@ -65,10 +76,13 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
                     if gtm else "GTM result unavailable → Uncertain Result"))
 
     w = float(s.get("python_weight", 0.5))
-    comb = combine(py, gtm, w)
+    fuse = bool(s.get("agreement_fusion", False)) and bool(gtm) and bool(cmp["class_match"])
+    comb = combine(py, gtm, w, agreement_fusion=fuse)
     best, conf = top_k(comb, 1)[0]
     margin = top_margin(comb)
-    trace.append(f"Combined scores" + (f" (Python {w:.0%} / GTM {1 - w:.0%})" if gtm else "")
+    how = ("both models agree → product rule (independent evidence)" if fuse
+           else f"Python {w:.0%} / GTM {1 - w:.0%}")
+    trace.append(f"Combined scores" + (f" ({how})" if gtm else "")
                  + f" → {best} ({conf:.2f}), top-2 margin {margin:.2f}")
 
     category = best
@@ -101,8 +115,9 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
     rule = rules.get(category) or default_rule(category)
     repeated = repeated_for(category) if category != UNKNOWN_CLASS else 1
     agree = bool(gtm) and cmp["class_match"] and cmp["python_prediction"] == category
+    single = min(float(py.get(category, 0.0)), float(gtm.get(category, 0.0))) if agree else None
     ev = evaluate_rule(rule, confidence=conf, margin=margin, quality=quality,
-                       models_agree=agree, repeated=repeated)
+                       models_agree=agree, repeated=repeated, single_confidence=single)
     severity = ev["severity"]
     trace.append(f"Rule '{category}': " + ", ".join(f"{k}={'✔' if v else '✘'}" for k, v in ev["checks"].items())
                  + f" (repeated {repeated}×)")

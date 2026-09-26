@@ -215,6 +215,13 @@ def test_exports(client):
         r = client.get(f"/admin/export/{name}.csv")
         assert r.status_code == 200 and r.data
     assert client.get("/admin/export/events.xlsx").status_code == 200
+    import io
+    from openpyxl import load_workbook
+    for name in ("comparison", "evaluation"):
+        r = client.get(f"/admin/export/{name}.xlsx")
+        assert r.status_code == 200
+        wb = load_workbook(io.BytesIO(r.data))
+        assert wb.sheetnames == ["Summary", "Comparison", "Per class", "Confusion matrices", "Disagreements"]
 
 
 def test_admin_settings_and_rules(client, app):

@@ -90,7 +90,9 @@ DEFAULT_RUNTIME_SETTINGS = {
     "acceptable_match_diff": 0.20,   # |Python top conf - GTM top conf| for "Acceptable Match"
     "unknown_threshold": 0.35,       # below this combined confidence -> Unknown
     "overlap_threshold": 0.25,       # >=2 non-background classes above this -> overlap
-    "python_weight": 0.5,            # share of the Python model in the combined score (GTM gets 1 - this)
+    "python_weight": 0.75,           # share of the Python model in the combined score (GTM gets 1 - this);
+                                     # 0.75 because Python is measurably more accurate (92.3 % vs 70.3 % on the comparison run)
+    "agreement_fusion": True,        # both models pick the same class -> combine them as independent evidence (product rule)
     "lookalike_margin": 0.20,        # min gap between a class and its look-alike (SRS Step 14) before it is trusted
     "repeat_window_seconds": 10,     # time period used for repeated-detection confirmation
     "noise_reduction": True,

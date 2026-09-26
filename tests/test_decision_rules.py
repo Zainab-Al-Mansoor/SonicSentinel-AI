@@ -163,3 +163,21 @@ def test_alarm_vs_horn_and_hidden_event_behind_background():
     d = _decide(_scores(Background_Noise=0.55, Gunshot=0.45), _scores(Background_Noise=0.5, Gunshot=0.4))
     assert d["final_category"] == "Background Noise"
     assert any(r.startswith("Possible Gunshot") for r in d["review_reasons"]) and d["manual_review_required"]
+
+
+def test_agreement_fusion_raises_confidence_when_both_models_agree():
+    from src.services.decision import combine
+    py = {c: 0.01 for c in CLASSES}; py["Glass Breaking"] = 0.91
+    gtm = {c: 0.0766 for c in CLASSES}; gtm["Glass Breaking"] = 0.31
+    avg = combine(py, gtm, 0.5)["Glass Breaking"]
+    fused = combine(py, gtm, 0.5, agreement_fusion=True)
+    assert abs(sum(fused.values()) - 1) < 1e-9
+    assert max(fused, key=fused.get) == "Glass Breaking"      # the class never changes
+    assert fused["Glass Breaking"] > 0.9 > avg                  # agreement is extra evidence
+
+
+def test_agreement_fusion_is_not_used_when_models_disagree():
+    from src.services.decision import combine
+    py = {c: 0.0 for c in CLASSES}; py["Gunshot"] = 0.9; py["Background Noise"] = 0.1
+    gtm = {c: 0.0 for c in CLASSES}; gtm["Glass Breaking"] = 0.6; gtm["Gunshot"] = 0.4
+    assert abs(combine(py, gtm, 0.75, agreement_fusion=True)["Gunshot"] - (0.75 * 0.9 + 0.25 * 0.4)) < 1e-9

@@ -220,15 +220,22 @@ def export(name, fmt):
     if fmt == "csv":
         return Response(df.to_csv(index=False), mimetype="text/csv",
                         headers={"Content-Disposition": f"attachment; filename=sonicsentinel_{name}_{stamp}.csv"})
-    buf = io.BytesIO()
-    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
-        df.to_excel(xw, index=False, sheet_name=name[:30])
-        if name in ("comparison", "evaluation"):
-            evs = AudioEvent.query.filter(AudioEvent.actual_class.isnot(None) if name == "evaluation"
-                                          else AudioEvent.final_category.isnot(None)).all()
-            _, s = comparison_dataframe(evs)
-            pd.DataFrame([{"metric": k, "value": json.dumps(v) if isinstance(v, dict) else v} for k, v in s.items()]) \
-                .to_excel(xw, index=False, sheet_name="summary")
-    buf.seek(0)
+    from ..services.report_xlsx import comparison_workbook, style_sheet
+    if name in ("comparison", "evaluation"):
+        evs = AudioEvent.query.filter(AudioEvent.actual_class.isnot(None) if name == "evaluation"
+                                      else AudioEvent.final_category.isnot(None)).order_by(AudioEvent.id).all()
+        df, s = comparison_dataframe(evs)
+        meta = {"gtm_version": gtm_info().get("version", ""), "python_weight": get_settings().get("python_weight")}
+        try:
+            meta["python_version"] = python_model().version
+        except Exception:
+            meta["python_version"] = ""
+        buf = comparison_workbook(df, s, meta)
+    else:
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+            df.to_excel(xw, index=False, sheet_name=name[:30])
+            style_sheet(xw.sheets[name[:30]])
+        buf.seek(0)
     return send_file(buf, as_attachment=True, download_name=f"sonicsentinel_{name}_{stamp}.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

@@ -138,14 +138,14 @@ def write_html(df, path, acc, n):
 <td class="why">{html.escape(r.reason)}</td>
 <td><select>{sel}</select><button class="q" data-v="move:{html.escape(r.suggested)}">use suggestion</button></td></tr>""")
     page = f"""<!doctype html><html><head><meta charset="utf-8"><title>SonicSentinel – label audit</title>
-<style>body{{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#FBF7F3;color:#2E2724}}
-h1{{color:#4A2C21;margin:0 0 4px}} .sub{{color:#6b5e58;margin-bottom:16px}}
-table{{border-collapse:collapse;width:100%;background:#fff}} th{{background:#4A2C21;color:#fff;text-align:left;padding:8px;position:sticky;top:0}}
-td{{border-bottom:1px solid #E6D8CC;padding:8px;vertical-align:top;font-size:14px}} audio{{width:260px;height:34px}}
-.fn{{font-family:Consolas,monospace;font-size:12px;color:#8A3F1E;margin-top:4px;word-break:break-all}} .src,.p{{font-size:12px;color:#7a6d67}}
-.why{{max-width:260px;color:#5a4a42}} select{{padding:4px;font-size:13px}} button{{cursor:pointer}} .q{{display:block;margin-top:6px;font-size:12px}}
-.bar{{position:sticky;top:0;background:#FBF7F3;padding:10px 0;z-index:2;display:flex;gap:12px;align-items:center}}
-.bar button{{background:#A0522D;color:#fff;border:0;padding:10px 16px;border-radius:8px;font-weight:600}} tr.changed td{{background:#FFF4E5}}
+<style>body{{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#F5F1FA;color:#1D1526}}
+h1{{color:#5C4B73;margin:0 0 4px}} .sub{{color:#6E6187;margin-bottom:16px}}
+table{{border-collapse:collapse;width:100%;background:#fff}} th{{background:#5C4B73;color:#fff;text-align:left;padding:8px;position:sticky;top:0}}
+td{{border-bottom:1px solid #DCD2EA;padding:8px;vertical-align:top;font-size:14px}} audio{{width:260px;height:34px}}
+.fn{{font-family:Consolas,monospace;font-size:12px;color:#5C4B73;margin-top:4px;word-break:break-all}} .src,.p{{font-size:12px;color:#6E6187}}
+.why{{max-width:260px;color:#34284A}} select{{padding:4px;font-size:13px}} button{{cursor:pointer}} .q{{display:block;margin-top:6px;font-size:12px}}
+.bar{{position:sticky;top:0;background:#F5F1FA;padding:10px 0;z-index:2;display:flex;gap:12px;align-items:center}}
+.bar button{{background:#5C4B73;color:#fff;border:0;padding:10px 16px;border-radius:8px;font-weight:600}} tr.changed td{{background:#EFE8F7}}
 </style></head><body>
 <h1>Label audit</h1><div class="sub">{len(df)} clips to check (out of {n}) · out-of-fold accuracy {acc:.1%}.
 Listen to each clip. Leave <b>keep</b> if the label is right, choose <b>→ class</b> to move it, or <b>delete</b> if it fits no class.

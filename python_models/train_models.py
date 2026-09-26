@@ -276,14 +276,17 @@ def metrics(y_true, y_pred):
 def plot_cm(y_true, y_pred, path, title):
     cm = confusion_matrix(y_true, y_pred, labels=CLASSES)
     fig, ax = plt.subplots(figsize=(9, 8), dpi=110)
-    ax.imshow(cm, cmap="Blues")
+    from matplotlib.colors import LinearSegmentedColormap
+    aura = LinearSegmentedColormap.from_list("aura", ["#F5F1FA", "#D4C4E8", "#8E76B8", "#5C4B73", "#1D1526"])
+    ax.imshow(cm, cmap=aura)
     ax.set_xticks(range(len(CLASSES))); ax.set_xticklabels(CLASSES, rotation=45, ha="right", fontsize=8)
     ax.set_yticks(range(len(CLASSES))); ax.set_yticklabels(CLASSES, fontsize=8)
     for i in range(len(CLASSES)):
         for j in range(len(CLASSES)):
             ax.text(j, i, cm[i, j], ha="center", va="center", fontsize=8,
                     color="white" if cm[i, j] > cm.max() / 2 else "black")
-    ax.set_xlabel("Predicted"); ax.set_ylabel("Actual"); ax.set_title(title)
+    ax.set_xlabel("Predicted", color="#5C4B73"); ax.set_ylabel("Actual", color="#5C4B73")
+    ax.set_title(title, color="#1D1526", fontweight="bold")
     fig.tight_layout(); fig.savefig(path); plt.close(fig)
     return cm
 

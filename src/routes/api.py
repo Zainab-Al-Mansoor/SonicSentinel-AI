@@ -231,6 +231,9 @@ def testset_file():
     if dup:
         if dup.actual_class is None:
             dup.actual_class = r["class_label"]; db.session.commit()
+        # re-run the decision on the stored scores so the report always uses the CURRENT decision logic and settings
+        from ..services.analysis import finalize
+        finalize(dup)
         return jsonify({"duplicate": True, "event": event_json(dup, True)})
     if not ev:
         return jsonify({"error": " ".join(msgs)}), 422

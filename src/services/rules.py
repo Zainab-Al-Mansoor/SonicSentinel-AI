@@ -54,7 +54,7 @@ def quality_ok(actual: str, minimum: str) -> bool:
 
 
 def evaluate_rule(rule: dict, *, confidence: float, margin: float, quality: str,
-                  models_agree: bool, repeated: int) -> dict:
+                  models_agree: bool, repeated: int, single_confidence: float | None = None) -> dict:
     """Check every condition of one rule and say whether the event is CONFIRMED."""
     checks = {
         "confidence": confidence >= rule["min_confidence"],
@@ -63,7 +63,11 @@ def evaluate_rule(rule: dict, *, confidence: float, margin: float, quality: str,
         "model_agreement": models_agree or not rule["require_model_agreement"],
     }
     strong = rule.get("strong_confidence", 0) or 0
-    single_ok = strong > 0 and models_agree and confidence >= strong
+    # one window is enough only when BOTH models are individually above strong_confidence
+    # (single_confidence = the lower of the two models' scores for the class); the combined score is not used here,
+    # so the agreement fusion can never turn a single, moderate detection into an automatic critical alert
+    sc = confidence if single_confidence is None else single_confidence
+    single_ok = strong > 0 and models_agree and sc >= strong
     checks["repeated_detection"] = repeated >= rule["required_consecutive"] or single_ok
     severity = rule["severity"]
     escalated = False

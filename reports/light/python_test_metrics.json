@@ -1,0 +1,90 @@
+{
+  "version": "py-xgb-20260927-1010",
+  "accuracy": 0.9039385206532181,
+  "precision_macro": 0.9289403875070736,
+  "recall_macro": 0.9088044141603404,
+  "f1_macro": 0.9154124025683938,
+  "f1_weighted": 0.9039029035202488,
+  "critical_recall": {
+    "Gunshot": 1.0,
+    "Glass Breaking": 1.0,
+    "Panic Scream": 0.907563025210084,
+    "Aggression": 0.6976744186046512,
+    "Person Asking for Help": 0.9393939393939394
+  },
+  "critical_recall_min": 0.6976744186046512,
+  "per_class": {
+    "Machinery Fault": {
+      "precision": 1.0,
+      "recall": 0.9876543209876543,
+      "f1": 0.9937888198757764
+    },
+    "Glass Breaking": {
+      "precision": 0.9285714285714286,
+      "recall": 1.0,
+      "f1": 0.9629629629629629
+    },
+    "Alarm or Siren": {
+      "precision": 0.9672131147540983,
+      "recall": 0.921875,
+      "f1": 0.944
+    },
+    "Vehicle Horn": {
+      "precision": 1.0,
+      "recall": 0.8947368421052632,
+      "f1": 0.9444444444444444
+    },
+    "Animal Sound": {
+      "precision": 0.8502673796791443,
+      "recall": 0.9298245614035088,
+      "f1": 0.888268156424581
+    },
+    "Gunshot": {
+      "precision": 0.9580838323353293,
+      "recall": 1.0,
+      "f1": 0.9785932721712538
+    },
+    "Panic Scream": {
+      "precision": 0.7552447552447552,
+      "recall": 0.907563025210084,
+      "f1": 0.8244274809160306
+    },
+    "Aggression": {
+      "precision": 0.9375,
+      "recall": 0.6976744186046512,
+      "f1": 0.8
+    },
+    "Person Asking for Help": {
+      "precision": 1.0,
+      "recall": 0.9393939393939394,
+      "f1": 0.96875
+    },
+    "Background Noise": {
+      "precision": 0.8925233644859814,
+      "recall": 0.809322033898305,
+      "f1": 0.8488888888888889
+    }
+  },
+  "noise_robustness": [
+    {
+      "condition": "clean",
+      "accuracy": 0.9039385206532181,
+      "f1_macro": 0.9154124025683938
+    },
+    {
+      "condition": "white noise SNR 20 dB",
+      "accuracy": 0.8386167146974063,
+      "f1_macro": 0.8469351458211722
+    },
+    {
+      "condition": "white noise SNR 10 dB",
+      "accuracy": 0.7463976945244957,
+      "f1_macro": 0.6788617260506973
+    },
+    {
+      "condition": "white noise SNR 5 dB",
+      "accuracy": 0.6983669548511047,
+      "f1_macro": 0.5806589562313527
+    }
+  ]
+}

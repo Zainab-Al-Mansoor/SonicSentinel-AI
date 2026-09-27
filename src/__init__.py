@@ -50,8 +50,11 @@ def create_app(test_config: dict | None = None) -> Flask:
         ctx = {"csrf_token": csrf_token, "CLASSES": CLASSES, "SEVERITY_LEVELS": SEVERITY_LEVELS, "ROLES": ROLES}
         if current_user.is_authenticated:
             try:
-                ctx["nav_active_alerts"] = Alert.query.filter_by(status="Active").count() \
-                    if current_user.role in ("admin", "security", "maintenance") else 0
+                if current_user.role in ("admin", "security", "maintenance"):
+                    from .routes.alerts import visible_alerts   # same role filter as the Alerts page
+                    ctx["nav_active_alerts"] = visible_alerts().filter(Alert.status == "Active").count()
+                else:
+                    ctx["nav_active_alerts"] = 0
                 ctx["nav_notifications"] = SystemNotification.query.filter_by(is_read=False).count() \
                     if current_user.role == "admin" else 0
                 ctx["nav_reviews"] = AudioEvent.query.filter_by(status="Manual Review").count() \

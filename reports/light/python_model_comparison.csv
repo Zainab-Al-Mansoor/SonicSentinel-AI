@@ -1,0 +1,4 @@
+model,best_params,cv_f1_macro,val_accuracy,val_f1_macro,val_precision_macro,val_recall_macro,val_critical_recall_min,train_seconds
+xgb,"{""clf__max_depth"": 6, ""clf__learning_rate"": 0.1}",,0.9000960614793467,0.9162322961804303,0.9182292450485582,0.9161743361262715,0.8604651162790697,705.4
+mlp,"{""clf__alpha"": 0.001}",,0.8674351585014409,0.877090329433439,0.8722761898710212,0.8902629157950319,0.75,235.2
+rf,"{""clf__max_depth"": null, ""clf__min_samples_leaf"": 1}",,0.8328530259365994,0.8410225923089412,0.9164826184724273,0.8018717091023593,0.5,650.7

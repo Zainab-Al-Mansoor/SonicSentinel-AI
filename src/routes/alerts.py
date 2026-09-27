@@ -11,10 +11,19 @@ bp = Blueprint("alerts", __name__, url_prefix="/alerts")
 ACTIONS = {"acknowledge": "Acknowledged", "dismiss": "Dismissed", "escalate": "Escalated"}
 
 
-def visible_alerts():
+def visible_alerts(role=None):
+    """Alerts the given role (default: current user) may see.
+    The audience column is JSON text, so it is cast to plain text before the LIKE search;
+    otherwise SQLAlchemy JSON-encodes the search term too and nothing ever matches."""
+    from sqlalchemy import cast, or_, Text
+    role = role or current_user.role
     q = Alert.query
-    if current_user.role != "admin":
-        q = q.filter(Alert.audience.contains(f'"{current_user.role}"'))
+    if role != "admin":
+        aud = cast(Alert.audience, Text)
+        cond = aud.contains(f'"{role}"')
+        if role == "security":            # alerts without an audience go to security (same as can_handle_alert)
+            cond = or_(cond, Alert.audience.is_(None), aud == "[]", aud == "null")
+        q = q.filter(cond)
     return q
 
 

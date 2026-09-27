@@ -15,7 +15,7 @@ SonicSentinel AI listens to **uploaded audio clips** and **live microphone input
 
 The app compares the two predictions and their confidence scores. It also checks audio quality, detects uncertain, unknown and overlapping sounds, applies configurable alert rules and assigns a severity (Informational → Critical). Doubtful results go to a manual-review queue. Everything is stored for event history, dashboards, reports and audit.
 
-**Results (unseen test split, 695 clips):** accuracy **86.5 %** · macro-F1 **0.863** · critical-class recall Gunshot 0.93, Panic Scream 0.93, Aggression 0.89, Help 1.00, Glass Breaking 0.83.
+**Results (unseen test split, 1,041 clips, model `py-xgb-20260926-0308`):** accuracy **93.4 %** · macro-F1 **0.945** · critical-class recall Gunshot 0.99, Glass Breaking 1.00, Help 0.94, Panic Scream 0.91, Aggression 0.84.
 
 **Deliverables:** [Project report](documentation/PROJECT_REPORT.md) · [Technical blog](documentation/TECHNICAL_BLOG.md) · Demo video: _link_ · Live app: _URL_ · [Submission checklist](documentation/SUBMISSION_CHECKLIST.md)
 
@@ -232,10 +232,10 @@ Status: Done
 
 | ID | Category | Requirement | How it is met / current status |
 |---|---|---|---|
-| NFR-01 | Accuracy | Test accuracy ≥ 85 % | Done **86.5 %** (Python XGBoost, 695 unseen test clips, 10 classes) |
-| NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | Done **0.863** over all 10 classes |
-| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | Done Gunshot 0.93 · Panic Scream 0.93 · Aggression 0.89 · Help 1.00 · 
-| NFR-04 | Robustness | Keep working with background noise | Done noise-augmented training + quality gate; accuracy 0.81 at 20 dB SNR, 0.71 at 10 dB, 0.66 at 5 dB (see §8.4); Poor-quality audio goes to manual review |
+| NFR-01 | Accuracy | Test accuracy ≥ 85 % | Done **93.4 %** (Python XGBoost, 1,041 unseen test clips, 10 classes) |
+| NFR-02 | Accuracy | Macro-F1 ≥ 0.80 | Done **0.945** over all 10 classes |
+| NFR-03 | Accuracy | Recall ≥ 85 % for critical classes | Gunshot 0.99 · Glass Breaking 1.00 · Help 0.94 · Panic Scream 0.91 Done; Aggression 0.84 (just below target) |
+| NFR-04 | Robustness | Keep working with background noise | Done noise-augmented training + quality gate; accuracy 0.90 at 20 dB SNR, 0.82 at 10 dB, 0.76 at 5 dB (see §8.4); Poor-quality audio goes to manual review |
 | NFR-05 | Performance | 30-s upload ≤ 8 s · live prediction ≤ 3 s | 2-s live windows; GTM runs in the browser. Done measured with the real model: 30-s upload **1.5 s** (max 1.7 s), live window **0.11 s** – `reports/performance.md` |
 | NFR-06 | Reliability | No crash on bad input | Validation rejects corrupt, empty, silent, too short and unsupported files with a clear message (tested) |
 | NFR-07 | Reliability | Works when one model is missing | Without GTM the result uses the Python model only and is marked *Uncertain Result* |
@@ -272,39 +272,40 @@ The raw downloads live in `downloads/` and are **not committed** (several GB). T
 
 ### 6.2 Clips per class (original clips, after validation and de-duplication)
 
-| Class | ESC-50 | UrbanSound8K | MIMII | Kaggle gunshot | Kaggle scream | VSD | TTS | Team | **Total** |
-|---|---|---|---|---|---|---|---|---|---|
-| Machinery Fault | | | 138 | | | | | | **138** |
-| Glass Breaking | 40 | | | | | | | | **40** |
-| Alarm or Siren | 80 | 393 | | | | | | | **473** |
-| Vehicle Horn | 40 | 325 | | | | | | | **365** |
-| Animal Sound | 400 | 374 | | | | | | | **774** |
-| Gunshot | | 349 | | 382 | | | | | **731** |
-| Panic Scream | | | | | 400 | | | | **400** |
-| Aggression | | | | | | 298 | | | **298** |
-| Person Asking for Help | | | | | | | 204 | 17 | **221** |
-| Background Noise | 250 | 249 | 250 | | 250 | 150 | | 40 | **1,189** |
-| **Total** | **810** | **1,690** | **388** | **382** | **650** | **448** | **204** | **57** | **4,629** |
+| Class | UrbanSound8K | ESC-50 | MIMII | Kaggle gunshot | Kaggle scream | VSD | TTS | Team | Extra | **Total** |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Machinery Fault | 1 | | 536 | | | | | 1 | | **538** |
+| Glass Breaking | | 35 | | | | | | 9 | 38 | **82** |
+| Alarm or Siren | 775 | 70 | | | | | | 12 | | **857** |
+| Vehicle Horn | 337 | 32 | | | | | | 14 | | **383** |
+| Animal Sound | 741 | 372 | | | 1 | | | 28 | 1 | **1,143** |
+| Gunshot | 346 | 1 | | 715 | | | | 3 | | **1,065** |
+| Panic Scream | | | | | 773 | | | 16 | | **789** |
+| Aggression | | | | | | 270 | | 18 | | **288** |
+| Person Asking for Help | | | | | | | 204 | 15 | | **219** |
+| Background Noise | 225 | 510 | 248 | | 306 | 150 | | 94 | 41 | **1,574** |
+| **Total** | **2,425** | **1,020** | **784** | **715** | **1,080** | **420** | **204** | **210** | **80** | **6,938** |
 
-* **Split** (stratified by class, by original clip): train 3,240 · validation 694 · test 695 (70 / 15 / 15).
-* **Total audio:** ≈ 6.6 hours · mean clip length 5.1 s (0.5 s – 360 s).
-* **Quality:** Good 3,195 · Acceptable 1,208 · Poor 226.
-* **Rejected:** 241 files (near-silent / too short, exact duplicates) – listed in `data/dataset_rejected.csv`. This includes 73 team Help recordings made with the wrong microphone input (−64 to −75 dBFS).
-* **Class imbalance ratio:** 30 : 1 before augmentation, ≈ 1 : 1 in the balanced training split.
+* **Split** (stratified by class, by original clip): train 4,856 · validation 1,041 · test 1,041 (70 / 15 / 15).
+* **Total audio:** ≈ 10.5 hours · mean clip length 5.4 s (0.5 s – 360 s).
+* **Quality:** Good 4,747 · Acceptable 1,846 · Poor 345.
+* **Rejected:** 336 files (near-silent / too short, exact duplicates) – listed in `data/dataset_rejected.csv`. This includes 73 team Help recordings made with the wrong microphone input (−64 to −75 dBFS).
+* **Class imbalance ratio:** about 19 : 1 (Background Noise 1,574 vs Glass Breaking 82) before augmentation.
 * **Format:** every clip is converted to 44.1 kHz mono 16-bit WAV and gets a unique Audio ID (`AUD-000001` …).
+* **Team** = own consented recordings (`team-collected`, `team-recording`); **Extra** = manually added clips (`downloads/extra/`).
 * Default import caps: 400 clips per class per source, 250 per source for Background Noise (`scripts/import_local_downloads.py`).
 
 ### 6.3 Augmentation (training split only)
 
 `python -m augmentation.augment --per-clip 1 --balance-to 600` creates augmented copies of **training** clips with a random mix of: background-noise mixing at a random SNR, time shift, pitch shift (±2 semitones), time stretch (0.85–1.15×), volume change (−12 to +6 dB), synthetic room reverberation, distance simulation and device (band-pass) simulation. Small classes get more copies (up to 10 per clip) until each class has ≈ 600 training clips. Augmented copies keep their parent's Audio ID in `parent_audio_id`, so they never leak into validation or test. Re-running the command replaces the previous augmented set.
 
-For the installed model: **8,270 training clips** (3,240 originals + 5,030 augmented) → **38,210 training segments** × 299 features.
+For the installed model: **19,424 training clips** (4,856 originals + 14,568 augmented copies), each cut into 2-s segments × 299 features.
 
 ### 6.4 Known gaps
 
-* **Glass Breaking:** only 40 clips (6 in the test split) – add the `glassbreak` events of [TUT Rare Sound Events 2017](https://zenodo.org/records/401395) (`...source_data_events.zip`, non-commercial licence) to `downloads/glass_extra/`, then import → build → augment → train.
-* **Machinery Fault:** 138 clips from one MIMII recording set – add more MIMII machine types / SNR levels.
-* **Person Asking for Help:** mostly synthetic TTS voices + 17 team clips – more real, consented voices would make it more robust.
+* **Glass Breaking:** still the smallest class (82 clips, 13 in the test split) – more data from [TUT Rare Sound Events 2017](https://zenodo.org/records/401395) or FSD50K would make its score more reliable.
+* **Machinery Fault:** 538 clips, almost all from MIMII pumps – add more MIMII machine types / SNR levels.
+* **Person Asking for Help:** mostly synthetic TTS voices + 15 team clips – more real, consented voices would make it more robust.
 
 ---
 
@@ -344,35 +345,36 @@ For the installed model: **8,270 training clips** (3,240 originals + 5,030 augme
 
 Run used for the installed model: `python -m python_models.train_models --fast --models rf,mlp,xgb`. SVM was skipped because it takes hours on 38k segments (it is still available: `--models svm`). XGBoost is skipped automatically if a class has no training data.
 
-### 8.2 Model comparison (validation split, 694 clips)
+### 8.2 Model comparison (validation split, 1,041 clips)
 
-| Model | Best parameters | CV macro-F1 | Val accuracy | Val macro-F1 | Val macro precision | Val macro recall | Training time |
-|---|---|---|---|---|---|---|---|
-| **XGBoost** Done selected | max_depth 6, learning_rate 0.1 | 0.790 | **0.844** | **0.847** | 0.858 | 0.850 | 1,462 s |
-| MLP (256-128) | alpha 0.001 | 0.779 | 0.805 | 0.818 | 0.805 | 0.848 | 292 s |
-| Random Forest (300 trees) | max_depth None, min_samples_leaf 1 | 0.742 | 0.769 | 0.802 | 0.880 | 0.771 | 953 s |
+| Model | Best parameters | Val accuracy | Val macro-F1 | Val macro precision | Val macro recall | Training time |
+|---|---|---|---|---|---|---|
+| **XGBoost** Done selected | max_depth 6, learning_rate 0.1 | **0.936** | **0.944** | 0.945 | 0.944 | 15,252 s |
+| MLP (256-128) | alpha 0.001 | 0.892 | 0.898 | 0.889 | 0.915 | 209 s |
+| Random Forest (300 trees) | max_depth None, min_samples_leaf 1 | 0.888 | 0.876 | 0.934 | 0.841 | 951 s |
 
-### 8.3 Final test results (695 unseen clips) – XGBoost
+### 8.3 Final test results (1,041 unseen clips) – XGBoost
 
 | Metric | Value | SRS target |
 |---|---|---|
-| Accuracy | **0.865** | ≥ 0.85 Done |
-| Macro precision / recall / F1 | 0.847 / 0.895 / **0.863** | F1 ≥ 0.80 Done |
+| Accuracy | **0.934** | ≥ 0.85 Done |
+| Macro precision / recall / F1 | 0.949 / 0.944 / **0.945** | F1 ≥ 0.80 Done |
+| Weighted F1 | 0.934 | |
 
-| Class | Precision | Recall | F1 | Test clips | False positives | False negatives |
-|---|---|---|---|---|---|---|
-| Machinery Fault | 0.77 | 1.00 | 0.87 | 20 | 6 | 0 |
-| Glass Breaking | 0.56 | 0.83 | 0.67 | 6 | 4 | 1 |
-| Alarm or Siren | 0.93 | 0.92 | 0.92 | 71 | 5 | 6 |
-| Vehicle Horn | 1.00 | 0.87 | 0.93 | 55 | 0 | 7 |
-| Animal Sound | 0.88 | 0.79 | 0.84 | 116 | 12 | 24 |
-| Gunshot | 0.96 | 0.93 | 0.94 | 110 | 4 | 8 |
-| Panic Scream | 0.64 | 0.93 | 0.76 | 60 | 32 | 4 |
-| Aggression | 0.89 | 0.89 | 0.89 | 45 | 5 | 5 |
-| Person Asking for Help | 1.00 | 1.00 | 1.00 | 33 | 0 | 0 |
-| Background Noise | 0.84 | 0.78 | 0.81 | 179 | 26 | 39 |
+| Class | Precision | Recall | F1 | Test clips |
+|---|---|---|---|---|
+| Machinery Fault | 1.00 | 0.99 | 0.99 | 81 |
+| Glass Breaking | 1.00 | 1.00 | 1.00 | 13 |
+| Alarm or Siren | 0.95 | 0.99 | 0.97 | 128 |
+| Vehicle Horn | 1.00 | 0.98 | 0.99 | 57 |
+| Animal Sound | 0.92 | 0.96 | 0.94 | 171 |
+| Gunshot | 0.95 | 0.99 | 0.97 | 160 |
+| Panic Scream | 0.78 | 0.91 | 0.84 | 119 |
+| Aggression | 0.92 | 0.84 | 0.88 | 43 |
+| Person Asking for Help | 1.00 | 0.94 | 0.97 | 33 |
+| Background Noise | 0.97 | 0.83 | 0.90 | 236 |
 
-An earlier 9-class MLP (without Help) reached 93.1 % accuracy but only 0.819 macro-F1; the 10-class XGBoost is the better and complete model.
+Panic Scream still has the most false positives (precision 0.78), and Background Noise and Aggression have the most misses. Glass Breaking is perfect on its 13 test clips, but 13 clips is too few to be sure.
 
 Confusion matrix: `reports/confusion_matrix_python.png`.
 
@@ -380,12 +382,12 @@ Confusion matrix: `reports/confusion_matrix_python.png`.
 
 | Condition | Accuracy | Macro-F1 |
 |---|---|---|
-| Clean | 0.865 | 0.863 |
-| SNR 20 dB | 0.809 | 0.780 |
-| SNR 10 dB | 0.711 | 0.602 |
-| SNR 5 dB | 0.663 | 0.529 |
+| Clean | 0.934 | 0.945 |
+| SNR 20 dB | 0.900 | 0.901 |
+| SNR 10 dB | 0.822 | 0.766 |
+| SNR 5 dB | 0.764 | 0.637 |
 
-Model `py-xgb-20260924-0800`. Audio this noisy is also marked Poor quality, and Poor-quality detections of critical classes go to manual review instead of raising an automatic alert.
+Model `py-xgb-20260926-0308`. Audio this noisy is also marked Poor quality, and Poor-quality detections of critical classes go to manual review instead of raising an automatic alert.
 
 Report files: `reports/python_model_comparison.csv`, `python_test_metrics.json`, `python_classwise_test.csv`, `noise_robustness.csv`, `confusion_matrix_python.png`. The Admin → **Models** page shows them.
 
@@ -555,7 +557,7 @@ gunicorn -w 2 -b 0.0.0.0:$PORT run:app   # production on Linux
 | Manual review | **Review** → listen, confirm or correct, comment, close |
 | Dashboards | **Dashboard**, **Live**, **Admin** |
 | History and timeline | **History** filters, **Timeline** |
-| Reports and exports | event page → *Download report*; Admin → CSV/Excel exports |
+| Reports and exports | event page → *Download report* (self-contained HTML, *Print / Save as PDF*); Admin → Analytics → *Exports* (events, alerts, reviews, audit, comparison as CSV/Excel); Admin → Audit trail → *Export CSV* |
 | Model comparison report | Admin → *Model comparison* → *Run test-set evaluation* → export Excel |
 | Thresholds and rules | Admin → *Settings*, Admin → *Alert rules* |
 
@@ -578,7 +580,7 @@ python -m pytest -q        # 66 passed
 
 Covered: functional and integration (upload → Python → GTM → decision → review → alerts → live), boundary (too-short clip, last-segment padding, exact thresholds), negative (unsupported / empty / corrupt / silent files, wrong password, bad CSRF), security (CSRF, role access, lock-out, protected media), database, audio formats (WAV, FLAC, OGG, MP3, stereo), silence / clipping / noise, pre-processing and features, model aggregation, comparison and alert rules, duplicates, low confidence, unknown and overlapping sounds, live windows.
 
-Synthetic test files for manual checks are in `sample_audio/test_cases/` (silent, too short, corrupted, not audio, clipped, very low level, white noise, missing frames, stereo FLAC).
+Synthetic test files for manual checks are in `sample_audio/test_cases/` (silent, too short, corrupted, not audio, clipped, very low level, white noise, missing frames, stereo FLAC). `sample_audio/batch_test_10_classes.zip` holds one unseen test clip per class for the **Batch** page.
 
 **Performance and scalability** (NFR): `python scripts\benchmark_performance.py` times five 30-s uploads (target ≤ 8 s) and 15 live windows (≤ 3 s), inserts 20,000 events and times the dashboard, history, filters and exports, and runs 5 concurrent users. It uses a temporary database and your real model, and writes `reports/performance.md`.
 
@@ -596,14 +598,15 @@ augmentation/         training-only augmentation
 config/               settings, class list, dataset label mapping
 data/                 database, uploads, features cache (not committed) + dataset metadata/statistics
 database/             init_db.py, schema.sql
-documentation/        report, blog, architecture, data dictionary, dataset guide, testing, deployment, GTM log, video script, checklists
+documentation/        report, blog, architecture, data dictionary, dataset guide, testing, deployment, GTM log, video script, checklists;
+                      diagrams/ (architecture, use case, activity and sequence diagrams as SVG/PNG)
 downloads/            downloaded public datasets (not committed)
 feature_extraction/   299-value features, waveform/spectrogram images, fingerprints
 gtm_model/            GTM sample preparation; exported model in gtm_model/model/
 notebooks/            exploration notebook
 python_models/        training script, inference wrapper, saved/sonic_model.joblib
 reports/              model comparison, test metrics, class-wise scores, confusion matrix, noise robustness
-sample_audio/         synthetic test clips
+sample_audio/         synthetic test clips + batch_test_10_classes.zip (one test clip per class)
 scripts/              dataset import (local + public), build, clean, recording, TTS, benchmark
 screenshots/          application and GTM screenshots
 src/                  Flask app: models, routes, services (analysis, decision, rules, audit …)
@@ -619,16 +622,17 @@ Dockerfile, render.yaml  container image and Render deployment
 
 ## 19. Limitations and future work
 
-* **Glass Breaking** (40 clips, 6 test clips) and **Machinery Fault** (138 clips, one recording set) are small; their scores are less reliable and Glass Breaking recall (0.83) is just below the 0.85 target.
+* **Glass Breaking** (82 clips, 13 test clips) is still small, so its perfect test score is not fully reliable; **Machinery Fault** comes almost only from MIMII pumps.
+* **Aggression** recall (0.84) is just below the 0.85 target.
 * **Person Asking for Help** is trained mostly on synthetic TTS voices; real voices, accents and languages may be missed.
 * **Panic Scream** has the most false positives (loud voices, children, some animals).
-* The **GTM model** was trained from speaker playback through the microphone, so it is less accurate than the Python model and often disagrees with it; the installed version has 9 classes.
-* Accuracy drops with strong noise (0.69 at 5 dB SNR in the last measurement).
+* The **GTM model** was trained from speaker playback through the microphone, so it is less accurate than the Python model and often disagrees with it; the installed version has all 10 classes.
+* Accuracy drops with strong noise (0.76 at 5 dB SNR in the last measurement).
 * GTM runs in the browser, so uploads need an open browser tab to get GTM scores.
 * Help-phrase detection is sound classification, not speech recognition; it only knows the trained phrases.
 * SQLite suits a single server; use PostgreSQL for many concurrent users.
 
-**Future work:** more Glass Breaking / MIMII / real help-voice data, GTM retraining with 10 classes and more samples, a pretrained audio-embedding model (YAMNet/PANNs) as another candidate, SMS/e-mail notifications, multi-room monitoring, and feeding reviewer corrections back into training.
+**Future work:** more Glass Breaking / MIMII / real help-voice data, GTM retraining with more samples, a pretrained audio-embedding model (YAMNet/PANNs) as another candidate, SMS/e-mail notifications, multi-room monitoring, and feeding reviewer corrections back into training.
 
 ---
 

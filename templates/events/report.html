@@ -17,7 +17,7 @@
 </style></head>
 <body>
 <div class="head">
-  <div><img src="{{ url_for('static', filename='img/sonic-logo-silver.svg') }}" alt="Sonic Sentinel" style="height:54px;width:auto;border-radius:0;margin:0 0 10px"><h1>SonicSentinel AI – Sound-Event Analysis Report</h1><div class="muted">Audio ID {{ ev.audio_id }} · generated {{ generated|dt }}</div></div>
+  <div><img src="{% if logo %}data:image/svg+xml;base64,{{ logo }}{% else %}{{ url_for('static', filename='img/sonic-logo-silver.svg', _external=True) }}{% endif %}" alt="Sonic Sentinel" style="height:54px;width:auto;border-radius:0;margin:0 0 10px"><h1>SonicSentinel AI – Sound-Event Analysis Report</h1><div class="muted">Audio ID {{ ev.audio_id }} · generated {{ generated|dt }}</div></div>
   <button class="noprint" onclick="window.print()">Print / Save as PDF</button>
 </div>
 

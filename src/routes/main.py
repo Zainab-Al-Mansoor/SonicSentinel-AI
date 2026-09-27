@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import (Blueprint, render_template, request, redirect, url_for, flash, abort, send_file,
-                   send_from_directory, Response)
+                   send_from_directory, Response, current_app)
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from werkzeug.utils import secure_filename
@@ -150,8 +150,9 @@ def event_report(audio_id):
         except OSError:
             return None
     try:
+        logo = b64(Path(current_app.static_folder) / "img" / "sonic-logo-silver.svg")  # embedded so the logo shows offline
         html = render_template("events/report.html", ev=ev, wave=b64(ev.waveform_path), spec=b64(ev.spectrogram_path),
-                               top_k=top_k, generated=now())
+                               logo=logo, top_k=top_k, generated=now())
     except Exception as exc:
         audit.notify("report_failure", f"Report failed for {ev.audio_id}: {exc}")
         flash("The report could not be generated. The error has been logged.", "error")

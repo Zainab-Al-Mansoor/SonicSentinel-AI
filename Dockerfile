@@ -1,6 +1,6 @@
 # SonicSentinel AI – production image
 # Works on Hugging Face Spaces (Docker, port 7860), Render, Railway or any Docker host.
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # FFmpeg decodes MP3/M4A uploads; libsndfile is used by soundfile
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg libsndfile1 \

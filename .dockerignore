@@ -18,3 +18,10 @@ screenshots
 notebooks
 Claude outputs
 _training_pack
+_to_delete
+python_models/yamnet
+python_models/yamnet_tmp
+reports/label_audit.html
+documentation/*.docx
+documentation/*.pdf
+logs

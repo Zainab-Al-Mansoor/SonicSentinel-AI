@@ -1,0 +1,27 @@
+# SonicSentinel AI – LIGHT image for the free Render plan (512 MB RAM)
+# Uses the model trained with --no-yamnet (python_models/saved/sonic_model_light.joblib), so TensorFlow is NOT
+# installed. The full YAMNet model runs locally or with the main Dockerfile.
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements*.txt ./
+RUN REQ=requirements.txt; [ -f requirements-deploy.txt ] && REQ=requirements-deploy.txt; \
+    pip install --no-cache-dir -r $REQ gunicorn
+
+COPY . .
+ENV PORT=10000 \
+    SONIC_MODEL_PATH=/app/python_models/saved/sonic_model_light.joblib \
+    PYTHONUNBUFFERED=1 \
+    MPLCONFIGDIR=/tmp/matplotlib \
+    NUMBA_CACHE_DIR=/tmp/numba
+EXPOSE 10000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+  CMD python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:%s/healthz' % os.environ.get('PORT','10000'),timeout=8)" || exit 1
+
+# one worker + threads keeps a single copy of the model in the small RAM
+CMD python -m database.init_db && \
+    gunicorn -w 1 --threads 4 --timeout 180 -b 0.0.0.0:${PORT} run:app

@@ -1,10 +1,14 @@
 # Render Blueprint – New + > Blueprint > select this repository
+# Free plan: 512 MB RAM -> uses the LIGHT model (trained with --no-yamnet) and Dockerfile.render.
 services:
   - type: web
     name: sonicsentinel-ai
     runtime: docker
+    dockerfilePath: ./Dockerfile.render
     plan: free            # free plan: the disk is temporary (database resets on every redeploy)
     healthCheckPath: /healthz
     envVars:
       - key: SONIC_SECRET_KEY
         generateValue: true
+      - key: SONIC_MODEL_PATH
+        value: /app/python_models/saved/sonic_model_light.joblib

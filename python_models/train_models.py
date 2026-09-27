@@ -31,6 +31,8 @@ Outputs
   reports/noise_robustness.csv
 """
 import argparse
+import os
+from pathlib import Path
 import hashlib
 import json
 import time
@@ -68,8 +70,8 @@ try:
 except ImportError:
     XGBClassifier = None
 
-REPORTS = BASE_DIR / "reports"
-REPORTS.mkdir(exist_ok=True)
+REPORTS = Path(os.environ.get("SONIC_REPORTS_DIR", BASE_DIR / "reports"))   # separate folder for e.g. the light deploy model
+REPORTS.mkdir(parents=True, exist_ok=True)
 SEG = DEFAULT_RUNTIME_SETTINGS["segment_seconds"]
 HOP = DEFAULT_RUNTIME_SETTINGS["segment_hop_seconds"]
 DENOISE = DEFAULT_RUNTIME_SETTINGS["noise_reduction"]

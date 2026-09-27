@@ -1,12 +1,3 @@
-"""
-Analysis orchestration: upload / live window  ->  validation -> quality ->
-pre-processing -> segmentation -> Python model -> (GTM in browser) ->
-comparison -> rules -> alerts -> storage.
-
-GTM runs in the browser (TensorFlow.js, the official GTM export). The server
-never sends Python predictions to the browser before GTM has produced its own
-scores for a segment, so the two models stay independent.
-"""
 import hashlib
 import json
 import secrets
@@ -36,9 +27,6 @@ class AnalysisError(Exception):
     pass
 
 
-# ---------------------------------------------------------------------------
-# Model registry
-# ---------------------------------------------------------------------------
 _py_model = {"obj": None, "mtime": None}
 
 
@@ -79,17 +67,15 @@ def _register_version(kind, version, details):
 
 
 def warm_up():
-    """Run the pipeline once on synthetic audio so the first real request is fast (numba JIT)."""
     y = (0.1 * np.sin(2 * np.pi * 440 * np.arange(TARGET_SR) / TARGET_SR)).astype(np.float32)
     clean, _ = preprocess_signal(y, TARGET_SR)
     try:
-        python_model().segment_scores([clean])     # also loads YAMNet when the model uses it
+        python_model().segment_scores([clean])
     except Exception:
         extract_features(clean)
     resample(y, TARGET_SR, GTM_SR)
 
 
-# ---------------------------------------------------------------------------
 def new_audio_id(prefix="AUD") -> str:
     return f"{prefix}-{now():%Y%m%d-%H%M%S}-{secrets.token_hex(2).upper()}"
 
@@ -111,7 +97,6 @@ def _rms_db(x):
 
 
 def make_images(event: AudioEvent, y_raw_mono: np.ndarray | None = None, sr: int | None = None):
-    """Waveform + spectrogram PNGs (called eagerly for uploads, lazily for live windows)."""
     if y_raw_mono is None:
         from audio_preprocessing import load_audio
         a = load_audio(event.stored_path)
@@ -128,11 +113,7 @@ def make_images(event: AudioEvent, y_raw_mono: np.ndarray | None = None, sr: int
     event.waveform_path, event.spectrogram_path = str(wave), str(spec)
 
 
-# ---------------------------------------------------------------------------
-# Uploaded files
-# ---------------------------------------------------------------------------
 def analyze_upload(path: Path, original_filename: str, user, source="upload", actual_class=None):
-    """Returns (event, errors, duplicate_event)."""
     t0 = time.time()
     s = get_settings()
     v = validate_file(path, original_filename)
@@ -160,7 +141,6 @@ def analyze_upload(path: Path, original_filename: str, user, source="upload", ac
     q = analyze_quality(audio.samples, audio.sample_rate)
     ev.quality, ev.quality_label, ev.noise_level_db = q, q["label"], q["noise_floor_dbfs"]
 
-    # near-duplicate check (re-encoded / trimmed / volume-changed copies)
     fp = compute_fingerprint(raw_mono, audio.sample_rate)
     ev.fingerprint = fp
     best, best_sim = None, 0.0
@@ -173,7 +153,6 @@ def analyze_upload(path: Path, original_filename: str, user, source="upload", ac
         ev.near_duplicate_of_id, ev.near_duplicate_score = best.id, round(best_sim, 3)
         audit.notify("duplicate_file", f"{original_filename} looks like a copy of {best.audio_id} (similarity {best_sim:.2f})")
 
-    # pre-processing + segmentation (timestamps are on the ORIGINAL timeline)
     clean, offset = preprocess_signal(audio.samples, audio.sample_rate, trim=True, denoise=s["noise_reduction"])
     segs = segment(clean, TARGET_SR, s["segment_seconds"], s["segment_hop_seconds"])
     gtm_audio = prepare_for_gtm(audio.samples, audio.sample_rate, GTM_SR)
@@ -189,7 +168,6 @@ def analyze_upload(path: Path, original_filename: str, user, source="upload", ac
         ev.segments.append(Segment(index=i, start_s=round(a, 3), end_s=round(b, 3), audio_path=str(p),
                                    rms_db=round(_rms_db(segs[i][2]), 1)))
 
-    # Python model (independent of GTM)
     try:
         scores = _python_scores([x for _, _, x in segs])
         for seg, sc in zip(ev.segments, scores):
@@ -199,7 +177,7 @@ def analyze_upload(path: Path, original_filename: str, user, source="upload", ac
     except ModelNotAvailable as exc:
         audit.notify("model_failure", str(exc))
         ev.python_prediction = None
-    except Exception as exc:  # model failure must not crash the app
+    except Exception as exc:
         audit.notify("model_failure", f"Python model failed on {ev.audio_id}: {exc}")
         ev.python_prediction = None
     ev.status = "Classified" if ev.segments and ev.segments[0].python_scores else "Uploaded"
@@ -217,7 +195,6 @@ def analyze_upload(path: Path, original_filename: str, user, source="upload", ac
 
 
 def submit_gtm(ev: AudioEvent, segment_scores: list | None, error: str | None = None):
-    """Store GTM scores per segment (from the browser), then produce the final decision."""
     if error or not segment_scores:
         ev.gtm_status = "error" if error else "unavailable"
         if error:
@@ -232,9 +209,6 @@ def submit_gtm(ev: AudioEvent, segment_scores: list | None, error: str | None = 
     return finalize(ev)
 
 
-# ---------------------------------------------------------------------------
-# Final decision
-# ---------------------------------------------------------------------------
 def _upload_repeated(ev: AudioEvent):
     def f(category):
         best = run = 0
@@ -256,7 +230,7 @@ def _live_repeated(ev: AudioEvent, window_s: int):
                                        AudioEvent.id != ev.id, AudioEvent.uploaded_at >= since) \
             .order_by(AudioEvent.uploaded_at.desc()).all()
         n = 1
-        for p in prev:                       # consecutive windows, newest first
+        for p in prev:
             if p.final_category == category:
                 n += 1
             else:
@@ -312,11 +286,7 @@ def finalize(ev: AudioEvent) -> AudioEvent:
     return ev
 
 
-# ---------------------------------------------------------------------------
-# Live microphone windows
-# ---------------------------------------------------------------------------
 def analyze_live_window(raw: bytes, session, user, gtm_scores: dict | None, gtm_error: str | None = None):
-    """One live window. GTM scores were computed in the browser on the SAME window before upload."""
     t0 = time.time()
     s = get_settings()
     audio = load_bytes(raw, ".wav")

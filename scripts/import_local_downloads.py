@@ -1,42 +1,3 @@
-"""
-Import the datasets that are ALREADY in the project's  downloads/  folder
-into audio_dataset/raw/<Class>/ and write source + licence to
-audio_dataset/raw/annotations.csv.
-
-Why this script exists: scripts/import_public_datasets.py expects the
-*official* folder layouts (UrbanSound8K/metadata + audio/foldN,
-ESC-50-master/meta + audio). The copies in downloads/ use the Kaggle layouts,
-and the Gunshot, Scream and VSD (violence) sets are not supported there at all.
-
-Layout that is read (missing folders are simply skipped):
-    downloads/urbansound8k/UrbanSound8K.csv + fold1..fold10/   (label map: config/dataset_mapping.json)
-    downloads/esc50/esc50.csv + audio/audio/*.wav              (label map: config/dataset_mapping.json)
-    downloads/mimii/**/abnormal/*.wav     -> Machinery Fault
-    downloads/mimii/**/normal/*.wav       -> Background Noise  ("normal machinery", SRS step 14)
-    downloads/gunshot/<weapon>/*.wav      -> Gunshot
-    downloads/scream/Screaming/*.wav      -> Panic Scream
-    downloads/scream/NotScreaming/*.wav   -> Background Noise  (ordinary voices / shouting, SRS step 14)
-    downloads/violence/VSD.xlsx + audios_VSD/audios_VSD/angry_*.wav      -> Aggression
-    downloads/violence/audios_VSD/audios_VSD/noviolence_*.wav            -> Background Noise
-                                                                            (random 5-s chunks: normal conversation)
-    downloads/glass_extra/**              -> Glass Breaking
-    downloads/extra/<Class Name>/**       -> that class (any clips you add by hand: Freesound, FSD50K, own recordings …)
-    --sources lookalikes                  -> ALL ESC-50 look-alike categories (fireworks, door knock, can opening,
-                                             laughing, crying baby, …) + all NotScreaming voices -> Background Noise
-                                             (SRS step 14 – similar events), e.g.:
-        python scripts/import_local_downloads.py --sources lookalikes
-
-Usage (from the project folder):
-    python scripts/import_local_downloads.py --dry-run
-    python scripts/import_local_downloads.py --max-per-class 1200 --per-source 400 --bg-per-source 250
-
-Selection rules
-  * each source adds at most --per-source clips to a class (--bg-per-source for Background Noise),
-  * inside one source the clips are taken round-robin over the original labels
-    (e.g. every gunshot weapon, every ESC-50 category) so no sub-type dominates,
-  * a class folder never grows beyond --max-per-class,
-  * re-running is safe: existing files are skipped and annotations.csv keeps one row per file.
-"""
 import argparse
 import csv
 import json
@@ -68,7 +29,6 @@ def cand(cls, src, dst_name, source, lic, env="unknown", cut=None, group=""):
             "env": env, "cut": cut, "group": group}
 
 
-# ---------------------------------------------------------------- sources
 def urbansound8k(rng):
     root = DL / "urbansound8k"
     csv_path = next((p for p in (root / "UrbanSound8K.csv", root / "metadata" / "UrbanSound8K.csv") if p.exists()), None)
@@ -149,8 +109,6 @@ def _vsd_dir():
 
 
 def vsd(rng, min_len=1.5, max_len=6.0):
-    """Aggression: one clip per annotated violence interval (from the angry_XXX segment files),
-    at most `max_len` seconds, centred in the interval."""
     xlsx, audio_dir = DL / "violence" / "VSD.xlsx", _vsd_dir()
     if not xlsx.exists() or not audio_dir:
         return []
@@ -171,8 +129,6 @@ def vsd(rng, min_len=1.5, max_len=6.0):
 
 
 def vsd_calm(rng, per_file=80, length=5.0):
-    """Background Noise: random 5-s chunks of the long non-violent VSD recordings
-    (normal conversation, music, street) – negatives for Aggression / Panic Scream."""
     audio_dir = _vsd_dir()
     if not audio_dir:
         return []
@@ -211,9 +167,6 @@ def extra(rng):
     return out
 
 
-# SRS Step 14 look-alikes: real-world sounds that are easily confused with a critical class.
-# They are Background Noise, but the default Background cap keeps only a few of each, so
-# `--sources lookalikes` adds ALL of them (up to --lookalike-per-source per source).
 LOOKALIKE_ESC = {
     "fireworks": "gunshot look-alike", "door_wood_knock": "gunshot / impact look-alike",
     "can_opening": "metal impact (glass look-alike)", "clock_tick": "metal click",
@@ -233,7 +186,6 @@ def lookalikes(rng):
             if r["category"] in LOOKALIKE_ESC and (audio_dir / r["filename"]).exists():
                 out.append(cand(BACKGROUND_CLASS, audio_dir / r["filename"], f"esc50_{r['filename']}",
                                 f"ESC-50:{r['src_file']}:{r['category']}", lic, group=r["category"]))
-    # ordinary voices / normal shouting (Panic Scream and Help look-alikes)
     for c in scream_not(rng):
         c["group"] = "NotScreaming"
         out.append(c)
@@ -246,7 +198,6 @@ SOURCES = {"urbansound8k": urbansound8k, "esc50": esc50, "mimii": mimii, "mimii_
 DEFAULT_SOURCES = [k for k in SOURCES if k != "lookalikes"]
 
 
-# ---------------------------------------------------------------- selection + copy
 def round_robin(items, rng):
     groups = defaultdict(list)
     for it in items:

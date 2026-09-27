@@ -1,20 +1,3 @@
-"""
-Clean the hand-downloaded Glass Breaking clips (look-alike fix, SRS Step 14).
-
-  python scripts/clean_glass_extra.py            # dry run – only shows what would happen
-  python scripts/clean_glass_extra.py --apply    # do it
-
-1. keeps the 43 real breaking / shattering clips in downloads/extra/Glass Breaking/
-2. moves 33 ordinary glass sounds (pouring, clinking, ding, wiping, tapping …) to
-   downloads/extra/Background Noise/  – they are look-alikes, not breaking glass
-3. moves 11 duplicates / unsuitable clips (" (1)" copies, cinematic hit, scream + glass mix)
-   to _to_delete/glass_extra/
-4. moves the old imported copies audio_dataset/raw/Glass Breaking/extra_* to
-   _to_delete/raw_glass_extra/ (the re-import copies the cleaned files again)
-
-Nothing is deleted permanently – check _to_delete/ and delete that folder yourself.
-A log is written to _to_delete/clean_glass_extra_log.csv.
-"""
 import argparse
 import csv
 import re

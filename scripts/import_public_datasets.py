@@ -1,18 +1,3 @@
-"""
-Copy clips from FREE, LICENSED public datasets into audio_dataset/raw/<Class>/
-and record source + licence in audio_dataset/raw/annotations.csv.
-
-Download the datasets yourself (links in documentation/DATASET_GUIDE.md), unzip,
-then run for example:
-
-    python scripts/import_public_datasets.py --urbansound8k D:/data/UrbanSound8K --max-per-class 300
-    python scripts/import_public_datasets.py --esc50 D:/data/ESC-50-master
-    python scripts/import_public_datasets.py --fsd50k D:/data/FSD50K
-    python scripts/import_public_datasets.py --mimii D:/data/mimii
-
-Label mapping lives in config/dataset_mapping.json.
-The importer never exceeds --max-per-class clips in any class folder.
-"""
 import argparse
 import csv
 import json
@@ -91,7 +76,7 @@ def import_fsd50k(root: Path, counts, max_n, ann):
         for _, r in meta.iterrows():
             labels = [l.lower() for l in str(r["labels"]).split(",")]
             hits = {keys[l] for l in labels if keys.get(l)}
-            if len(hits) == 1:           # skip clips that map to several of our classes
+            if len(hits) == 1:
                 src = root / audio_dir / f"{r['fname']}.wav"
                 if src.exists():
                     copy_clip(src, hits.pop(), "fsd50k", f"FSD50K:{r['fname']}", cfg["license"], counts, max_n, ann)

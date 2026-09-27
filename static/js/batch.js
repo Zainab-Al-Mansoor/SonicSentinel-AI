@@ -1,5 +1,3 @@
-// Batch runner shared by "Batch upload" and the admin "Test-set evaluation".
-// For each item: server analysis (validation, Python model) -> GTM on the same segments in the browser -> final decision.
 const Batch = (() => {
   async function runGtm(ev, gtmAvailable) {
     if (ev.gtm_status !== 'pending' || !gtmAvailable) return ev;

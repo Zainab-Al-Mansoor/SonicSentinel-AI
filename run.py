@@ -1,12 +1,3 @@
-"""
-Start SonicSentinel AI.
-
-    python run.py                  # http://127.0.0.1:5000
-    python run.py --host 0.0.0.0   # reachable from other devices on the LAN
-
-Live microphone monitoring needs a "secure context": use http://localhost
-or http://127.0.0.1 on the same computer, or serve over HTTPS.
-"""
 import argparse
 import os
 

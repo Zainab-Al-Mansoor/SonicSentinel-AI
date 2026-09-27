@@ -1,4 +1,3 @@
-// Live microphone monitoring: capture -> GTM (browser) -> POST window -> Python + rules (server) -> dashboard.
 (() => {
   const SR = 44100;
   const $ = id => document.getElementById(id);
@@ -36,7 +35,7 @@
         try {
           await GTM.load(GTM_BASE);
           $('gtm-state').textContent = `ready (${GTM.labels.length} classes)`;
-        } catch (err) {   // keep monitoring with the Python model; results will be "Uncertain Result"
+        } catch (err) {
           $('gtm-state').textContent = 'failed – ' + err.message;
           SS.toast('GTM model could not be loaded: ' + err.message, 'warning');
         }
@@ -78,7 +77,7 @@
       if (take < b.length) buffer[0] = b.subarray(take); else buffer.shift();
     }
     bufferLen -= windowLen;
-    if (busy) return;              // drop a window rather than fall behind real time
+    if (busy) return;
     analyse(win);
   }
 
@@ -90,7 +89,7 @@
     fd.append('audio', encodeWav(win, SR), 'window.wav');
     try {
       if (LIVE.gtmAvailable && GTM.loaded) {
-        // GTM classifies the window BEFORE the server sees it – fully independent of the Python model.
+
         fd.append('gtm', JSON.stringify(await GTM.classify(win)));
       }
     } catch (err) { fd.append('gtm_error', String(err.message || err)); }

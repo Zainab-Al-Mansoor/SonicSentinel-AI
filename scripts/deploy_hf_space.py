@@ -1,20 +1,3 @@
-"""
-Deploy SonicSentinel AI to a free Hugging Face Space (Docker) in one command.
-
-    pip install huggingface_hub
-    python scripts/deploy_hf_space.py --space YOUR-HF-USERNAME/sonicsentinel-ai
-
-What it does
-  1. checks that both trained models are present
-  2. writes requirements-deploy.txt with the EXACT library versions installed on this PC
-     (a joblib model must be loaded with the same scikit-learn / XGBoost / NumPy it was trained with)
-  3. logs in to Hugging Face (asks for a token the first time)
-  4. creates the Space (Docker SDK) if it does not exist and stores a random SONIC_SECRET_KEY as a secret
-  5. uploads the project (datasets, database, uploads and other large/private folders are skipped)
-     together with the Space README header (sdk: docker, app_port: 7860)
-
-Run it again after any change to update the live app. Hugging Face then rebuilds the image (≈ 10–20 min).
-"""
 import argparse
 import re
 import secrets
@@ -48,7 +31,6 @@ short_description: Acoustic safety monitoring with two AI models
 
 
 def pinned_requirements() -> str:
-    """requirements.txt with every installed package pinned to the version on this PC."""
     out = ["# written by scripts/deploy_hf_space.py – exact versions of the training PC"]
     for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines():
         s = line.strip()
@@ -57,7 +39,7 @@ def pinned_requirements() -> str:
         name = re.split(r"[<>=!~ ;\[]", s, maxsplit=1)[0]
         marker = s.split(";", 1)[1].strip() if ";" in s else ""
         if name.lower() in ("waitress", "gunicorn", "pytest"):
-            continue                       # server installed separately; tests not needed in the image
+            continue
         try:
             ver = metadata.version(name)
             out.append(f"{name}=={ver}" + (f" ; {marker}" if marker else ""))

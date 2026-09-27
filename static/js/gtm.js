@@ -1,17 +1,3 @@
-/*
- * Google Teachable Machine (audio) classifier running in the browser.
- *
- * GTM audio projects export a TensorFlow.js "speech-commands" BROWSER_FFT model
- * (model.json + metadata.json + weights.bin). That model expects a spectrogram
- * of 43 frames x 232 frequency bins computed exactly like the Web Audio
- * AnalyserNode does it: 44.1 kHz audio, FFT size 2048, Blackman window,
- * magnitude in dB, one frame every 1024 samples (~1 second per example),
- * then z-normalised.
- *
- * Here we compute the same spectrogram ourselves from ANY audio buffer, so the
- * GTM model can classify uploaded files and live windows (not only its own
- * microphone stream). The Python model's output is never given to this code.
- */
 const GTM = (() => {
   const SR = 44100, FFT = 2048, HOP = 1024;
   let recognizer = null, labels = [], frames = 43, cols = 232;
@@ -19,18 +5,18 @@ const GTM = (() => {
   async function load(baseUrl) {
     if (recognizer) return { labels };
     if (typeof speechCommands === 'undefined') throw new Error('speech-commands library not loaded');
-    baseUrl = new URL(baseUrl, window.location.href).href;   // speech-commands needs absolute http(s) URLs
+    baseUrl = new URL(baseUrl, window.location.href).href;
     recognizer = speechCommands.create('BROWSER_FFT', undefined, baseUrl + 'model.json', baseUrl + 'metadata.json');
     await recognizer.ensureModelLoaded();
     labels = recognizer.wordLabels();
-    const shape = recognizer.modelInputShape();   // [null, frames, cols, 1]
+    const shape = recognizer.modelInputShape();
     frames = shape[1]; cols = shape[2];
     return { labels, frames, cols };
   }
 
-  // ---- FFT (iterative radix-2) -------------------------------------------
+
   const win = new Float32Array(FFT);
-  for (let n = 0; n < FFT; n++)   // Blackman window, same as Web Audio AnalyserNode
+  for (let n = 0; n < FFT; n++)
     win[n] = 0.42 - 0.5 * Math.cos(2 * Math.PI * n / FFT) + 0.08 * Math.cos(4 * Math.PI * n / FFT);
   const rev = new Uint32Array(FFT);
   for (let i = 0, bits = Math.log2(FFT); i < FFT; i++) {
@@ -69,7 +55,7 @@ const GTM = (() => {
       for (let i = 0; i < FFT; i++) { const idx = off + i; buf[i] = idx < samples.length ? samples[idx] : 0; }
       x.set(magnitudeDb(buf), f * cols);
     }
-    // z-normalisation (speech-commands normalize())
+
     let mean = 0; for (const v of x) mean += v; mean /= x.length;
     let v2 = 0; for (const v of x) v2 += (v - mean) ** 2; const std = Math.sqrt(v2 / x.length) + 1e-7;
     for (let i = 0; i < x.length; i++) x[i] = (x[i] - mean) / std;
@@ -83,9 +69,9 @@ const GTM = (() => {
     return scores;
   }
 
-  /** Classify a 44.1 kHz mono Float32Array of any length (1-s windows, 0.5-s hop, averaged). */
+
   async function classify(samples) {
-    const span = frames * HOP;              // samples covered by one GTM example (~1 s)
+    const span = frames * HOP;
     const starts = [];
     if (samples.length <= span) starts.push(0);
     else for (let s = 0; s + span <= samples.length; s += Math.floor(span / 2)) starts.push(s);
@@ -97,7 +83,7 @@ const GTM = (() => {
     return acc;
   }
 
-  /** Decode a WAV/MP3 URL to 44.1 kHz mono samples. */
+
   async function decodeUrl(url) {
     const buf = await (await fetch(url)).arrayBuffer();
     const ctx = new OfflineAudioContext(1, SR, SR);

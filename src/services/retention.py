@@ -1,4 +1,3 @@
-"""Data retention (SRS lxxx): delete old audio files and old event records."""
 import shutil
 from datetime import timedelta
 from pathlib import Path

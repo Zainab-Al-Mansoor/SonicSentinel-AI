@@ -1,16 +1,3 @@
-"""
-Reset the dataset before a fresh import + build + training run.
-
-    python scripts/clean_dataset.py            # show what would be deleted
-    python scripts/clean_dataset.py --yes      # delete
-
-Deletes
-  * clips in audio_dataset/raw/<Class>/ that were copied from downloads/ by the import scripts
-    (your own recordings rec_*.wav and TTS clips tts_*.wav are KEPT),
-  * everything in audio_dataset/processed/ (rebuilt by build_dataset.py),
-  * the feature cache in data/features/ (Audio IDs change on every rebuild).
-annotations.csv is kept; rows of deleted files are simply ignored later.
-"""
 import argparse
 import shutil
 import sys

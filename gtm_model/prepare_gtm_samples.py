@@ -1,34 +1,3 @@
-"""
-Prepare Google Teachable Machine (GTM) training samples from the SAME
-training recordings used by the Python model.
-
-GTM audio projects work on 1-second samples at 44.1 kHz. This script cuts
-every TRAIN-split recording into 1-second windows, keeps the windows that
-actually contain the event (energy check), and writes
-
-    gtm_model/training_samples/<Class Name>/<AudioID>_w<k>.wav
-    gtm_model/training_samples/gtm_samples_metadata.csv   (sample -> Audio ID)
-    gtm_model/training_samples/gtm_sample_counts.csv
-
-Validation and test recordings are NEVER exported.
-
-    python -m gtm_model.prepare_gtm_samples --max-per-class 400 --zip
-
---zip (recommended) also writes one Teachable Machine sample archive per class:
-
-    gtm_model/training_samples/_tm_upload/<Class Name>.zip
-
-Teachable Machine's audio "Upload" button only accepts archives in its own
-format (samples.json + .webm audio). These zips use exactly that format, and the
-spectrogram of every sample is computed exactly like Teachable Machine's own
-microphone recorder (Web Audio AnalyserNode: 44.1 kHz, FFT 2048, Blackman
-window, smoothing 0, one frame every 1024 samples, first 232 bins, 43 frames).
-So the samples go into GTM digitally: no speaker -> microphone recording,
-and hundreds of samples per class instead of a few dozen.
-
---playlist writes one long WAV per class instead (old method: play it into
-GTM's microphone recorder).
-"""
 import argparse
 import json
 import random
@@ -47,7 +16,6 @@ from audio_preprocessing import load_audio, prepare_for_gtm
 
 OUT = BASE_DIR / "gtm_model" / "training_samples"
 
-# Teachable Machine / speech-commands BROWSER_FFT settings (same as static/js/gtm.js)
 TM_FFT = 2048
 TM_HOP = 1024
 TM_FRAMES = 43
@@ -57,8 +25,6 @@ _BLACKMAN = 0.42 - 0.5 * np.cos(2 * np.pi * _n / TM_FFT) + 0.08 * np.cos(4 * np.
 
 
 def tm_frequency_frames(y: np.ndarray, start: int = 0) -> np.ndarray:
-    """43 x 232 dB spectrogram, identical to AnalyserNode.getFloatFrequencyData() frames
-    (and to spectrogram() in static/js/gtm.js)."""
     out = np.empty((TM_FRAMES, TM_COLS), np.float32)
     for f in range(TM_FRAMES):
         off = start + f * TM_HOP
@@ -71,7 +37,6 @@ def tm_frequency_frames(y: np.ndarray, start: int = 0) -> np.ndarray:
 
 
 def _encode_webm(wav_path: Path, webm_path: Path) -> bool:
-    """Opus/WebM audio for playback inside Teachable Machine (needs FFmpeg)."""
     try:
         r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav_path),
                             "-c:a", "libopus", "-b:a", "48k", str(webm_path)],
@@ -82,13 +47,6 @@ def _encode_webm(wav_path: Path, webm_path: Path) -> bool:
 
 
 def write_tm_zip(zip_path: Path, items: list, sr: int = GTM_SR) -> int:
-    """items: list of (full_signal, start_sample). Writes a Teachable Machine sample archive.
-
-    Format (as read by teachablemachine.withgoogle.com):
-      samples.json : [{frequencyFrames: [[232 floats] x 43], blob: null, blobFilePath: "sample-1.webm",
-                       startTime, endTime, recordingDuration}, ...]
-      sample-1.webm: the audio of all samples one after another (used only for playback)
-    """
     span = TM_FRAMES * TM_HOP
     samples, audio = [], []
     t = 0.0
@@ -110,7 +68,7 @@ def write_tm_zip(zip_path: Path, items: list, sr: int = GTM_SR) -> int:
         wav = Path(tmp) / "all.wav"
         webm = Path(tmp) / "all.webm"
         sf.write(wav, np.concatenate(audio), sr, subtype="PCM_16")
-        audio_file = webm if _encode_webm(wav, webm) else wav   # WAV bytes still play in Chrome
+        audio_file = webm if _encode_webm(wav, webm) else wav
         zip_path.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
             z.write(audio_file, "sample-1.webm")
@@ -131,7 +89,7 @@ def main():
     args = ap.parse_args()
     random.seed(args.seed)
     if OUT.exists():
-        shutil.rmtree(OUT)          # always rebuild from the current TRAIN split
+        shutil.rmtree(OUT)
 
     meta = pd.read_csv(DATASET_METADATA_CSV)
     train = meta[meta["split"] == "train"]
@@ -145,14 +103,14 @@ def main():
         for _, r in sub.iterrows():
             try:
                 a = load_audio(BASE_DIR / r["path"])
-            except Exception as e:          # unreadable file: skip, keep going
+            except Exception as e:
                 print(f"  skipped {r['path']}: {e}")
                 continue
             y = prepare_for_gtm(a.samples, a.sample_rate, GTM_SR).astype(np.float32)
             n = GTM_SR
             if len(y) < n:
                 y = np.pad(y, (0, n - len(y)))
-            starts = list(range(0, len(y) - n + 1, n // 2))   # 50 % overlap
+            starts = list(range(0, len(y) - n + 1, n // 2))
             energies = [float(np.sqrt(np.mean(y[s:s + n] ** 2))) for s in starts]
             emax = max(energies) or 1.0
             for k, (s, e) in enumerate(zip(starts, energies)):

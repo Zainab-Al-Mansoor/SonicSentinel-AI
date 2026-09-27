@@ -1,4 +1,3 @@
-"""Unit tests: validation, pre-processing, quality, features, fingerprint, augmentation."""
 import shutil
 
 import numpy as np
@@ -12,7 +11,6 @@ from config.settings import TARGET_SR
 from conftest import tone, SR
 
 
-# ---------------- validation / audio-format tests ----------------
 def test_valid_wav(wav_file):
     v = validate_file(wav_file(tone()))
     assert v.ok and v.audio.sample_rate == SR and v.audio.channels == 1
@@ -62,7 +60,6 @@ def test_stereo_metadata(wav_file):
     assert a.channels == 2 and to_mono(a.samples).ndim == 1
 
 
-# ---------------- pre-processing ----------------
 def test_resample_and_normalize():
     y = resample(tone(), SR, TARGET_SR)
     assert abs(len(y) - 2 * TARGET_SR) <= 2
@@ -85,7 +82,6 @@ def test_preprocess_trims_silence():
     assert 0.8 < offset < 1.1 and len(clean) < 2 * TARGET_SR
 
 
-# ---------------- quality ----------------
 def test_quality_good_tone():
     assert analyze_quality(tone(), SR)["label"] == "Good"
 
@@ -115,18 +111,16 @@ def test_quality_missing_frames():
     assert analyze_quality(y, SR)["dropouts"] >= 1
 
 
-# ---------------- features ----------------
 def test_feature_vector():
     f = extract_features(resample(tone(), SR, TARGET_SR))
     assert f.shape == (len(feature_names()),) and np.all(np.isfinite(f))
-    assert np.allclose(f, extract_features(resample(tone(), SR, TARGET_SR)))   # deterministic
+    assert np.allclose(f, extract_features(resample(tone(), SR, TARGET_SR)))
 
 
 def test_features_on_silence_are_finite():
     assert np.all(np.isfinite(extract_features(np.zeros(2 * TARGET_SR, np.float32))))
 
 
-# ---------------- augmentation ----------------
 def test_augmentations_keep_length_and_finite():
     y = resample(tone(), SR, TARGET_SR)
     for out in (add_noise(y, 10), time_shift(y), volume(y, -6), reverb(y, TARGET_SR), distance(y, TARGET_SR),
@@ -135,7 +129,6 @@ def test_augmentations_keep_length_and_finite():
     assert np.all(np.isfinite(time_stretch(y, 1.1)))
 
 
-# ---------------- duplicate audio ----------------
 def test_near_duplicate_trimmed_and_quieter():
     rng = np.random.default_rng(3)
     t = np.arange(SR * 5) / SR

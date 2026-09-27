@@ -1,4 +1,3 @@
-"""Administrator pages: analytics, users, settings, alert rules, audit, notifications, models, export."""
 import io
 import json
 from datetime import timedelta
@@ -42,7 +41,6 @@ def dashboard():
                            notes=SystemNotification.query.order_by(SystemNotification.at.desc()).limit(8).all())
 
 
-# ---- users --------------------------------------------------------------
 @bp.route("/users", methods=["GET", "POST"])
 def users():
     if request.method == "POST":
@@ -61,7 +59,6 @@ def users():
     return render_template("admin/users.html", users=User.query.order_by(User.id).all())
 
 
-# ---- settings / thresholds ----------------------------------------------
 @bp.route("/settings", methods=["GET", "POST"])
 def settings():
     if request.method == "POST":
@@ -90,7 +87,6 @@ def retention():
     return redirect(url_for("admin.settings"))
 
 
-# ---- alert rules --------------------------------------------------------
 @bp.route("/rules", methods=["GET", "POST"])
 def rules():
     rules = load_rules()
@@ -129,7 +125,6 @@ def rules():
     return render_template("admin/rules.html", rules=rules, QUALITY_LEVELS=QUALITY_LEVELS, roles=ROLES)
 
 
-# ---- audit / notifications / models -------------------------------------
 @bp.route("/audit")
 def audit_log():
     q = AuditLog.query
@@ -172,7 +167,6 @@ def confusion_png():
     return send_file(p) if p.exists() else abort(404)
 
 
-# ---- evaluation + export -------------------------------------------------
 @bp.route("/evaluation")
 def evaluation():
     evs = AudioEvent.query.filter(AudioEvent.actual_class.isnot(None)).order_by(AudioEvent.id).all()

@@ -1,12 +1,3 @@
-"""
-Training-audio augmentation (TRAINING SPLIT ONLY).
-
-Augmented clips keep the parent's Audio ID in `parent_audio_id`, stay in the
-same split, and are never counted as unique original clips.
-
-Usage (after scripts/build_dataset.py):
-    python -m augmentation.augment --per-clip 2
-"""
 import argparse
 import random
 
@@ -49,7 +40,6 @@ def volume(y, gain_db=None):
 
 
 def reverb(y, sr, rt60=None):
-    """Limited synthetic room reverberation (exponentially decaying noise IR)."""
     rt60 = rt60 or random.uniform(0.15, 0.6)
     n = int(rt60 * sr)
     ir = np.random.randn(n) * np.exp(-6.9 * np.arange(n) / n)
@@ -60,7 +50,6 @@ def reverb(y, sr, rt60=None):
 
 
 def distance(y, sr, metres=None):
-    """Far-away source: quieter + high frequencies absorbed (low-pass)."""
     metres = metres or random.uniform(5, 30)
     cutoff = max(1500, 9000 - metres * 200)
     sos = butter(4, cutoff, btype="low", fs=sr, output="sos")
@@ -68,7 +57,6 @@ def distance(y, sr, metres=None):
 
 
 def device(y, sr):
-    """Cheap-microphone simulation: band-pass 300 Hz–4 kHz + light saturation."""
     sos = butter(3, [300, min(4000, sr / 2 - 100)], btype="band", fs=sr, output="sos")
     return np.tanh(2.0 * sosfilt(sos, y)).astype(np.float32) / 2.0
 
@@ -104,16 +92,14 @@ def main():
     random.seed(args.seed); np.random.seed(args.seed)
 
     meta = pd.read_csv(DATASET_METADATA_CSV)
-    meta = meta[meta["is_augmented"] == 0]  # never augment an augmented clip
+    meta = meta[meta["is_augmented"] == 0]
     train = meta[meta["split"] == "train"]
 
-    # real background recordings make the most realistic noise
     bg_pool = []
     for p in train[train["class_label"] == BACKGROUND_CLASS]["path"].head(100):
         a, _ = librosa.load(BASE_DIR / p, sr=None, mono=True)
         bg_pool.append(a)
 
-    # copies per clip for every class (minority classes get more when --balance-to is used)
     copies = {}
     for cls, n in train["class_label"].value_counts().items():
         c = args.per_clip
@@ -140,7 +126,7 @@ def main():
         _progress(f"augmented {row['audio_id']}")
 
     full = pd.read_csv(DATASET_METADATA_CSV)
-    full = full[full["is_augmented"] == 0]   # replace every earlier augmentation run
+    full = full[full["is_augmented"] == 0]
     full = pd.concat([full, pd.DataFrame(new_rows)], ignore_index=True)
     full.to_csv(DATASET_METADATA_CSV, index=False)
     print(f"\nCreated {len(new_rows)} augmented training clips (all in the TRAIN split).")

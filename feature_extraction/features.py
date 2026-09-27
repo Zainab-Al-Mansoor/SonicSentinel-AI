@@ -1,20 +1,9 @@
-"""
-Acoustic feature extraction for the Python classification model.
-
-Each fixed-duration segment is turned into ONE fixed-length vector made of
-summary statistics (mean / std / max) of frame-level features:
-
-  MFCC (40) mean+std, delta-MFCC (40) mean, log-Mel spectrogram (64) mean+std,
-  chroma (12) mean+std, spectral contrast (7) mean, zero-crossing rate,
-  RMS energy, spectral centroid, bandwidth, roll-off, flatness, onset strength,
-  tempo.
-"""
 import numpy as np
 import librosa
 
 from config.settings import TARGET_SR, N_MFCC, N_MELS
 
-FEATURE_VERSION = "v1"   # bump when feature code changes -> invalidates cached features
+FEATURE_VERSION = "v1"
 N_FFT = 2048
 HOP = 512
 
@@ -33,10 +22,9 @@ def feature_names() -> list[str]:
 
 
 def extract_features(y: np.ndarray, sr: int = TARGET_SR) -> np.ndarray:
-    """y: mono float32 segment (already pre-processed). Returns 1-D float32 vector."""
     y = y.astype(np.float32)
     if not np.any(y):
-        y = y + 1e-6  # avoid NaNs on digital silence
+        y = y + 1e-6
 
     S = np.abs(librosa.stft(y, n_fft=N_FFT, hop_length=HOP)) ** 2
     mel = librosa.feature.melspectrogram(S=S, sr=sr, n_mels=N_MELS)

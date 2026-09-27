@@ -1,4 +1,3 @@
-"""Alert list, acknowledgement / dismissal / escalation and alert history."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from flask_login import login_required, current_user
 
@@ -12,16 +11,13 @@ ACTIONS = {"acknowledge": "Acknowledged", "dismiss": "Dismissed", "escalate": "E
 
 
 def visible_alerts(role=None):
-    """Alerts the given role (default: current user) may see.
-    The audience column is JSON text, so it is cast to plain text before the LIKE search;
-    otherwise SQLAlchemy JSON-encodes the search term too and nothing ever matches."""
     from sqlalchemy import cast, or_, Text
     role = role or current_user.role
     q = Alert.query
     if role != "admin":
         aud = cast(Alert.audience, Text)
         cond = aud.contains(f'"{role}"')
-        if role == "security":            # alerts without an audience go to security (same as can_handle_alert)
+        if role == "security":
             cond = or_(cond, Alert.audience.is_(None), aud == "[]", aud == "null")
         q = q.filter(cond)
     return q
@@ -73,7 +69,6 @@ def history():
 @bp.route("/poll")
 @login_required
 def poll():
-    """Lightweight poll for the navbar badge / toast of new alerts."""
     if current_user.role not in ("admin", "security", "maintenance"):
         return jsonify({"active": 0, "latest": None})
     q = visible_alerts().filter(Alert.status == "Active")

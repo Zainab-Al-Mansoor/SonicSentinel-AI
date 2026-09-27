@@ -1,7 +1,3 @@
-"""
-Database models (SQLAlchemy ORM, SQLite by default).
-See database/schema.sql for the equivalent SQL and documentation/DATA_DICTIONARY.md.
-"""
 import json
 from datetime import datetime
 
@@ -16,7 +12,6 @@ def now():
 
 
 class JSONText(db.TypeDecorator):
-    """Stores Python dict/list as JSON text."""
     impl = db.Text
     cache_ok = True
 
@@ -30,7 +25,7 @@ class JSONText(db.TypeDecorator):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    user_code = db.Column(db.String(20), unique=True, index=True)        # USR-00001
+    user_code = db.Column(db.String(20), unique=True, index=True)
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     full_name = db.Column(db.String(120))
@@ -70,16 +65,14 @@ class LiveSession(db.Model):
 
 
 class AudioEvent(db.Model):
-    """One analysed recording (uploaded file OR one live microphone window)."""
     __tablename__ = "audio_events"
     id = db.Column(db.Integer, primary_key=True)
     audio_id = db.Column(db.String(40), unique=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), index=True)
-    source = db.Column(db.String(20), default="upload")                  # upload | batch | live | evaluation
+    source = db.Column(db.String(20), default="upload")
     live_session_id = db.Column(db.Integer, db.ForeignKey("live_sessions.id"))
-    actual_class = db.Column(db.String(60))                             # ground truth (evaluation only)
+    actual_class = db.Column(db.String(60))
 
-    # file metadata
     original_filename = db.Column(db.String(255))
     stored_path = db.Column(db.String(500))
     format = db.Column(db.String(10))
@@ -95,14 +88,12 @@ class AudioEvent(db.Model):
     near_duplicate_of_id = db.Column(db.Integer, db.ForeignKey("audio_events.id"))
     near_duplicate_score = db.Column(db.Float)
 
-    # quality + visuals
     quality_label = db.Column(db.String(20))
     quality = db.Column(JSONText)
     noise_level_db = db.Column(db.Float)
     waveform_path = db.Column(db.String(500))
     spectrogram_path = db.Column(db.String(500))
 
-    # model outputs (preserved even after a reviewer override)
     python_prediction = db.Column(db.String(60))
     python_confidence = db.Column(db.Float)
     python_scores = db.Column(JSONText)
@@ -112,9 +103,8 @@ class AudioEvent(db.Model):
     gtm_confidence = db.Column(db.Float)
     gtm_scores = db.Column(JSONText)
     gtm_margin = db.Column(db.Float)
-    gtm_status = db.Column(db.String(20), default="pending")            # pending | done | unavailable | error
+    gtm_status = db.Column(db.String(20), default="pending")
 
-    # comparison + decision
     class_match = db.Column(db.Boolean)
     consistency_status = db.Column(db.String(30))
     confidence_diff = db.Column(db.Float)
@@ -133,9 +123,8 @@ class AudioEvent(db.Model):
     manual_review_required = db.Column(db.Boolean, default=False)
     review_reasons = db.Column(JSONText)
     status = db.Column(db.String(30), default="Uploaded", index=True)
-    decision_trace = db.Column(JSONText)                                # step-by-step explanation
+    decision_trace = db.Column(JSONText)
 
-    # reviewer outcome
     reviewed_category = db.Column(db.String(60))
     reviewer_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     reviewed_at = db.Column(db.DateTime)
@@ -165,7 +154,7 @@ class Segment(db.Model):
     index = db.Column(db.Integer)
     start_s = db.Column(db.Float)
     end_s = db.Column(db.Float)
-    audio_path = db.Column(db.String(500))       # 44.1 kHz WAV (GTM input + reviewer playback)
+    audio_path = db.Column(db.String(500))
     rms_db = db.Column(db.Float)
     python_scores = db.Column(JSONText)
     python_prediction = db.Column(db.String(60))
@@ -183,8 +172,8 @@ class Alert(db.Model):
     severity = db.Column(db.String(20))
     message = db.Column(db.String(300))
     recommended_action = db.Column(db.String(300))
-    audience = db.Column(JSONText)                # roles that should see it
-    status = db.Column(db.String(20), default="Active", index=True)   # Active | Acknowledged | Escalated | Dismissed
+    audience = db.Column(JSONText)
+    status = db.Column(db.String(20), default="Active", index=True)
     created_at = db.Column(db.DateTime, default=now, index=True)
     handled_by_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     handled_at = db.Column(db.DateTime)
@@ -208,9 +197,9 @@ class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey("audio_events.id"), index=True)
     reviewer_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    original_category = db.Column(db.String(60))        # automatic result, preserved
+    original_category = db.Column(db.String(60))
     decided_category = db.Column(db.String(60))
-    decision = db.Column(db.String(20))                  # Confirmed | Corrected
+    decision = db.Column(db.String(20))
     override = db.Column(db.Boolean, default=False)
     comment = db.Column(db.Text)
     recommended_action = db.Column(db.String(300))
@@ -232,7 +221,6 @@ class AuditLog(db.Model):
 
 
 class SystemNotification(db.Model):
-    """Anomaly alerts for administrators (failed logins, model failures, ...)."""
     __tablename__ = "system_notifications"
     id = db.Column(db.Integer, primary_key=True)
     kind = db.Column(db.String(40))
@@ -251,7 +239,7 @@ class Setting(db.Model):
 class ModelVersion(db.Model):
     __tablename__ = "model_versions"
     id = db.Column(db.Integer, primary_key=True)
-    model_type = db.Column(db.String(10))      # python | gtm
+    model_type = db.Column(db.String(10))
     version = db.Column(db.String(60))
     details = db.Column(JSONText)
     registered_at = db.Column(db.DateTime, default=now)

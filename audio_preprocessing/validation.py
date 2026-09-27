@@ -1,8 +1,3 @@
-"""
-Audio file validation (format, size, duration, sample rate, channels,
-integrity, presence of an audio signal). Returns a ValidationResult with
-user-friendly error messages.
-"""
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -46,7 +41,7 @@ def validate_file(path: str | Path, filename: str | None = None) -> ValidationRe
     except AudioDecodeError as exc:
         res.errors.append(f"File integrity check failed: {exc}")
         return res
-    except Exception as exc:  # damaged header, truncated file, ...
+    except Exception as exc:
         res.errors.append(f"The file appears to be damaged or is not valid audio ({type(exc).__name__}).")
         return res
     return validate_audio(audio, res)

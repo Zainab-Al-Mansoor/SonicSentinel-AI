@@ -1,4 +1,3 @@
-// Encode mono Float32 samples as a 16-bit PCM WAV Blob.
 function encodeWav(samples, sampleRate) {
   const buffer = new ArrayBuffer(44 + samples.length * 2);
   const v = new DataView(buffer);

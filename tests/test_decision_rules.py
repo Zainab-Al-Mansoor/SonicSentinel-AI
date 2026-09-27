@@ -1,4 +1,3 @@
-"""Unit tests: model comparison, uncertainty, overlap, alert rules, manual-review routing."""
 from config.settings import CLASSES, DEFAULT_RUNTIME_SETTINGS
 from src.services.decision import decide, compare_models
 from src.services.rules import load_rules, validate_rule, quality_ok, evaluate_rule
@@ -34,10 +33,8 @@ def test_confidence_difference_formula():
 
 
 def test_gunshot_needs_confirmation():
-    # agree but below strong confidence and only one detection -> not confirmed -> manual review
     d = run(scores("Gunshot", 0.75), scores("Gunshot", 0.72), repeated=1)
     assert d["alert_status"] == "Pending Confirmation" and d["manual_review_required"]
-    # the same event repeated in 2 consecutive windows -> confirmed
     d2 = run(scores("Gunshot", 0.75), scores("Gunshot", 0.72), repeated=2)
     assert d2["alert_status"] == "Alert Generated"
 
@@ -124,10 +121,10 @@ def test_python_weight_changes_the_combined_score():
     from src.services.decision import combine
     py = {c: 0.0 for c in CLASSES}; py["Gunshot"] = 0.9; py["Background Noise"] = 0.1
     gtm = {c: 0.0 for c in CLASSES}; gtm["Glass Breaking"] = 0.6; gtm["Gunshot"] = 0.4
-    assert abs(combine(py, gtm)["Gunshot"] - 0.65) < 1e-9                  # default: plain average
+    assert abs(combine(py, gtm)["Gunshot"] - 0.65) < 1e-9
     assert abs(combine(py, gtm, 0.8)["Gunshot"] - 0.8) < 1e-9
-    assert combine(py, None, 0.2)["Gunshot"] == 0.9                         # no GTM -> Python only
-    assert abs(combine(py, gtm, 7)["Gunshot"] - 0.9) < 1e-9                 # clamped to 0..1
+    assert combine(py, None, 0.2)["Gunshot"] == 0.9
+    assert abs(combine(py, gtm, 7)["Gunshot"] - 0.9) < 1e-9
 
 
 def _scores(**kw):
@@ -172,8 +169,8 @@ def test_agreement_fusion_raises_confidence_when_both_models_agree():
     avg = combine(py, gtm, 0.5)["Glass Breaking"]
     fused = combine(py, gtm, 0.5, agreement_fusion=True)
     assert abs(sum(fused.values()) - 1) < 1e-9
-    assert max(fused, key=fused.get) == "Glass Breaking"      # the class never changes
-    assert fused["Glass Breaking"] > 0.9 > avg                  # agreement is extra evidence
+    assert max(fused, key=fused.get) == "Glass Breaking"
+    assert fused["Glass Breaking"] > 0.9 > avg
 
 
 def test_agreement_fusion_is_not_used_when_models_disagree():

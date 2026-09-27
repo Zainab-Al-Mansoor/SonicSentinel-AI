@@ -1,27 +1,3 @@
-"""
-Label audit – find recordings whose label is probably wrong (step 1 of "better features").
-
-    python scripts/label_audit.py                 # all original clips of every split
-    python scripts/label_audit.py --max-rows 400  # size of the review list (default 300)
-
-How it works
-  1. Every ORIGINAL clip (augmented copies are skipped) is turned into one clip-level vector:
-     mean and max of its 299 segment features (the cached features of train_models.py are reused,
-     so this is fast after a training run).
-  2. 5-fold cross-validation with a HistGradientBoosting classifier gives an OUT-OF-FOLD probability
-     for every clip – i.e. a prediction from a model that never saw that clip.
-     ("confident learning": a clip whose own label gets a very low probability while another class
-     is very likely is probably mislabelled.)
-  3. Filename / source keywords that do not fit the class (e.g. "pour" or "clink" in Glass Breaking,
-     "firework" in Gunshot) are flagged as well.
-
-Output
-  reports/label_audit.csv    all flagged clips, most suspicious first
-  reports/label_audit.html   open in Chrome: listen to every clip, choose keep / move / delete,
-                             then click "Export decisions" -> reports/label_audit_decisions.csv
-Apply the decisions with:  python scripts/apply_label_fixes.py --apply
-Nothing is changed by this script.
-"""
 import argparse
 import html
 import json
@@ -56,7 +32,7 @@ KEYWORDS = {
 
 
 def clip_vector(row):
-    X, _ = clip_features(row, spec=LEGACY_SPEC)   # fast 299 features, cache shared with older runs
+    X, _ = clip_features(row, spec=LEGACY_SPEC)
     return np.concatenate([X.mean(axis=0), X.max(axis=0)])
 
 
@@ -79,7 +55,6 @@ def main():
     X = np.vstack(vecs)
     y = meta["class_label"].map({c: i for i, c in enumerate(CLASSES)}).to_numpy()
 
-    # out-of-fold probabilities
     oof = np.zeros((len(meta), len(CLASSES)))
     min_count = int(np.bincount(y, minlength=len(CLASSES))[np.bincount(y, minlength=len(CLASSES)) > 0].min())
     skf = StratifiedKFold(n_splits=max(2, min(a.folds, min_count)), shuffle=True, random_state=42)

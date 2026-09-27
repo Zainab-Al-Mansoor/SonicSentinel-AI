@@ -1,18 +1,9 @@
-"""
-Model comparison + final sound-event decision (pure functions, no database).
-
-Inputs : Python scores, GTM scores (or None), audio quality, noise level,
-         a function giving the repeated-detection count, rules, settings.
-Output : everything the SRS "Final Sound Event Decision" needs, plus a
-         human-readable `trace` explaining each step.
-"""
 from config.settings import CLASSES, BACKGROUND_CLASS, UNKNOWN_CLASS, SEVERITY_LEVELS, LOOKALIKE_PAIRS
 from python_models.inference import top_k, top_margin
 from .rules import evaluate_rule, default_rule, quality_ok
 
 
 def compare_models(py: dict, gtm: dict | None, s: dict) -> dict:
-    """Prediction and confidence comparison between the two independent models."""
     py_cls, py_conf = top_k(py, 1)[0]
     out = {"python_prediction": py_cls, "python_confidence": py_conf, "python_margin": top_margin(py),
            "python_top3": top_k(py, 3)}
@@ -22,7 +13,7 @@ def compare_models(py: dict, gtm: dict | None, s: dict) -> dict:
                     "consistency_status": "Uncertain Result"})
         return out
     g_cls, g_conf = top_k(gtm, 1)[0]
-    diff = abs(py_conf - g_conf)          # |Python top-class conf − GTM top-class conf|
+    diff = abs(py_conf - g_conf)
     match = py_cls == g_cls
     th = s["min_confidence"]
     if py_conf < th and g_conf < th:
@@ -40,21 +31,11 @@ def compare_models(py: dict, gtm: dict | None, s: dict) -> dict:
 
 
 def combine(py: dict, gtm: dict | None, python_weight: float = 0.5, agreement_fusion: bool = False) -> dict:
-    """Combine both models' confidence vectors (Python only if GTM unavailable).
-
-    * Models pick DIFFERENT classes (or agreement_fusion is off): weighted average.
-      python_weight = 0.5 is a plain average; a higher value trusts the more accurate model more.
-    * Both models pick the SAME class and agreement_fusion is on: the two independent models are treated as
-      independent evidence and combined with the product rule, p(c) ∝ p_python(c) · p_gtm(c)
-      (naive-Bayes fusion with a uniform prior). Agreement of two independent models is stronger evidence than
-      either model alone, so the combined confidence is higher than the average – e.g. Python 0.91 and GTM 0.31
-      for Glass Breaking give ≈ 0.97 instead of 0.61. The predicted class never changes: it is the class both
-      models chose."""
     if not gtm:
         return {c: float(py.get(c, 0.0)) for c in CLASSES}
     w = min(1.0, max(0.0, float(python_weight)))
     if agreement_fusion and top_k(py, 1)[0][0] == top_k(gtm, 1)[0][0]:
-        eps = 1e-4                                   # keeps a zero score from wiping out the other model's evidence
+        eps = 1e-4
         prod = {c: (float(py.get(c, 0.0)) + eps) * (float(gtm.get(c, 0.0)) + eps) for c in CLASSES}
         total = sum(prod.values()) or 1.0
         return {c: v / total for c, v in prod.items()}
@@ -90,7 +71,6 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         category = UNKNOWN_CLASS
         trace.append(f"Combined confidence {conf:.2f} < unknown threshold {s['unknown_threshold']:.2f} → Unknown")
 
-    # ---- overlap / uncertainty ------------------------------------------
     strong = [c for c, v in comb.items() if c != BACKGROUND_CLASS and v >= s["overlap_threshold"]]
     overlap = len(strong) >= 2
     if overlap:
@@ -111,7 +91,6 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         uncertain_reasons.append("Overlapping sounds detected")
     uncertain = bool(uncertain_reasons)
 
-    # ---- rules -----------------------------------------------------------
     rule = rules.get(category) or default_rule(category)
     repeated = repeated_for(category) if category != UNKNOWN_CLASS else 1
     agree = bool(gtm) and cmp["class_match"] and cmp["python_prediction"] == category
@@ -143,13 +122,11 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
                 review_reasons.append("Critical event without sufficient confirmation"
                                       if severity in ("High", "Critical") else "Event not confirmed by rules")
 
-    # possible false alarm: an alert for a class the other model barely supports
     if alert_status == "Alert Generated" and gtm and category != BACKGROUND_CLASS:
         weakest = min(py.get(category, 0), gtm.get(category, 0))
         if weakest < 0.20:
             review_reasons.append("Possible false alarm (one model gives this class < 0.20)")
 
-    # ---- look-alike check (SRS Step 14) --------------------------------
     lookalike = []
     lm = float(s.get("lookalike_margin", 0.20))
     for alt, what in LOOKALIKE_PAIRS.get(category, []):
@@ -161,7 +138,6 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         if not ok:
             review_reasons.append(f"Possible look-alike: could be {what}")
     if category == BACKGROUND_CLASS:
-        # a real event hiding behind its look-alike (e.g. a gunshot that looks like fireworks)
         for cls, pairs in LOOKALIKE_PAIRS.items():
             if cls == category:
                 continue
@@ -173,7 +149,6 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
                                  f"≥ {s['unknown_threshold']:.2f} → check for a real {cls}")
                     review_reasons.append(f"Possible {cls} that sounds like {what}")
 
-    # ---- manual-review routing (SRS Step 17) ---------------------------
     if gtm and not cmp["class_match"]:
         review_reasons.append("Different predictions from the two models")
     if conf < s["min_confidence"]:
@@ -186,7 +161,6 @@ def decide(py: dict, gtm: dict | None, *, quality: str, noise_db: float | None,
         review_reasons.append("Overlapping sounds")
     if category == UNKNOWN_CLASS:
         review_reasons.append("Unsupported / unknown sound pattern")
-    # Background noise that is clearly background noise needs no human.
     if category == BACKGROUND_CLASS and alert_status == "No Alert":
         review_reasons = [r for r in review_reasons
                           if r == "Different predictions from the two models" or r.startswith("Possible ")]

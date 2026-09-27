@@ -1,4 +1,3 @@
-"""Registration, login / logout, profile management."""
 from datetime import timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -11,7 +10,7 @@ from ..security import password_problems
 from ..services import audit
 
 bp = Blueprint("auth", __name__)
-SELF_REGISTER_ROLES = ["user", "reviewer", "security", "maintenance"]   # admin is assigned by an admin
+SELF_REGISTER_ROLES = ["user", "reviewer", "security", "maintenance"]
 MAX_FAILED = 5
 LOCK_MINUTES = 5
 

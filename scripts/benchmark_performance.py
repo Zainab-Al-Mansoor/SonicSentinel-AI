@@ -1,20 +1,3 @@
-"""
-Performance + scalability benchmark for the SRS non-functional requirements.
-
-    python scripts/benchmark_performance.py            # full run (≈ 3–8 minutes)
-    python scripts/benchmark_performance.py --records 2000 --uploads 2   # quick check
-
-NFR 1 – Performance : a 30-s uploaded clip is analysed in ≤ 8 s,
-                      a live window returns a prediction in ≤ 3 s.
-NFR 2 – Scalability : ≥ 20,000 event records, several concurrent users.
-
-The benchmark runs against a TEMPORARY copy of the database and data folder
-(your real data/sonicsentinel.db is never touched) but uses the REAL trained
-Python model in python_models/saved/. GTM runs in the browser, so its time is
-not included here (it is measured on the live page as "Last latency").
-
-Results: reports/performance.json and reports/performance.md
-"""
 import argparse
 import io
 import json
@@ -42,7 +25,6 @@ SR = 44100
 
 
 def test_clip(seconds: float, seed: int) -> np.ndarray:
-    """A real test-split recording looped to the wanted length (falls back to a synthetic event)."""
     rng = np.random.default_rng(seed)
     meta = ROOT / "data" / "dataset_metadata.csv"
     if meta.exists():
@@ -107,7 +89,6 @@ def main():
         except Exception as e:
             results["python_model"] = f"unavailable ({e})"
 
-    # ---- NFR 1a: 30-second upload --------------------------------------------------
     times = []
     for i in range(args.uploads):
         y = test_clip(30.0, seed=100 + i)
@@ -120,7 +101,6 @@ def main():
         print(f"  30-s upload {i+1}/{args.uploads}: {times[-1]:.2f} s")
     results["upload_30s"] = {**summary(times), "target_s": 8.0, "pass": max(times) <= 8.0}
 
-    # ---- NFR 1b: live windows -------------------------------------------------------
     sess = client.post("/api/live/start", headers={"X-CSRFToken": token}).get_json()["session"]
     lat = []
     for i in range(args.windows):
@@ -133,7 +113,6 @@ def main():
     print(f"  live window mean {statistics.mean(lat):.2f} s, max {max(lat):.2f} s")
     results["live_window_2s"] = {**summary(lat), "target_s": 3.0, "pass": max(lat) <= 3.0}
 
-    # ---- NFR 2: 20,000 records -----------------------------------------------------
     from config.settings import CLASSES, SEVERITY_LEVELS, QUALITY_LEVELS
     from src.extensions import db
     from src.models import AudioEvent, User
@@ -173,7 +152,6 @@ def main():
     results["scalability"] = {"records": total, "insert_seconds": round(insert_s, 1), "pages": page_t,
                               "pass": total >= 20000 and all(v["status"] == 200 and v["seconds"] < 5 for v in page_t.values())}
 
-    # ---- concurrency: several users hitting pages + one live window each ----------
     errors, durs = [], []
     def worker(k):
         c = app.test_client()
@@ -196,7 +174,6 @@ def main():
                               "wall_s": round(time.perf_counter() - t0, 2), "pass": not errors}
     print(f"  {args.users} concurrent users: {len(durs)} requests, errors={errors}")
 
-    # ---- report ----------------------------------------------------------------------
     import platform
     results["machine"] = {"os": platform.platform(), "python": platform.python_version(), "cpu_count": os.cpu_count()}
     out = ROOT / "reports"; out.mkdir(exist_ok=True)

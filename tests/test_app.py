@@ -1,4 +1,3 @@
-"""Integration, security and database tests through the Flask test client."""
 import io
 import json
 
@@ -23,14 +22,12 @@ def upload(client, token, signal, name="clip.wav", api=True):
 
 
 def fake_gtm(n_segments, cls, conf=0.9):
-    """GTM runs in the browser; in tests we post scores the way the browser would."""
     rest = (1 - conf) / (len(CLASSES) - 1)
     s = {c: rest for c in CLASSES}
     s[cls] = conf
     return {"segments": [s] * n_segments}
 
 
-# ---------------- security ----------------
 def test_login_required(client):
     assert client.get("/dashboard").status_code == 302
     assert client.get("/api/stats").status_code in (302, 401)
@@ -76,16 +73,14 @@ def test_role_based_access(client):
     assert client.get("/upload").status_code == 200
 
 
-# ---------------- upload -> Python -> GTM -> decision ----------------
 def test_upload_full_flow_with_gtm(client, app):
     token, _ = login(client)
     sig = class_signal(CLASSES.index("Glass Breaking"), 3.0, seed=11)
     r = upload(client, token, sig, "glass.wav")
     assert r.status_code == 200, r.data
     ev = r.get_json()["event"]
-    assert ev["gtm_status"] == "unavailable"          # no GTM model installed in tests
-    assert ev["python_prediction"] is None or ev["final_category"]  # finalised without GTM
-    # simulate a GTM-enabled run on a fresh upload
+    assert ev["gtm_status"] == "unavailable"
+    assert ev["python_prediction"] is None or ev["final_category"]
     with app.app_context():
         from src.models import AudioEvent
         from src.extensions import db
@@ -121,7 +116,6 @@ def test_model_disagreement_goes_to_review(client, app):
         n = len(e.segments)
     d = client.post(f"/api/events/{aid}/gtm", json=fake_gtm(n, "Animal Sound"), headers={"X-CSRFToken": token}).get_json()
     assert d["consistency_status"] == "Model Disagreement" and d["status"] == "Manual Review"
-    # reviewer corrects it; original model outputs preserved
     login(client, "reviewer", "Review@12345")
     token = csrf(client)
     client.post(f"/review/{aid}", data={"category": "Vehicle Horn", "severity": "Low", "comment": "clear horn",
@@ -130,7 +124,7 @@ def test_model_disagreement_goes_to_review(client, app):
         from src.models import AudioEvent, Review
         e = AudioEvent.query.filter_by(audio_id=aid).first()
         assert e.reviewed_category == "Vehicle Horn" and e.status == "Reviewed"
-        assert e.gtm_prediction == "Animal Sound"            # preserved
+        assert e.gtm_prediction == "Animal Sound"
         assert Review.query.filter_by(event_id=e.id).first().original_category == e.final_category
 
 
@@ -161,7 +155,6 @@ def test_low_quality_upload_flagged(client):
     assert ev["quality"] in ("Poor", "Acceptable")
 
 
-# ---------------- live monitoring ----------------
 def test_live_window_flow(client):
     token, _ = login(client, "security", "Secure@12345")
     sess = client.post("/api/live/start", headers={"X-CSRFToken": token}).get_json()["session"]
@@ -173,11 +166,9 @@ def test_live_window_flow(client):
     d = r.get_json()
     assert r.status_code == 200 and d["final_category"] == "Panic Scream"
     assert d["alert_status"] == "Alert Generated" and d["alert"]["severity"] == "Critical"
-    # silent window is not classified
     r = client.post("/api/live/window", data={"session": sess, "audio": (wav_bytes(np.zeros(SR * 2, np.float32)), "w.wav")},
                     headers={"X-CSRFToken": token}, content_type="multipart/form-data")
     assert r.get_json()["silent"]
-    # acknowledge the alert
     aid = d["alert"]["id"]
     r = client.post(f"/alerts/{aid}/acknowledge", headers={"X-CSRFToken": token, "X-Requested-With": "fetch"})
     assert r.get_json()["status"] == "Acknowledged"
@@ -198,7 +189,6 @@ def test_repeated_live_detection_confirms_gunshot(client):
     assert results[1]["repeated_count"] >= 2
 
 
-# ---------------- pages, search, admin, export, database ----------------
 def test_all_pages_render(client):
     login(client)
     for url in ["/dashboard", "/upload", "/batch", "/live", "/history", "/timeline", "/alerts/", "/alerts/history",

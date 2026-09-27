@@ -1,20 +1,3 @@
-"""
-Similar-event evaluation (SRS Step 14): can the Python model tell each critical sound from its look-alike?
-
-    python scripts/lookalike_report.py            # validation + test clips (never used for training)
-
-For every pair in config.settings.LOOKALIKE_PAIRS the script reports
-  * recall of the real event,
-  * how often the look-alike recordings are mistaken for the event (false alarm rate),
-  * how many look-alike training clips the model has seen (data coverage),
-using the same pipeline and the same look-alike gap check as the web application.
-Look-alike recordings are found by their original dataset category (e.g. ESC-50 "fireworks",
-MIMII "normal", VSD "noviolence", Kaggle "NotScreaming"). Pairs without any look-alike recordings
-are listed as "no data yet" – add clips to downloads/extra/Background Noise/ (e.g. backfire_*.wav,
-metal_*.wav) and rebuild the dataset.
-
-Results: reports/lookalike_pairs.md and reports/lookalike_pairs.csv
-"""
 import sys
 import warnings
 from pathlib import Path
@@ -32,7 +15,6 @@ from feature_extraction import extract_batch
 from python_models.inference import PythonSoundModel, aggregate_scores
 
 S = DEFAULT_RUNTIME_SETTINGS
-# pair name -> (event class, look-alike class, keywords that identify look-alike recordings in `source`/`original_filename`)
 PAIRS = [
     ("Gunshot vs fireworks", "Gunshot", "Background Noise", ["fireworks"]),
     ("Gunshot vs vehicle backfire", "Gunshot", "Background Noise", ["backfire"]),

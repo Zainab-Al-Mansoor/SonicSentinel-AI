@@ -1,4 +1,3 @@
-"""Analytics for the admin dashboard and the model-comparison report."""
 from collections import Counter
 
 import numpy as np
@@ -15,9 +14,9 @@ def summary(events: list[AudioEvent]) -> dict:
     handled = [a for a in alerts if a.handled_at]
     resp = [(a.handled_at - a.created_at).total_seconds() for a in handled]
     reviews = Review.query.all()
-    fp = Counter(r.original_category for r in reviews if r.decision == "Corrected")     # model said X, wrong
-    fn = Counter(r.decided_category for r in reviews if r.decision == "Corrected")      # truly Y, missed
-    for e in ev:                                                                         # evaluation ground truth
+    fp = Counter(r.original_category for r in reviews if r.decision == "Corrected")
+    fn = Counter(r.decided_category for r in reviews if r.decision == "Corrected")
+    for e in ev:
         if e.actual_class and e.final_category != e.actual_class:
             fp[e.final_category] += 1
             fn[e.actual_class] += 1
@@ -45,8 +44,6 @@ def _top2(d: dict):
 
 
 def _explain(e: AudioEvent, py: dict, g: dict, final: str) -> str:
-    """Plain-language explanation for a MAJOR disagreement: different classes, or the same class with a large
-    confidence gap (|Δ| ≥ 0.40)."""
     pt, gt = _top2(py), _top2(g)
     extra = f" Quality {e.quality_label}" + ("; overlapping sounds." if e.overlap_detected else ".")
     if e.class_match is False:
@@ -67,7 +64,6 @@ def _explain(e: AudioEvent, py: dict, g: dict, final: str) -> str:
 
 
 def comparison_dataframe(events: list[AudioEvent]) -> tuple[pd.DataFrame, dict]:
-    """Rows required by SRS deliverable 6 (Model Prediction and Confidence Comparison Report)."""
     rows = []
     for e in events:
         if not e.final_category:

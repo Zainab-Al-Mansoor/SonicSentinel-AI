@@ -1,4 +1,3 @@
-"""Audit trail + administrator anomaly notifications."""
 from datetime import timedelta
 
 from flask import request, has_request_context
@@ -22,7 +21,6 @@ def log(action: str, entity: str = "", entity_id="", details: str = "", user=Non
 
 
 def notify(kind: str, message: str, dedupe_minutes: int = 10):
-    """Create an admin notification (skips an identical one raised in the last few minutes)."""
     since = now() - timedelta(minutes=dedupe_minutes)
     if SystemNotification.query.filter(SystemNotification.kind == kind, SystemNotification.message == message,
                                        SystemNotification.at >= since).first():
@@ -31,9 +29,6 @@ def notify(kind: str, message: str, dedupe_minutes: int = 10):
     db.session.commit()
 
 
-# ---------------------------------------------------------------------------
-# Anomaly checks (SRS lxxviii)
-# ---------------------------------------------------------------------------
 def check_failed_uploads(user):
     since = now() - timedelta(minutes=10)
     n = AuditLog.query.filter(AuditLog.action == "upload_rejected", AuditLog.user_id == user.id,

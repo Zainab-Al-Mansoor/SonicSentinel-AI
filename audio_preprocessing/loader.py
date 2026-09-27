@@ -1,10 +1,3 @@
-"""
-Audio loading + metadata extraction.
-
-WAV / FLAC / OGG are decoded with `soundfile`. MP3 / M4A (and anything
-soundfile cannot read) are decoded through FFmpeg, which must be installed
-and on the PATH (see README -> Installation).
-"""
 import io
 import shutil
 import subprocess
@@ -16,12 +9,12 @@ import soundfile as sf
 
 
 class AudioDecodeError(Exception):
-    """Raised when a file cannot be decoded as audio."""
+    pass
 
 
 @dataclass
 class AudioData:
-    samples: np.ndarray      # float32, shape (n,) mono or (n, channels)
+    samples: np.ndarray
     sample_rate: int
     channels: int
     bit_depth: int | None
@@ -55,7 +48,6 @@ def ffmpeg_available() -> bool:
 def _decode_with_ffmpeg(path: Path) -> tuple[np.ndarray, int, int]:
     if not ffmpeg_available():
         raise AudioDecodeError("FFmpeg is not installed, so this format cannot be decoded.")
-    # Probe the original channel count / sample rate by letting ffmpeg keep them.
     cmd = ["ffmpeg", "-v", "error", "-i", str(path), "-f", "wav", "-acodec", "pcm_f32le", "pipe:1"]
     proc = subprocess.run(cmd, capture_output=True, timeout=120)
     if proc.returncode != 0 or not proc.stdout:
@@ -65,7 +57,6 @@ def _decode_with_ffmpeg(path: Path) -> tuple[np.ndarray, int, int]:
 
 
 def load_audio(path: str | Path) -> AudioData:
-    """Decode an audio file, keeping its native sample rate and channels."""
     path = Path(path)
     ext = path.suffix.lower().lstrip(".")
     size = path.stat().st_size
@@ -88,7 +79,6 @@ def load_audio(path: str | Path) -> AudioData:
 
 
 def load_bytes(raw: bytes, suffix: str = ".wav") -> AudioData:
-    """Decode audio held in memory (used for live microphone windows)."""
     import tempfile, os
     fd, tmp = tempfile.mkstemp(suffix=suffix)
     try:

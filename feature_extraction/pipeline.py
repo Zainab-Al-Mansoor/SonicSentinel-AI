@@ -1,16 +1,3 @@
-"""
-One place that turns the segments of ONE recording into the model's input matrix.
-
-The feature set is described by a small "spec" that is saved inside the model bundle, so the web app always computes
-exactly the features the loaded model was trained with:
-
-    {"version": "v1", "context": False, "yamnet": False}   299 features  (models trained before feature set v2)
-    {"version": "v2", "context": True,  "yamnet": True}    299 + 94 extra + 53 context + 521 YAMNet = 967 features
-
-  v2       = v1 + extra hand-crafted features (feature_extraction/extra.py)
-  context  = average of the previous and next segment for a compact subset of features (step 4)
-  yamnet   = pretrained AudioSet knowledge (feature_extraction/embeddings.py, step 2)
-"""
 import hashlib
 import json
 
@@ -67,7 +54,6 @@ def spec_tag(spec) -> str:
 
 
 def segment_matrix(segments: list[np.ndarray], spec=None, sr: int = TARGET_SR) -> np.ndarray:
-    """(n_segments x n_features) for the segments of one recording, in time order."""
     spec = normalise(spec)
     if not segments:
         return np.zeros((0, len(spec_names(spec))), dtype=np.float32)

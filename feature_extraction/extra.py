@@ -1,18 +1,3 @@
-"""
-Extra hand-crafted features (feature set v2, step 3 of the feature-engineering plan).
-
-They target the confusions seen in the confusion matrix and the look-alike report:
-
-  impulsiveness   crest factor, attack / decay time, spectral flux, onset rate
-                  -> gunshot, glass and metal impacts vs. steady sounds
-  voice           pitch (F0) median / spread / range, harmonic and percussive energy share
-                  -> panic scream vs. normal shouting, help phrases vs. ordinary speech
-  frequency bands energy share in 7 bands + high/low ratio
-                  -> glass (very high) vs. metal (lower), machinery hum vs. alarms
-  PCEN            per-channel energy-normalised Mel spectrum (32 bands, mean + std)
-                  -> more robust to background noise and recording level
-  shape stats     percentiles of loudness and brightness, skew / kurtosis of the spectrum and envelope
-"""
 import numpy as np
 import librosa
 from scipy.stats import kurtosis, skew
@@ -49,7 +34,6 @@ def extract_extra(y: np.ndarray, sr: int = TARGET_SR) -> np.ndarray:
     rms = librosa.feature.rms(S=S, frame_length=N_FFT)[0] + 1e-9
     f = []
 
-    # ---- impulsiveness ---------------------------------------------------
     peak = float(np.max(np.abs(y))) + 1e-9
     f.append(np.log(peak / (float(np.sqrt(np.mean(y ** 2))) + 1e-9)))
     i_pk = int(np.argmax(rms))
@@ -68,7 +52,6 @@ def extract_extra(y: np.ndarray, sr: int = TARGET_SR) -> np.ndarray:
     onsets = librosa.onset.onset_detect(onset_envelope=onset_env, sr=sr, hop_length=HOP)
     f.append(len(onsets) / (len(y) / sr))
 
-    # ---- voice -----------------------------------------------------------
     try:
         f0 = librosa.yin(y, fmin=80, fmax=1000, sr=sr, frame_length=N_FFT, hop_length=HOP)
         n = min(len(f0), len(rms))
@@ -78,12 +61,11 @@ def extract_extra(y: np.ndarray, sr: int = TARGET_SR) -> np.ndarray:
               float(np.percentile(v, 90) - np.percentile(v, 10)) / 1000]
     except Exception:
         f += [0.0, 0.0, 0.0]
-    Sv = S[:372]                                   # 0–4 kHz: where voice harmonics live; small kernel keeps it fast
+    Sv = S[:372]
     H, Pc = librosa.decompose.hpss(Sv, kernel_size=9)
     tot = float(np.sum(Sv ** 2)) + 1e-9
     f += [float(np.sum(H ** 2)) / tot, float(np.sum(Pc ** 2)) / tot]
 
-    # ---- frequency bands -------------------------------------------------
     freqs = librosa.fft_frequencies(sr=sr, n_fft=N_FFT)
     spec = P.mean(axis=1)
     etot = float(spec.sum()) + 1e-12
@@ -91,13 +73,11 @@ def extract_extra(y: np.ndarray, sr: int = TARGET_SR) -> np.ndarray:
     f += shares
     f.append(np.log((sum(shares[5:]) + 1e-6) / (sum(shares[:3]) + 1e-6)))
 
-    # ---- PCEN ------------------------------------------------------------
     mel = librosa.feature.melspectrogram(S=P, sr=sr, n_mels=N_PCEN * 2)
     pc = librosa.pcen(mel * (2 ** 31), sr=sr, hop_length=HOP)
     pc = pc.reshape(N_PCEN, 2, -1).mean(axis=1)
     f += list(pc.mean(axis=1)) + list(pc.std(axis=1))
 
-    # ---- shape statistics ------------------------------------------------
     rmsdb = 20 * np.log10(rms)
     cent = librosa.feature.spectral_centroid(S=S, sr=sr)[0] / 1000
     f += list(np.percentile(rmsdb, [10, 50, 90]) / 100) + list(np.percentile(cent, [10, 50, 90]))

@@ -1,8 +1,3 @@
-"""
-Loading the saved Python model and turning segment features into confidence
-scores for ALL classes. Also holds the clip-level aggregation rule that is
-used identically for the Python model and the GTM model.
-"""
 from pathlib import Path
 
 import joblib
@@ -16,7 +11,6 @@ class ModelNotAvailable(Exception):
 
 
 class PythonSoundModel:
-    """Wrapper around the joblib bundle written by python_models/train_models.py"""
 
     def __init__(self, path: Path = PYTHON_MODEL_PATH):
         if not Path(path).exists():
@@ -30,10 +24,8 @@ class PythonSoundModel:
         self.metrics = bundle.get("metrics", {})
         self.feature_names = bundle.get("feature_names")
         self.settings = bundle.get("settings", {})
-        # feature set the model was trained with (older bundles: the original 299 features)
         from feature_extraction.pipeline import normalise
         self.spec = normalise(bundle.get("feature_spec"))
-        # per-class calibration factors found on the VALIDATION split (1.0 = unchanged)
         bias = bundle.get("class_bias") or {}
         self.class_bias = {c: float(bias.get(c, 1.0)) for c in CLASSES}
         if self.spec.get("yamnet"):
@@ -44,16 +36,13 @@ class PythonSoundModel:
                     f"({embeddings.unavailable_reason()}). Install it with: pip install tensorflow")
 
     def featurize(self, segments: list) -> np.ndarray:
-        """Model input matrix for the segments of ONE recording (same features as in training)."""
         from feature_extraction.pipeline import segment_matrix
         return segment_matrix(segments, self.spec)
 
     def segment_scores(self, segments: list) -> list[dict]:
-        """Scores for every segment of one recording (features + prediction in one call)."""
         return self.predict_proba(self.featurize(segments))
 
     def predict_proba(self, X: np.ndarray) -> list[dict]:
-        """Returns one {class: probability} dict per row, covering every class in CLASSES."""
         proba = self.pipeline.predict_proba(X)
         model_classes = [self.classes[i] for i in self.pipeline.classes_] \
             if np.issubdtype(np.asarray(self.pipeline.classes_).dtype, np.integer) else list(self.pipeline.classes_)
@@ -77,14 +66,6 @@ def top_margin(scores: dict) -> float:
 
 
 def aggregate_scores(segment_scores: list[dict], min_conf: float) -> tuple[dict, int]:
-    """
-    Clip-level scores from segment-level scores (same rule for both models):
-      * if any segment has a NON-background class with confidence >= min_conf,
-        the clip takes the scores of the strongest such segment (a 0.3 s gunshot
-        in a 20 s clip must not be averaged away);
-      * otherwise the clip takes the mean over all segments.
-    Returns (scores, index_of_segment_used or -1 for mean).
-    """
     if not segment_scores:
         return {c: 0.0 for c in CLASSES}, -1
     best_i, best_v = -1, -1.0

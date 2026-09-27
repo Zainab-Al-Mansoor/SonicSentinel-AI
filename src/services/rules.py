@@ -1,4 +1,3 @@
-"""Load / save / evaluate the configurable alert rules (alert_rules/alert_rules.json)."""
 import json
 
 from config.settings import ALERT_RULES_PATH, SEVERITY_LEVELS, QUALITY_LEVELS
@@ -48,14 +47,12 @@ def validate_rule(rule: dict) -> list[str]:
 
 
 def quality_ok(actual: str, minimum: str) -> bool:
-    """'Good' >= 'Acceptable' >= 'Poor' >= 'Unusable'"""
     order = {q: i for i, q in enumerate(QUALITY_LEVELS)}
     return order.get(actual, 3) <= order.get(minimum, 2)
 
 
 def evaluate_rule(rule: dict, *, confidence: float, margin: float, quality: str,
                   models_agree: bool, repeated: int, single_confidence: float | None = None) -> dict:
-    """Check every condition of one rule and say whether the event is CONFIRMED."""
     checks = {
         "confidence": confidence >= rule["min_confidence"],
         "top2_margin": margin >= rule["top2_margin"],
@@ -63,9 +60,6 @@ def evaluate_rule(rule: dict, *, confidence: float, margin: float, quality: str,
         "model_agreement": models_agree or not rule["require_model_agreement"],
     }
     strong = rule.get("strong_confidence", 0) or 0
-    # one window is enough only when BOTH models are individually above strong_confidence
-    # (single_confidence = the lower of the two models' scores for the class); the combined score is not used here,
-    # so the agreement fusion can never turn a single, moderate detection into an automatic critical alert
     sc = confidence if single_confidence is None else single_confidence
     single_ok = strong > 0 and models_agree and sc >= strong
     checks["repeated_detection"] = repeated >= rule["required_consecutive"] or single_ok

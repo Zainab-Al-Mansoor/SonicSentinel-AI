@@ -1,35 +1,3 @@
-"""
-Train, tune and compare Python sound-classification models.
-
-    python -m python_models.train_models              # all models, normal grids
-    python -m python_models.train_models --fast       # small grids (quick check)
-    python -m python_models.train_models --models svm,rf,xgb
-    python -m python_models.train_models --fast --no-yamnet        # feature set v2 without TensorFlow
-    python -m python_models.train_models --fast --legacy-features  # the original 299 features
-
-Feature set v2 (default): 299 original + 94 extra hand-crafted + 53 context features
-(+ 521 YAMNet AudioSet scores when TensorFlow is installed).
-Class-balanced sample weights (XGBoost), per-class calibration on the VALIDATION split and a
-feature-ablation table (reports/feature_ablation.csv) are part of every run.
---fast skips the cross-validated grid search: every model is fitted once with its default
-parameters and compared on the validation split (much faster, same selection rule).
-
-Models compared : SVM (RBF), Random Forest, XGBoost (or sklearn Gradient
-                  Boosting if xgboost is missing), MLP neural network.
-Tuning          : GridSearchCV, GroupKFold(3) grouped by ORIGINAL Audio ID so
-                  segments / augmented copies of one clip never leak across folds.
-Selection       : best CLIP-level macro-F1 on the VALIDATION split
-                  (critical-class recall breaks ties).
-Test split      : used once, only for the final report.
-
-Outputs
-  python_models/saved/sonic_model.joblib        selected model bundle
-  reports/python_model_comparison.csv           all candidates, val metrics
-  reports/python_test_metrics.json              final test metrics
-  reports/python_classwise_test.csv             per-class precision/recall/F1
-  reports/confusion_matrix_python.png
-  reports/noise_robustness.csv
-"""
 import argparse
 import os
 from pathlib import Path
@@ -70,18 +38,18 @@ try:
 except ImportError:
     XGBClassifier = None
 
-REPORTS = Path(os.environ.get("SONIC_REPORTS_DIR", BASE_DIR / "reports"))   # separate folder for e.g. the light deploy model
+REPORTS = Path(os.environ.get("SONIC_REPORTS_DIR", BASE_DIR / "reports"))
 REPORTS.mkdir(parents=True, exist_ok=True)
 SEG = DEFAULT_RUNTIME_SETTINGS["segment_seconds"]
 HOP = DEFAULT_RUNTIME_SETTINGS["segment_hop_seconds"]
 DENOISE = DEFAULT_RUNTIME_SETTINGS["noise_reduction"]
 MIN_CONF = DEFAULT_RUNTIME_SETTINGS["min_confidence"]
-SPEC = None            # feature set used by this run (set in main(); scripts may pass their own)
+SPEC = None
 
 
 def cache_tag(spec) -> str:
     spec = normalise(spec)
-    if spec == LEGACY_SPEC:   # same folder as before feature set v2, so old caches are reused
+    if spec == LEGACY_SPEC:
         return hashlib.md5(f"{FEATURE_VERSION}-{SEG}-{HOP}-{DENOISE}-{TARGET_SR}-{len(feature_names())}".encode()).hexdigest()[:8]
     return hashlib.md5(f"{spec_tag(spec)}-{SEG}-{HOP}-{DENOISE}-{TARGET_SR}".encode()).hexdigest()[:8]
 
@@ -93,9 +61,6 @@ def current_spec():
     return SPEC
 
 
-# ---------------------------------------------------------------------------
-# Feature extraction with on-disk cache (data/features/<tag>/<audio_id>.npz)
-# ---------------------------------------------------------------------------
 def clip_segments(path, noise_snr=None):
     audio = load_audio(path)
     y = audio.samples if audio.samples.ndim == 1 else audio.samples.mean(axis=1)
@@ -109,8 +74,6 @@ def clip_features(row, noise_snr=None, use_cache=True, spec=None):
     spec = normalise(spec if spec is not None else current_spec())
     cache_dir = FEATURE_DIR / cache_tag(spec)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    # The key includes the file's size and modification time: Audio IDs are re-assigned every time
-    # build_dataset.py runs, so an ID alone could return the cached features of a different clip.
     st = (BASE_DIR / row["path"]).stat()
     key = f"{row['audio_id']}_{st.st_size}_{int(st.st_mtime)}" + (f"_snr{noise_snr}" if noise_snr is not None else "")
     f = cache_dir / f"{key}.npz"
@@ -125,8 +88,6 @@ def clip_features(row, noise_snr=None, use_cache=True, spec=None):
 
 
 def build_matrix(df, drop_quiet=True, noise_snr=None):
-    """Segment-level matrix. Quiet segments of event clips are dropped from TRAINING
-    (a mostly-silent segment of a gunshot clip is not a gunshot)."""
     Xs, ys, groups, clip_ids = [], [], [], []
     for i, (_, r) in enumerate(df.iterrows()):
         X, e = clip_features(r, noise_snr)
@@ -140,7 +101,6 @@ def build_matrix(df, drop_quiet=True, noise_snr=None):
     return np.vstack(Xs), np.array(ys), np.array(groups), np.array(clip_ids)
 
 
-# ---------------------------------------------------------------------------
 def candidates(fast: bool, wanted: set):
     c = {}
     if "svm" in wanted:
@@ -164,7 +124,6 @@ def candidates(fast: bool, wanted: set):
 
 
 def seg_probs(pipe, X) -> np.ndarray:
-    """Segment probabilities in CLASSES order."""
     p = pipe.predict_proba(X)
     out = np.zeros((len(p), len(CLASSES)))
     for j, k in enumerate(pipe.classes_):
@@ -194,13 +153,11 @@ def predict_clips(probs: list, bias=None) -> tuple[np.ndarray, np.ndarray]:
 
 
 def clip_level(pipe, df, label_to_idx=None, bias=None):
-    """Clip-level predictions using the same aggregation rule as the web app."""
     pred, conf = predict_clips(clip_probs(pipe, df), bias)
     return df["class_label"].to_numpy(), pred, conf
 
 
 def calibrate_bias(probs: list, y_true: np.ndarray) -> tuple[np.ndarray, float, float]:
-    """Per-class factors (step 6) that maximise VALIDATION macro-F1; kept only if they help clearly."""
     def score(b):
         return f1_score(y_true, predict_clips(probs, b)[0], labels=CLASSES, average="macro", zero_division=0)
     bias = np.ones(len(CLASSES))
@@ -219,14 +176,12 @@ def calibrate_bias(probs: list, y_true: np.ndarray) -> tuple[np.ndarray, float, 
 
 
 def class_weights(y: np.ndarray) -> np.ndarray:
-    """Class-balanced sample weights (step 6): rare classes count more, softened with a square root."""
     counts = np.bincount(y, minlength=len(CLASSES)).astype(float)
     w = np.sqrt(counts[counts > 0].mean() / np.clip(counts, 1, None))
     return np.clip(w, 0.5, 4.0)[y]
 
 
 def ablation(Xtr, ytr, val_df, spec, max_rows=40000) -> pd.DataFrame:
-    """Quick comparison of the feature groups on the VALIDATION split (same fast model for every set)."""
     names = spec_names(spec)
     nb = len(base_names(spec))
     sets = [("original 299 features", list(range(299)))]
@@ -372,7 +327,6 @@ def main():
     best = fitted[best_name]
     print(f"\nSelected model: {best_name}")
 
-    # ---- per-class calibration on the VALIDATION split (step 6) ------------
     val_probs = clip_probs(best, val_df)
     bias, f1_before, f1_after = calibrate_bias(val_probs, val_df["class_label"].to_numpy())
     if f1_after > f1_before:
@@ -381,14 +335,12 @@ def main():
     else:
         print(f"Calibration: no clear gain on validation (macro-F1 {f1_before:.3f}) -> not used")
 
-    # ---- final, one-time test evaluation ---------------------------------
     yt, pt, ct = clip_level(best, test_df, bias=bias)
     test_m = metrics(yt, pt)
     plot_cm(yt, pt, REPORTS / "confusion_matrix_python.png", f"Python model ({best_name}) – test set")
     pd.DataFrame(test_m["per_class"]).T.to_csv(REPORTS / "python_classwise_test.csv")
     print(classification_report(yt, pt, labels=CLASSES, zero_division=0))
 
-    # ---- noise robustness -------------------------------------------------
     rob = [{"condition": "clean", "accuracy": test_m["accuracy"], "f1_macro": test_m["f1_macro"]}]
     for snr in (20, 10, 5):
         yy, pp = [], []

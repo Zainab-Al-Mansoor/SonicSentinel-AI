@@ -1,10 +1,3 @@
-"""
-Excel reports in the SonicSentinel "Aura" purple theme.
-
-* style_sheet()        – header, banding, widths and freeze panes for any exported table
-* comparison_workbook() – SRS deliverable 6: Model Prediction and Confidence Comparison Report
-                          (Summary · Comparison · Per class · Confusion matrices · Disagreements)
-"""
 from __future__ import annotations
 
 import io
@@ -17,9 +10,8 @@ from openpyxl.utils import get_column_letter
 
 from config.settings import CLASSES
 
-# ---- palette (same as the web app) ------------------------------------------------
 NIGHT, PLUM, LILAC, SILVER = "1D1526", "5C4B73", "D4C4E8", "EAE6F2"
-BAND = "F5F1FA"          # light lilac row band (printable)
+BAND = "F5F1FA"
 LINE = "DCD2EA"
 GOOD, GOOD_BG = "1E6B3A", "E3F4E8"
 BAD, BAD_BG = "9B1C1C", "FBE3E3"
@@ -44,7 +36,6 @@ def _fill(hex_):
 
 
 def _banner(ws, title: str, subtitle: str, width: int):
-    """Dark purple title band across the first two rows."""
     for r in (1, 2):
         for c in range(1, max(width, 6) + 1):
             ws.cell(r, c).fill = FILL_NIGHT
@@ -55,7 +46,6 @@ def _banner(ws, title: str, subtitle: str, width: int):
 
 
 def _table(ws, df: pd.DataFrame, top: int, left: int = 1, widths: dict | None = None):
-    """Write a DataFrame with a purple header and banded rows. Returns the next free row."""
     for j, col in enumerate(df.columns):
         c = ws.cell(top, left + j, str(col))
         c.font, c.fill, c.alignment = F_HEAD, FILL_HEAD, CENTER
@@ -79,7 +69,6 @@ def _table(ws, df: pd.DataFrame, top: int, left: int = 1, widths: dict | None = 
 
 
 def _mark(ws, df: pd.DataFrame, top: int, col: str, good=("Yes", "Correct"), bad=("No", "Incorrect")):
-    """Green / red text + soft fill for yes/no style columns."""
     if col not in df.columns:
         return
     j = list(df.columns).index(col) + 1
@@ -92,7 +81,6 @@ def _mark(ws, df: pd.DataFrame, top: int, col: str, good=("Yes", "Correct"), bad
 
 
 def style_sheet(ws, title: str | None = None):
-    """Theme an already written pandas sheet (header in row 1)."""
     for c in ws[1]:
         c.font, c.fill, c.alignment = F_HEAD, FILL_HEAD, CENTER
     ws.row_dimensions[1].height = 30
@@ -126,7 +114,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
     wb = Workbook()
     stamp = datetime.now().strftime("%d %b %Y %H:%M")
 
-    # ---------------------------------------------------------------- Summary
     ws = wb.active
     ws.title = "Summary"
     ws.sheet_properties.tabColor = NIGHT
@@ -174,7 +161,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
         ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=3)
         ws.row_dimensions[r].height = 30
 
-    # ---------------------------------------------------------------- Comparison
     wc = wb.create_sheet("Comparison")
     wc.sheet_properties.tabColor = PLUM
     _banner(wc, "Per-recording comparison", "Actual class vs both models, final decision and result", len(df.columns))
@@ -185,7 +171,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
     shown = df.drop(columns=["Correct"], errors="ignore")
     for col in ("Result", "Python correct", "GTM correct", "Class match"):
         _mark(wc, shown, top, col)
-    # highlight each model's predicted-class confidence
     for i, rec in enumerate(shown.to_dict("records"), start=1):
         for prefix, key in (("Python conf: ", "Python predicted class"), ("GTM conf: ", "GTM predicted class")):
             col = prefix + str(rec.get(key))
@@ -204,7 +189,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
     else:
         wc.cell(top, 1, "No evaluated recordings yet – run Admin → Model comparison → Run test-set evaluation.").font = F_BODY
 
-    # ---------------------------------------------------------------- Per class
     wp = wb.create_sheet("Per class")
     wp.sheet_properties.tabColor = PLUM
     _banner(wp, "Per-class results", "Accuracy of each model and of the final decision for every class", 6)
@@ -216,7 +200,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
     if not pdf.empty:
         _table(wp, pdf, 4, widths={"Class": 26})
 
-    # ---------------------------------------------------------------- Confusion matrices
     wm = wb.create_sheet("Confusion matrices")
     wm.sheet_properties.tabColor = PLUM
     _banner(wm, "Confusion matrices", "Rows = actual class · columns = predicted class · diagonal = correct", len(CLASSES) + 1)
@@ -238,7 +221,7 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
                 cell = wm.cell(start + 1 + i, 2 + j)
                 cell.alignment = CENTER
                 if v:
-                    t = v / mx                        # lilac → plum heat map
+                    t = v / mx
                     rgb = [int(a + (b - a) * t) for a, b in ((0xF1, 0x5C), (0xEA, 0x4B), (0xF8, 0x73))]
                     cell.fill = _fill("".join(f"{x:02X}" for x in rgb))
                     cell.font = Font(name="Segoe UI", size=10, bold=i == j, color="FFFFFF" if t > 0.5 else NIGHT)
@@ -246,7 +229,6 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
                     cell.border = Border(left=Side(style="medium", color=PLUM), right=Side(style="medium", color=PLUM),
                                          top=Side(style="medium", color=PLUM), bottom=Side(style="medium", color=PLUM))
 
-    # ---------------------------------------------------------------- Disagreements
     wd = wb.create_sheet("Disagreements")
     wd.sheet_properties.tabColor = PLUM
     _banner(wd, "Major disagreements", "Different classes, or the same class with a confidence gap ≥ 0.40", 8)
@@ -261,7 +243,7 @@ def comparison_workbook(df: pd.DataFrame, s: dict, meta: dict) -> io.BytesIO:
 
     for sheet in wb.worksheets:
         sheet.sheet_view.showGridLines = False
-        sheet.page_setup.orientation = "landscape"          # prints on A4 landscape, one page wide
+        sheet.page_setup.orientation = "landscape"
         sheet.sheet_properties.pageSetUpPr.fitToPage = True
         sheet.page_setup.fitToWidth, sheet.page_setup.fitToHeight = 1, 0
     buf = io.BytesIO()

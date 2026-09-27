@@ -1,4 +1,3 @@
-"""CSRF protection, role checks and password policy."""
 import re
 import secrets
 from functools import wraps
@@ -14,7 +13,6 @@ def csrf_token() -> str:
 
 
 def check_csrf():
-    """Called before every POST/PUT/DELETE. Forms send `csrf_token`, fetch() sends X-CSRFToken."""
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken")
         if not sent or not secrets.compare_digest(sent, session.get("_csrf", "")):
@@ -24,7 +22,6 @@ def check_csrf():
 
 
 def roles_required(*roles):
-    """Allow the listed roles (admin is always allowed)."""
     def deco(fn):
         @wraps(fn)
         def wrapper(*a, **kw):

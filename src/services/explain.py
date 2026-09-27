@@ -1,19 +1,3 @@
-"""
-"Why this prediction?" – explainable AI for the Python model.
-
-For one event this module answers three questions:
-
-1. WHERE is the sound?  Per-segment confidence of the predicted class (Python and GTM) plus the exact
-   loud part inside the strongest segment ("event located at 1.20–1.55 s").
-2. WHY this class?  Feature-group occlusion: the 299 features are grouped into 13 acoustic properties
-   (onset, loudness, brightness, low/mid/high-frequency energy, timbre, pitch …). Each group is set to the
-   training average (0 after the StandardScaler) and the model is asked again. The drop in confidence is
-   that property's contribution. This works for every model type (XGBoost, Random Forest, MLP, SVM).
-3. HOW unusual is it?  The z-score of each property (StandardScaler space) says whether it is higher or
-   lower than a typical training clip.
-
-The explanation is produced by our own Python model only – no generative AI is involved.
-"""
 from __future__ import annotations
 
 import json
@@ -29,7 +13,6 @@ from .settings_service import get_settings
 
 EXPLAIN_VERSION = "x1"
 
-# (key, label, plain-language description when HIGH, when LOW)
 GROUPS = [
     ("onset", "Onset / impulsiveness", "a sharp, sudden onset (impulsive sound)", "a smooth, gradual onset"),
     ("rms", "Loudness / energy", "high energy (loud)", "low energy (quiet)"),
@@ -44,7 +27,6 @@ GROUPS = [
     ("chroma", "Pitch / tonal content", "clear pitched / tonal content", "little pitched content"),
     ("contrast", "Harmonic peaks", "clear harmonic peaks", "flat, peak-less spectrum"),
     ("tempo", "Rhythm / repetition", "a fast repeating rhythm", "a slow or no rhythm"),
-    # feature set v2 (only present when the model was trained with it)
     ("impulse", "Impulsiveness (crest, attack, flux)", "a very short, explosive burst", "a steady, drawn-out sound"),
     ("voice", "Voice / pitch (F0, harmonicity)", "a clear voiced, harmonic sound", "little voiced or harmonic content"),
     ("bands", "Frequency-band balance", "energy concentrated in its typical frequency bands", "an untypical frequency balance"),
@@ -110,7 +92,6 @@ def _group_indices(names=None) -> dict[str, list[int]]:
 
 
 def _level_indices(idx: dict[str, list[int]], names=None) -> dict[str, list[int]]:
-    """Features that say whether a property is HIGH or LOW (means / maxima, not std)."""
     names = names or feature_names()
     out = {}
     for k, ids in idx.items():
@@ -120,7 +101,6 @@ def _level_indices(idx: dict[str, list[int]], names=None) -> dict[str, list[int]
 
 
 def _proba(model, Z: np.ndarray) -> np.ndarray:
-    """Class probabilities in CLASSES order from already-scaled features Z."""
     clf = model.pipeline[-1]
     p = clf.predict_proba(Z)
     raw = np.asarray(getattr(clf, "classes_", np.arange(p.shape[1])))
@@ -142,10 +122,6 @@ def _logit(p):
 
 
 def _contributions(model, Z: np.ndarray, t: int, idx: dict[str, list[int]]) -> tuple[dict, str]:
-    """Contribution of each feature group to the target class, in log-odds.
-
-    XGBoost: exact TreeSHAP values (booster.predict(pred_contribs=True)), summed per group.
-    Other models: occlusion – group set to the training average, drop in log-odds."""
     clf = model.pipeline[-1]
     if clf.__class__.__name__.startswith("XGB"):
         import xgboost as xgb
@@ -161,15 +137,13 @@ def _contributions(model, Z: np.ndarray, t: int, idx: dict[str, list[int]]) -> t
         z = Z.copy()
         if not idx[key]:
             batch.append(z[0]); continue
-        z[0, idx[key]] = 0.0                         # training average
+        z[0, idx[key]] = 0.0
         batch.append(z[0])
     occl = _logit(_proba(model, np.vstack(batch))[:, t])
     return {key: float(base - o) for (key, *_), o in zip(GROUPS, occl)}, "feature-group occlusion (log-odds)"
 
 
 def explain_vector(model, x: np.ndarray, target: str | None = None) -> dict:
-    """Explanation for one 299-value feature vector: how much each acoustic property pushed the model
-    towards (positive) or away from (negative) the target class."""
     Z = model.pipeline[:-1].transform(x.reshape(1, -1))
     base = _proba(model, Z)[0]
     t = CLASSES.index(target) if target in CLASSES else int(np.argmax(base))
@@ -194,12 +168,11 @@ def explain_vector(model, x: np.ndarray, target: str | None = None) -> dict:
 
 
 def _event_span(y: np.ndarray, sr: int, start: float, end: float) -> tuple[float, float]:
-    """Loud part of [start, end]: frames within 10 dB of the segment's peak, around the peak."""
     a, b = int(start * sr), int(end * sr)
     seg = y[a:b]
     if len(seg) < sr // 20:
         return start, end
-    hop = max(1, sr // 100)                                          # 10 ms
+    hop = max(1, sr // 100)
     rms = librosa.feature.rms(y=seg, frame_length=hop * 4, hop_length=hop)[0]
     db = 20 * np.log10(rms + 1e-9)
     pk = int(np.argmax(db))
@@ -262,7 +235,6 @@ def _draw(y, sr, segs, target, span, png):
 
 
 def explain_event(ev, model) -> dict:
-    """Full explanation for an AudioEvent (cached per model version)."""
     js, png = _paths(ev)
     key = f"{EXPLAIN_VERSION}|{model.version}|{ev.gtm_model_version}|{ev.gtm_status}|{ev.final_category}"
     if js.exists() and png.exists():
@@ -286,7 +258,6 @@ def explain_event(ev, model) -> dict:
     if not segs_audio:
         raise ValueError("No audio segments to explain.")
 
-    # which segment to explain: the one the clip decision used, else the strongest for the target
     stored = sorted(ev.segments, key=lambda x: x.index)
     pos = ev.python_segment_index if ev.python_segment_index is not None and ev.python_segment_index >= 0 else None
     if pos is None or pos >= len(segs_audio):

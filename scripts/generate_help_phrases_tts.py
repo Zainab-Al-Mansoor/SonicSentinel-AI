@@ -1,14 +1,3 @@
-"""
-Synthetic "Person Asking for Help" clips using the OFFLINE text-to-speech voices
-installed on Windows (SAPI) via pyttsx3. The SRS allows synthetic samples
-"where permitted". Mix these with real voluntary recordings – TTS alone will
-not generalise well to real voices.
-
-    pip install pyttsx3
-    python scripts/generate_help_phrases_tts.py --per-phrase 20
-
-Each clip varies the voice, speaking rate and volume.
-"""
 import argparse
 import csv
 import random

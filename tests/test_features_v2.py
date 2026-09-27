@@ -1,4 +1,3 @@
-"""Feature set v2: extra hand-crafted features, context features, spec handling and class calibration."""
 import numpy as np
 
 from config.settings import CLASSES

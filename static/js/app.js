@@ -1,4 +1,3 @@
-// Shared helpers for every page.
 const SS = (() => {
   const csrf = () => document.querySelector('meta[name="csrf-token"]').content;
 
@@ -11,7 +10,7 @@ const SS = (() => {
     }
     const r = await fetch(url, opts);
     let data = null;
-    try { data = await r.json(); } catch (_) { /* non-JSON */ }
+    try { data = await r.json(); } catch (_) {  }
     if (!r.ok) throw new Error((data && data.error) || `Request failed (${r.status})`);
     return data;
   }
@@ -44,13 +43,13 @@ const SS = (() => {
           toast('🔔 ' + d.latest.message, d.latest.severity, d.latest.url, 10000);
         }
         if (d.latest) lastAlertId = d.latest.id; else lastAlertId = 0;
-      } catch (_) { /* offline – ignore */ }
+      } catch (_) {  }
     };
     tick();
     setInterval(tick, 8000);
   }
 
-  // mobile nav
+
   document.addEventListener('DOMContentLoaded', () => {
     const t = document.getElementById('nav-toggle');
     if (t) t.onclick = () => document.getElementById('nav-links').classList.toggle('hidden');

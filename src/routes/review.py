@@ -1,4 +1,3 @@
-"""Manual review queue: playback, confirm / correct, comments, override (original outputs preserved)."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 
@@ -43,7 +42,6 @@ def review(audio_id):
                    decided_category=decided, decision="Corrected" if corrected else "Confirmed", override=override,
                    comment=f.get("comment", "").strip(), recommended_action=f.get("recommended_action", "").strip())
         db.session.add(r)
-        # Model outputs (python_*, gtm_*, final_category) stay untouched – only reviewer fields change.
         ev.reviewed_category = decided
         ev.reviewer_id, ev.reviewed_at, ev.overridden = current_user.id, now(), override
         if f.get("severity") in SEVERITY_LEVELS:
@@ -51,7 +49,6 @@ def review(audio_id):
         if r.recommended_action:
             ev.recommended_action = r.recommended_action
         ev.status = "Closed" if f.get("close") else "Reviewed"
-        # reviewer can raise an alert that the rules did not raise
         if f.get("raise_alert") and not ev.alerts:
             rule = load_rules().get(decided, {})
             ev.alerts.append(Alert(category=decided, severity=ev.severity,

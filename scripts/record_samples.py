@@ -1,20 +1,3 @@
-"""
-Voluntary recording helper for classes that public datasets cover poorly
-(Person Asking for Help, Panic Scream, Aggression).
-
-Every speaker must agree to be recorded. Recordings go to
-audio_dataset/raw/<Class>/ and are logged in annotations.csv.
-
-    pip install sounddevice
-    python scripts/record_samples.py --list-devices          # which microphone is used?
-    python scripts/record_samples.py --class "Person Asking for Help" --speaker S01 --count 20 \
-        --environment indoor --device laptop-mic --distance 1 [--input 2]
-
-Clips that are almost silent (the microphone recorded nothing) are not saved – you are asked to repeat them.
-
-Only the defined safety phrases are used for the help class:
-    "Help me", "Somebody help", "Please help", "Call for help", "Emergency"
-"""
 import argparse
 import csv
 import sys
@@ -47,7 +30,7 @@ def main():
     args = ap.parse_args()
 
     import numpy as np
-    import sounddevice as sd  # imported here so the rest of the project does not need it
+    import sounddevice as sd
 
     if args.list_devices:
         for i, d in enumerate(sd.query_devices()):

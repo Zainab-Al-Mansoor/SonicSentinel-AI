@@ -1,16 +1,3 @@
-"""
-Database initialisation + demo / evaluator accounts.
-
-    python -m database.init_db            # create tables + default accounts
-    python -m database.init_db --reset    # DELETE everything and start again
-
-Default accounts (CHANGE THE PASSWORDS after first login):
-    admin / Admin@12345          (Administrator)
-    reviewer / Review@12345      (Audio reviewer)
-    security / Secure@12345      (Security operator)
-    maintenance / Maint@12345    (Maintenance operator)
-    evaluator / Eval@12345       (Normal user – for competition evaluators)
-"""
 import argparse
 import sys
 from pathlib import Path

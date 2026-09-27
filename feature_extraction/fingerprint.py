@@ -1,11 +1,3 @@
-"""
-Audio fingerprint for near-duplicate detection.
-
-Catches re-encoded (MP3/OGG), trimmed and volume-adjusted copies:
-  * spectral profile  – mean log-Mel spectrum (volume-independent after normalisation)
-  * energy envelope   – 10 Hz RMS envelope, z-normalised, compared with sliding
-                        cross-correlation so a trimmed copy still aligns.
-"""
 import numpy as np
 import librosa
 
@@ -34,7 +26,6 @@ def _cos(a, b):
 
 
 def _best_xcorr(a, b) -> float:
-    """Max normalised cross-correlation of the shorter envelope slid over the longer one."""
     a, b = np.asarray(a, float), np.asarray(b, float)
     if len(a) > len(b):
         a, b = b, a
@@ -51,14 +42,13 @@ def _best_xcorr(a, b) -> float:
 
 
 def similarity(fp1: dict, fp2: dict) -> float:
-    """0..1 similarity. >= 0.9 is treated as a near-duplicate."""
     if not fp1 or not fp2:
         return 0.0
     spec = _cos(fp1["profile"], fp2["profile"])
     if spec < 0.85:
-        return max(0.0, spec * 0.5)       # clearly different spectrum – skip expensive check
+        return max(0.0, spec * 0.5)
     shorter = min(fp1["duration"], fp2["duration"]) / max(fp1["duration"], fp2["duration"], 1e-6)
-    if shorter < 0.3:                      # far too different in length
+    if shorter < 0.3:
         return spec * 0.6
     env = _best_xcorr(fp1["envelope"], fp2["envelope"])
     return round(0.3 * spec + 0.7 * max(env, 0.0), 4)

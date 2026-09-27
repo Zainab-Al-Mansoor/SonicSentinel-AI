@@ -1,17 +1,3 @@
-"""
-Hidden-test readiness check (SRS 1.8 – competition integrity, item 9).
-
-Evaluators test with UNSEEN recordings that may be noisy, echoing, quiet, recorded on other
-devices, far away, cut in the middle, overlapping, confusable or re-encoded. This script
-simulates each of those conditions on the unseen TEST split and runs the real Python model
-through the SAME pipeline the web app uses (pre-processing -> 2-s segments -> 299 features
--> model -> clip aggregation -> quality analysis -> overlap check).
-
-    python scripts/hidden_test_robustness.py                 # 30 test clips per class (~15 min)
-    python scripts/hidden_test_robustness.py --per-class 10  # quick run
-
-Results: reports/hidden_test_robustness.csv and reports/hidden_test_robustness.md
-"""
 import argparse
 import random
 import shutil
@@ -39,7 +25,6 @@ from python_models.inference import PythonSoundModel, aggregate_scores
 
 S = DEFAULT_RUNTIME_SETTINGS
 
-# SRS "similar classes" pairs, as represented in our label set
 CONFUSABLE = [("Gunshot", "Background Noise", "gunshot vs fireworks / door slam (Background)"),
               ("Panic Scream", "Background Noise", "scream vs normal shouting / voices (Background)"),
               ("Aggression", "Background Noise", "aggression vs normal conversation (Background)"),
@@ -50,7 +35,6 @@ CONFUSABLE = [("Gunshot", "Background Noise", "gunshot vs fireworks / door slam 
 
 
 def classify(y: np.ndarray, sr: int, model: PythonSoundModel) -> tuple[str, dict, str, bool]:
-    """Same steps as src/services/analysis.analyze_upload (Python side)."""
     q = analyze_quality(y, sr)
     clean, _ = preprocess_signal(y, sr, trim=True, denoise=S["noise_reduction"])
     segs = segment(clean, TARGET_SR, S["segment_seconds"], S["segment_hop_seconds"])
@@ -102,7 +86,7 @@ def main():
         "distant source (15 m)": lambda y, r: distance(y, TARGET_SR, 15),
         "partial event (first 40 % cut)": lambda y, r: y[int(0.4 * len(y)):] if len(y) > TARGET_SR else y,
         "re-encoded MP3 64 kbps": lambda y, r: reencode_mp3(y, TARGET_SR, 64),
-        "overlap with another class (0 dB)": None,     # handled below
+        "overlap with another class (0 dB)": None,
     }
     rows, t0 = [], time.time()
     items = list(pick.itertuples())
@@ -121,7 +105,7 @@ def main():
                 yy = fn(y, r)
             try:
                 pred, clip, qual, ovl = classify(np.asarray(yy, np.float32), TARGET_SR, model)
-            except Exception as e:                      # a crash would itself be a failed hidden test
+            except Exception as e:
                 rows.append({"condition": name, "audio_id": r.audio_id, "actual": r.class_label, "error": str(e)})
                 continue
             ok = pred == r.class_label or (other is not None and pred == other)

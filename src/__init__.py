@@ -1,4 +1,3 @@
-"""SonicSentinel AI – Flask application factory."""
 import os
 from pathlib import Path
 
@@ -16,7 +15,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         SECRET_KEY=SECRET_KEY,
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{DATABASE_PATH}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        MAX_CONTENT_LENGTH=MAX_UPLOAD_MB * 1024 * 1024 * 20,   # batch requests carry several files
+        MAX_CONTENT_LENGTH=MAX_UPLOAD_MB * 1024 * 1024 * 20,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         WARM_UP=True,
@@ -51,7 +50,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         if current_user.is_authenticated:
             try:
                 if current_user.role in ("admin", "security", "maintenance"):
-                    from .routes.alerts import visible_alerts   # same role filter as the Alerts page
+                    from .routes.alerts import visible_alerts
                     ctx["nav_active_alerts"] = visible_alerts().filter(Alert.status == "Active").count()
                 else:
                     ctx["nav_active_alerts"] = 0
@@ -71,7 +70,6 @@ def create_app(test_config: dict | None = None) -> Flask:
     def dt(v):
         return "—" if v is None else v.strftime("%Y-%m-%d %H:%M:%S")
 
-    # ---- error handling (SRS lxxvii) ---------------------------------------
     def _err(code, title, message):
         if request.path.startswith("/api/"):
             return jsonify({"error": message}), code
@@ -102,7 +100,6 @@ def create_app(test_config: dict | None = None) -> Flask:
         db.session.rollback()
         return _err(500, "Something went wrong", "An internal error occurred. It has been logged.")
 
-    # ---- health check (NFR availability: used by Render / Docker / run_server.bat) ----
     import time as _time
     started = _time.time()
 
@@ -114,7 +111,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         try:
             db.session.execute(text("SELECT 1"))
             checks["database"] = "ok"
-        except Exception as e:                      # pragma: no cover - depends on the environment
+        except Exception as e:
             checks["database"] = f"error: {e.__class__.__name__}"
         try:
             checks["python_model"] = python_model().version

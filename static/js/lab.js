@@ -1,4 +1,3 @@
-// Robustness Lab – degrade one recording with sliders and watch both models react (see src/services/lab.py).
 (() => {
   const $ = id => document.getElementById(id);
   const S = { token: null, meta: null, clean: null, reqId: 0, gtmReady: null, chart: null };
@@ -25,7 +24,7 @@
     labels(); schedule(0);
   }
 
-  // ---------------------------------------------------------------- rendering
+
   const top = sc => Object.entries(sc || {}).sort((a, b) => b[1] - a[1]);
   function bars(el, scores, highlight, color) {
     el.innerHTML = top(scores).slice(0, 5).map(([c, v]) => `
@@ -74,7 +73,7 @@
       (r.quality_issues && r.quality_issues.length ? `<span class="text-xs text-amber-300">${r.quality_issues.map(SS.esc).join('; ')}</span>` : '');
   }
 
-  // ---------------------------------------------------------------- GTM (browser)
+
   async function gtmScores(url) {
     if (!LAB.gtm) return null;
     if (!S.gtmReady) S.gtmReady = GTM.load(GTM_BASE);
@@ -82,7 +81,7 @@
     return GTM.classify(await GTM.decodeUrl(url));
   }
 
-  // ---------------------------------------------------------------- run
+
   let timer = null;
   function schedule(ms = 350) { clearTimeout(timer); timer = setTimeout(run, ms); }
   async function run() {
@@ -109,7 +108,7 @@
     }
   }
 
-  // ---------------------------------------------------------------- load clip
+
   async function loaded(res) {
     S.token = res.token; S.meta = res.meta; S.clean = null;
     const m = res.meta;
@@ -138,7 +137,7 @@
   document.querySelectorAll('.lab-preset').forEach(b => b.addEventListener('click', () => applyPreset(JSON.parse(b.dataset.p))));
   labels();
 
-  // ---------------------------------------------------------------- sweep
+
   document.querySelectorAll('[data-sweep]').forEach(btn => btn.addEventListener('click', async () => {
     if (!S.token) return;
     const kind = btn.dataset.sweep;

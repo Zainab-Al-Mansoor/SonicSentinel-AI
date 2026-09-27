@@ -1,25 +1,3 @@
-"""
-Build the COMMON sound dataset used by BOTH the Python model and GTM.
-
-Input layout (put your collected / recorded / imported clips here):
-    audio_dataset/raw/<Class Name>/<any file>.wav|mp3|flac|ogg|m4a
-Optional per-file annotations (all columns optional except `filename`):
-    audio_dataset/raw/annotations.csv
-        filename,class_label,source,license,environment,device,distance_m
-
-What it does
-  1. validates every clip (decodable, not silent, >= 0.5 s)
-  2. removes exact duplicates (SHA-256)
-  3. assigns a unique Audio ID (AUD-000001 ...)
-  4. converts to 44.1 kHz mono 16-bit WAV (keeps full quality for GTM)
-  5. stratified 70 / 15 / 15 split (train / val / test) BY ORIGINAL CLIP
-  6. writes data/dataset_metadata.csv, data/dataset_statistics.json,
-     data/dataset_quality_report.csv and a class-balance check
-
-Usage:
-    python scripts/build_dataset.py            # full rebuild
-    python scripts/build_dataset.py --min-per-class 300
-"""
 import argparse
 import hashlib
 import json
@@ -108,7 +86,6 @@ def main():
         return
 
     df = pd.DataFrame(rows)
-    # ---- class balance check ----------------------------------------------
     counts = df["class_label"].value_counts().reindex(CLASSES, fill_value=0)
     print("\nClips per class:")
     for c, n in counts.items():
@@ -118,7 +95,6 @@ def main():
     if ratio > 1.5:
         print(f"[warn] class imbalance ratio {ratio:.2f} (> 1.5). Collect more clips for the small classes.")
 
-    # ---- stratified 70/15/15 split by ORIGINAL clip -----------------------
     strat = df["class_label"] if counts[counts > 0].min() >= 4 else None
     train_idx, rest_idx = train_test_split(df.index, test_size=0.30, random_state=args.seed, stratify=strat)
     rest = df.loc[rest_idx]
@@ -128,7 +104,6 @@ def main():
     df.loc[val_idx, "split"] = "val"
     df.loc[test_idx, "split"] = "test"
 
-    # ---- write standardised WAVs ------------------------------------------
     for i, r in df.iterrows():
         audio = load_audio(r["_src"])
         y = resample(to_mono(audio.samples), audio.sample_rate, GTM_SR)

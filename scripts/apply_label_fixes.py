@@ -1,17 +1,3 @@
-"""
-Apply the decisions exported from reports/label_audit.html.
-
-    python scripts/apply_label_fixes.py                  # dry run
-    python scripts/apply_label_fixes.py --apply          # move the files
-    python scripts/apply_label_fixes.py --csv path.csv   # another decisions file
-
-For every row with action "move:<Class>" the RAW source file
-(audio_dataset/raw/<label>/<original filename>) is moved to audio_dataset/raw/<Class>/ and its row in
-audio_dataset/raw/annotations.csv gets the new class_label. For "delete" the file is moved to
-_to_delete/label_audit/ (nothing is deleted permanently) and its annotation row is removed.
-Rows with "keep" are ignored. Afterwards rebuild: build_dataset -> augment -> train.
-A log is written to _to_delete/label_audit_log.csv.
-"""
 import argparse
 import csv
 import shutil

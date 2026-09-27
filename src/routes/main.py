@@ -1,4 +1,3 @@
-"""User-facing pages: dashboard, upload, batch, live, event detail, history, timeline, media."""
 import base64
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -99,7 +98,7 @@ def save_and_analyze(file_storage, source, actual_class=None):
     dest = UPLOAD_DIR / f"{new_audio_id('UPL')}{ext}"
     file_storage.save(dest)
     ev, msgs, dup = analyze_upload(dest, file_storage.filename, current_user, source=source, actual_class=actual_class)
-    if not ev:                      # rejected or duplicate -> do not keep the file
+    if not ev:
         try:
             dest.unlink()
         except OSError:
@@ -150,7 +149,7 @@ def event_report(audio_id):
         except OSError:
             return None
     try:
-        logo = b64(Path(current_app.static_folder) / "img" / "sonic-logo-silver.svg")  # embedded so the logo shows offline
+        logo = b64(Path(current_app.static_folder) / "img" / "sonic-logo-silver.svg")
         html = render_template("events/report.html", ev=ev, wave=b64(ev.waveform_path), spec=b64(ev.spectrogram_path),
                                logo=logo, top_k=top_k, generated=now())
     except Exception as exc:
@@ -162,9 +161,6 @@ def event_report(audio_id):
                     headers={"Content-Disposition": f"attachment; filename=SonicSentinel_{ev.audio_id}.html"})
 
 
-# ---------------------------------------------------------------------------
-# Protected media (audio is never served from /static)
-# ---------------------------------------------------------------------------
 @bp.route("/lab")
 @login_required
 def lab():
@@ -205,9 +201,6 @@ def gtm_file(filename):
     return send_from_directory(GTM_MODEL_DIR, filename)
 
 
-# ---------------------------------------------------------------------------
-# History / search / timeline
-# ---------------------------------------------------------------------------
 def filtered_events(args):
     q = visible_events()
     if args.get("audio_id"):

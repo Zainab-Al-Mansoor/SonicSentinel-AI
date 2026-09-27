@@ -1,4 +1,3 @@
-"""Explainable-AI panel and Robustness Lab."""
 import numpy as np
 
 from conftest import class_signal, login, SR
@@ -24,8 +23,8 @@ def test_explain_vector_contributions(app):
     with app.app_context():
         r = explain_vector(python_model(), x)
     assert r["target"] in CLASSES and 0 <= r["confidence"] <= 1
-    assert len(r["groups"]) == 13                                       # v1 model: the 13 original groups
-    assert sum(g["n_features"] for g in r["groups"]) == 299          # every feature belongs to exactly one group
+    assert len(r["groups"]) == 13
+    assert sum(g["n_features"] for g in r["groups"]) == 299
     assert all(g["level"] in ("high", "low") for g in r["groups"])
 
 
@@ -40,7 +39,7 @@ def test_explain_api_and_image(client, wav_file):
     assert len(x["segments"]) >= 1
     img = client.get(x["image_url"])
     assert img.status_code == 200 and img.mimetype == "image/png"
-    assert client.get(f"/api/events/{aid}/explain").get_json()["cache_key"] == x["cache_key"]   # cached
+    assert client.get(f"/api/events/{aid}/explain").get_json()["cache_key"] == x["cache_key"]
     page = client.get(f"/events/{aid}")
     assert b"Why this prediction?" in page.data
 
@@ -85,7 +84,6 @@ def test_lab_rejects_bad_input(client, wav_file, tmp_path):
                         content_type="multipart/form-data")
     assert r.status_code == 422
     assert client.get("/api/lab/audio/..%2Fsecret.wav").status_code == 404
-    # CSRF is required
     assert client.post("/api/lab/run", json={"token": "0123456789abcdef"}).status_code in (400, 403)
 
 
@@ -105,7 +103,7 @@ def test_degrade_is_deterministic_and_bounded():
     from src.services.lab import degrade, clean_params
     y = (0.3 * np.sin(np.arange(44100 * 2) / 10)).astype(np.float32)
     p = clean_params({"noise_snr": 5, "echo_rt60": 0.5, "device": True, "gain_db": 99})
-    assert p["gain_db"] == 12.0                                        # clamped to the allowed range
+    assert p["gain_db"] == 12.0
     a, b = degrade(y, p, seed=7), degrade(y, p, seed=7)
     assert np.array_equal(a, b) and np.abs(a).max() <= 1.0
 
@@ -116,4 +114,4 @@ def test_feature_set_v2_groups_cover_every_feature():
     names = spec_names({"version": "v2", "context": True, "yamnet": True})
     idx = _group_indices(names)
     assigned = sorted(i for ids in idx.values() for i in ids)
-    assert assigned == list(range(len(names)))                          # every feature in exactly one group
+    assert assigned == list(range(len(names)))

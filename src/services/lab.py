@@ -1,12 +1,3 @@
-"""
-Robustness Lab – "what happens to the prediction if the recording gets worse?"
-
-A user loads one clip (own upload, or a random recording from the unseen TEST split) and moves sliders for
-noise, real background noise, echo, distance, volume, microphone type and a cut-off start. The server applies
-the same augmentation functions used for training (augmentation/augment.py), runs the Python model with the
-SAME pipeline as a normal upload, and returns a 44.1 kHz WAV so the browser can run the Google Teachable
-Machine model on exactly the same modified audio. Nothing is written to the event database.
-"""
 from __future__ import annotations
 
 import hashlib
@@ -71,7 +62,6 @@ def clean_params(raw: dict | None) -> dict:
     return p
 
 
-# ---------------------------------------------------------------- clip storage
 def _meta_path(token):
     return LAB_DIR / f"{token}.json"
 
@@ -132,9 +122,7 @@ def load_test_clip(class_label: str | None, user_id: int) -> tuple[str, dict]:
     return _store(_to44(a.samples, a.sample_rate), meta), meta
 
 
-# ---------------------------------------------------------------- degradation
 def _background(n: int, seed: int) -> np.ndarray:
-    """A real Background Noise recording from the TEST split if available, else pink-ish noise."""
     rng = np.random.default_rng(seed)
     try:
         if test_split_available():
@@ -148,11 +136,10 @@ def _background(n: int, seed: int) -> np.ndarray:
     except Exception:
         pass
     white = rng.standard_normal(n).astype(np.float32)
-    return np.cumsum(white) * 0.02 + white * 0.3          # brown + white mix
+    return np.cumsum(white) * 0.02 + white * 0.3
 
 
 def degrade(y: np.ndarray, params: dict, seed: int = 0, sr: int = GTM_SR) -> np.ndarray:
-    """Apply the selected conditions in a physically sensible order (source -> room -> mic -> recording)."""
     random.seed(seed); np.random.seed(seed)
     out = y.astype(np.float32).copy()
     if params["cut_start_pct"] > 0 and len(out) > sr // 2:
@@ -172,9 +159,7 @@ def degrade(y: np.ndarray, params: dict, seed: int = 0, sr: int = GTM_SR) -> np.
     return np.clip(out, -1.0, 1.0).astype(np.float32)
 
 
-# ---------------------------------------------------------------- analysis
 def python_analyse(y: np.ndarray, sr: int, model) -> dict:
-    """Same Python-side steps as a normal upload (analysis.analyze_upload)."""
     s = get_settings()
     q = analyze_quality(y, sr)
     clean, _ = preprocess_signal(y, sr, trim=True, denoise=s["noise_reduction"])
@@ -224,7 +209,6 @@ def run(token: str, raw_params: dict, model) -> dict:
 
 
 def sweep(token: str, raw_params: dict, model, kind: str = "noise_snr") -> dict:
-    """Confidence of the clean prediction while white noise gets stronger (other sliders kept)."""
     if kind not in ("noise_snr", "bg_snr"):
         raise LabError("Unknown sweep.")
     y0, meta = load_token(token)

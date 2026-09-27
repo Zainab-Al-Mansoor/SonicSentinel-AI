@@ -1,8 +1,3 @@
-"""
-Test fixtures. Everything runs in a temporary data folder with a temporary
-database, a temporary copy of the alert rules and a TINY test-only model
-trained on synthetic tones (it is never used by the real application).
-"""
 import os
 import shutil
 import sys
@@ -16,7 +11,7 @@ _TMP = Path(tempfile.mkdtemp(prefix="sonic_test_"))
 os.environ["SONIC_DATA_DIR"] = str(_TMP / "data")
 os.environ["SONIC_DB_PATH"] = str(_TMP / "test.db")
 os.environ["SONIC_MODEL_PATH"] = str(_TMP / "test_model.joblib")
-os.environ["SONIC_GTM_DIR"] = str(_TMP / "gtm")               # empty -> GTM "not installed"
+os.environ["SONIC_GTM_DIR"] = str(_TMP / "gtm")
 shutil.copy(ROOT / "alert_rules" / "alert_rules.json", _TMP / "rules.json")
 os.environ["SONIC_RULES_PATH"] = str(_TMP / "rules.json")
 
@@ -40,7 +35,6 @@ def tone(freq=440.0, seconds=2.0, sr=SR, amp=0.4, noise=0.01, seed=0):
 
 
 def class_signal(ci, seconds=2.0, seed=0):
-    """Synthetic, clearly separable signal per class index (test-only)."""
     if CLASSES[ci] == "Background Noise":
         return (0.05 * np.random.default_rng(seed).standard_normal(int(seconds * SR))).astype(np.float32)
     return tone(300 + 400 * ci, seconds, seed=seed)

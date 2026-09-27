@@ -1,4 +1,3 @@
-"""JSON API used by the browser (batch upload, GTM results, live monitoring, charts, evaluation)."""
 from collections import Counter
 from datetime import timedelta
 from pathlib import Path
@@ -73,7 +72,6 @@ def api_event(audio_id):
 @bp.route("/events/<audio_id>/explain")
 @login_required
 def api_event_explain(audio_id):
-    """'Why this prediction?' – where the event is and which acoustic properties drove the Python model."""
     from ..services.analysis import python_model
     from ..services.explain import explain_event
     ev = _event(audio_id)
@@ -83,7 +81,7 @@ def api_event_explain(audio_id):
         out = explain_event(ev, python_model())
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 404
-    except Exception as e:                                  # never break the event page
+    except Exception as e:
         return jsonify({"error": f"Explanation failed: {e}"}), 500
     out = dict(out)
     out["image_url"] = url_for("main.event_media", audio_id=ev.audio_id, kind="explain")
@@ -93,7 +91,6 @@ def api_event_explain(audio_id):
 @bp.route("/events/<audio_id>/gtm", methods=["POST"])
 @login_required
 def api_event_gtm(audio_id):
-    """Browser posts GTM scores for every segment: {"segments": [{class: score}...]} or {"error": "..."}."""
     ev = _event(audio_id)
     if ev.gtm_status == "done" and ev.final_category:
         return jsonify(event_json(ev))
@@ -105,9 +102,6 @@ def api_event_gtm(audio_id):
     return jsonify(event_json(ev))
 
 
-# ---------------------------------------------------------------------------
-# Live monitoring
-# ---------------------------------------------------------------------------
 @bp.route("/live/start", methods=["POST"])
 @login_required
 def live_start():
@@ -169,9 +163,6 @@ def live_recent():
     return jsonify([event_json(e) for e in evs])
 
 
-# ---------------------------------------------------------------------------
-# Chart data
-# ---------------------------------------------------------------------------
 @bp.route("/stats")
 @login_required
 def stats():
@@ -195,9 +186,6 @@ def stats():
     })
 
 
-# ---------------------------------------------------------------------------
-# Test-set evaluation (Model Prediction & Confidence Comparison report)
-# ---------------------------------------------------------------------------
 @bp.route("/evaluate/testset")
 @login_required
 @roles_required("admin")
@@ -231,7 +219,6 @@ def testset_file():
     if dup:
         if dup.actual_class is None:
             dup.actual_class = r["class_label"]; db.session.commit()
-        # re-run the decision on the stored scores so the report always uses the CURRENT decision logic and settings
         from ..services.analysis import finalize
         finalize(dup)
         return jsonify({"duplicate": True, "event": event_json(dup, True)})
@@ -240,9 +227,6 @@ def testset_file():
     return jsonify({"event": event_json(ev, True)})
 
 
-# ---------------------------------------------------------------------------
-# Robustness Lab (no events are stored – see src/services/lab.py)
-# ---------------------------------------------------------------------------
 def _lab_owner_ok(token: str) -> bool:
     from ..services import lab
     try:

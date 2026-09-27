@@ -1,4 +1,3 @@
-"""Tiny progress printer: prints every Nth message so logs stay readable."""
 import time
 
 _last = [0.0]

@@ -1,4 +1,3 @@
-"""Teachable Machine upload archives (gtm_model/prepare_gtm_samples.py --zip)."""
 import json
 import zipfile
 
@@ -14,7 +13,6 @@ def test_frequency_frames_shape_and_peak():
     f = tm_frequency_frames(y)
     assert f.shape == (TM_FRAMES, TM_COLS)
     assert np.isfinite(f).all()
-    # 1 kHz tone -> strongest bin ≈ 1000 / (44100 / 2048) ≈ 46
     assert abs(int(np.argmax(f[10])) - 46) <= 1
 
 

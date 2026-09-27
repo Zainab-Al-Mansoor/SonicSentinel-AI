@@ -1,14 +1,13 @@
-"""Waveform and Mel-spectrogram image generation (PNG) with matplotlib."""
 from pathlib import Path
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")  # headless – required inside Flask
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import librosa
 import librosa.display
 
-BG = "#281D35"      # "Aura" theme – matches the web UI cards
+BG = "#281D35"
 FG = "#B3A6C9"
 INK = "#EAE6F2"
 
@@ -26,7 +25,7 @@ def save_waveform(y: np.ndarray, sr: int, path: str | Path, segments: list | Non
     fig, ax = plt.subplots(figsize=(10, 2.4), dpi=110)
     fig.patch.set_facecolor(BG)
     t = np.arange(len(y)) / sr
-    step = max(1, len(y) // 20000)          # decimate for fast drawing
+    step = max(1, len(y) // 20000)
     ax.plot(t[::step], y[::step], color="#D4C4E8", linewidth=0.6)
     if segments:
         for (s, e) in segments:

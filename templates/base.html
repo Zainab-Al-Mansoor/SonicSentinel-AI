@@ -8,6 +8,14 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/sonic-mark.svg') }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/sonic-mark-32.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/sonic-mark-180.png') }}">
+  <meta name="theme-color" content="#1D1526">
+  <meta property="og:site_name" content="SonicSentinel AI">
+  <meta property="og:title" content="{{ self.title() }} · SonicSentinel AI">
+  <meta property="og:description" content="Acoustic safety monitoring with two AI models – Python classifier + Google Teachable Machine.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="{{ url_for('static', filename='img/sonic-og.png', _external=True, _scheme=('http' if request.host.startswith(('127.', 'localhost')) else 'https')) }}">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     /* "Aura" theme – dark purple glass. The templates use Tailwind's slate / brand / red … names;
